@@ -9,6 +9,7 @@ import {
   ARCHETYPE_CATEGORIES, 
   findBestArchetype, 
   getMatchingValues,
+  getMatchScore,
   Archetype 
 } from '@/lib/archetypes';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +22,7 @@ interface WhoAmIMostLikeProps {
 export function WhoAmIMostLike({ scores }: WhoAmIMostLikeProps) {
   const [category, setCategory] = useState<ArchetypeCategory>('fictional');
   const [archetype, setArchetype] = useState<Archetype | null>(null);
+  const [matchPercent, setMatchPercent] = useState(0);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -30,6 +32,10 @@ export function WhoAmIMostLike({ scores }: WhoAmIMostLikeProps) {
   useEffect(() => {
     const newArchetype = findBestArchetype(scores, category);
     setArchetype(newArchetype);
+    // Calculate match percentage (score is roughly 0-1.5, normalize to 0-100)
+    const rawScore = getMatchScore(scores, newArchetype);
+    const percent = Math.min(100, Math.round(rawScore * 70 + 20)); // Scale to 20-100%
+    setMatchPercent(percent);
     setImageUrl(null); // Reset image when archetype changes
     setHasGenerated(false);
   }, [scores, category]);
@@ -156,9 +162,14 @@ export function WhoAmIMostLike({ scores }: WhoAmIMostLikeProps) {
           <h4 className="font-serif text-xl font-bold text-primary">
             {archetype.name}
           </h4>
-          <p className="text-xs text-muted-foreground mt-1 capitalize">
-            {ARCHETYPE_CATEGORIES.find(c => c.value === category)?.label}
-          </p>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <span className="text-xs text-muted-foreground capitalize">
+              {ARCHETYPE_CATEGORIES.find(c => c.value === category)?.label}
+            </span>
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              {matchPercent}% match
+            </span>
+          </div>
         </div>
 
         <p className="text-sm text-muted-foreground leading-relaxed mb-4">

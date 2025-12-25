@@ -33,9 +33,28 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
   const [isSaving, setIsSaving] = useState(false);
   const [isModified, setIsModified] = useState(false);
 
-  // Load draft on mount for new profiles
+  // Load draft on mount for new profiles, or load archetype from sessionStorage
   useEffect(() => {
     if (!initialProfile) {
+      // Check for archetype loaded from landing page
+      const archetypeData = sessionStorage.getItem('loadArchetype');
+      if (archetypeData) {
+        try {
+          const { name: archetypeName, scores: archetypeScores } = JSON.parse(archetypeData);
+          setName(archetypeName);
+          setScores(archetypeScores);
+          setIsModified(true);
+          toast({
+            title: 'Profile loaded',
+            description: `Loaded ${archetypeName}'s value profile`,
+          });
+        } catch (e) {
+          console.error('Failed to parse archetype data:', e);
+        }
+        sessionStorage.removeItem('loadArchetype');
+        return;
+      }
+
       const draft = loadFromDraft();
       if (draft) {
         setName(draft.name ?? 'Untitled Profile');
@@ -44,7 +63,7 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
         setSystemPrompt(draft.systemPrompt ?? null);
       }
     }
-  }, [initialProfile, loadFromDraft]);
+  }, [initialProfile, loadFromDraft, toast]);
 
   // Auto-save draft on changes
   useEffect(() => {

@@ -1,19 +1,36 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Compass, Users, Sparkles, ArrowRight, Plus } from 'lucide-react';
+import { Compass, Users, Sparkles, ArrowRight, Plus, Star } from 'lucide-react';
 import { DbProfile } from '@/lib/profile-storage';
 import { ValueScores } from '@/lib/schwartz-values';
 import { Json } from '@/integrations/supabase/types';
+import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 
 function jsonToScores(json: Json): ValueScores {
   return json as unknown as ValueScores;
 }
 
 export default function Landing() {
+  const navigate = useNavigate();
   const [profiles, setProfiles] = useState<DbProfile[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const archetypesByCategory = ARCHETYPE_CATEGORIES.map((cat) => ({
+    ...cat,
+    archetypes: ARCHETYPES.filter((a) => a.category === cat.value),
+  }));
+
+  const handleLoadArchetype = (archetypeName: string) => {
+    const archetype = ARCHETYPES.find((a) => a.name === archetypeName);
+    if (archetype) {
+      const scores = archetypeToScores(archetype);
+      // Store in sessionStorage so editor can pick it up
+      sessionStorage.setItem('loadArchetype', JSON.stringify({ name: archetype.name, scores }));
+      navigate('/editor');
+    }
+  };
 
   useEffect(() => {
     async function fetchProfiles() {
@@ -111,6 +128,42 @@ export default function Landing() {
                 use with ChatGPT, Claude, or other LLMs.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Start with an Example */}
+      <section className="py-16 border-t bg-muted/30">
+        <div className="container">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4">
+              <Star className="w-6 h-6" />
+            </div>
+            <h2 className="font-serif text-3xl font-bold">Start with an Example</h2>
+            <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
+              Explore value profiles of famous characters and historical figures. 
+              Click any name to load their profile and see how they map.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {archetypesByCategory.map((category) => (
+              <div key={category.value} className="rounded-xl border bg-card p-5">
+                <h3 className="font-serif text-lg font-semibold mb-1">{category.label}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{category.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {category.archetypes.map((archetype) => (
+                    <button
+                      key={archetype.name}
+                      onClick={() => handleLoadArchetype(archetype.name)}
+                      className="text-sm px-3 py-1.5 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                    >
+                      {archetype.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

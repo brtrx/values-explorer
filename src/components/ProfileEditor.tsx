@@ -136,6 +136,12 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
     });
   }, [loadSampleProfile, toast]);
 
+  const handleLoadArchetypeProfile = useCallback((newScores: ValueScores, archetypeName: string) => {
+    setScores(newScores);
+    setName(archetypeName);
+    setIsModified(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -220,6 +226,7 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
                 systemPrompt={systemPrompt}
                 onDescriptionChange={handleDescriptionChange}
                 onSystemPromptChange={handleSystemPromptChange}
+                onLoadArchetypeProfile={handleLoadArchetypeProfile}
               />
             </div>
           </aside>

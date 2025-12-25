@@ -13,6 +13,7 @@ interface GenerationPanelProps {
   systemPrompt: string | null;
   onDescriptionChange: (description: string) => void;
   onSystemPromptChange: (systemPrompt: string) => void;
+  onLoadArchetypeProfile?: (scores: ValueScores, name: string) => void;
 }
 
 export function GenerationPanel({
@@ -21,6 +22,7 @@ export function GenerationPanel({
   systemPrompt,
   onDescriptionChange,
   onSystemPromptChange,
+  onLoadArchetypeProfile,
 }: GenerationPanelProps) {
   const [copiedField, setCopiedField] = useState<'description' | 'prompt' | null>(null);
   const { toast } = useToast();
@@ -46,7 +48,7 @@ export function GenerationPanel({
   return (
     <div className="space-y-6">
       {/* Who Am I Most Like - Featured component at top */}
-      <WhoAmIMostLike scores={scores} />
+      <WhoAmIMostLike scores={scores} onLoadArchetypeProfile={onLoadArchetypeProfile} />
 
       {/* Profile Description - As readable text */}
       <div className="generation-panel">

@@ -10,6 +10,8 @@ import {
   findBestArchetype, 
   getMatchingValues,
   getMatchScore,
+  findSimilarArchetypes,
+  archetypeToScores,
   Archetype 
 } from '@/lib/archetypes';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,11 +19,13 @@ import { useToast } from '@/hooks/use-toast';
 
 interface WhoAmIMostLikeProps {
   scores: ValueScores;
+  onLoadArchetypeProfile?: (scores: ValueScores, name: string) => void;
 }
 
-export function WhoAmIMostLike({ scores }: WhoAmIMostLikeProps) {
+export function WhoAmIMostLike({ scores, onLoadArchetypeProfile }: WhoAmIMostLikeProps) {
   const [category, setCategory] = useState<ArchetypeCategory>('fictional');
   const [archetype, setArchetype] = useState<Archetype | null>(null);
+  const [similarArchetypes, setSimilarArchetypes] = useState<Archetype[]>([]);
   const [matchPercent, setMatchPercent] = useState(0);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -36,12 +40,25 @@ export function WhoAmIMostLike({ scores }: WhoAmIMostLikeProps) {
     const rawScore = getMatchScore(scores, newArchetype);
     const percent = Math.min(100, Math.round(rawScore * 70 + 20)); // Scale to 20-100%
     setMatchPercent(percent);
+    // Find similar archetypes
+    setSimilarArchetypes(findSimilarArchetypes(newArchetype, 4));
     setImageUrl(null); // Reset image when archetype changes
     setHasGenerated(false);
   }, [scores, category]);
 
   const handleCategoryChange = (newCategory: ArchetypeCategory) => {
     setCategory(newCategory);
+  };
+
+  const handleLoadArchetype = (arch: Archetype) => {
+    if (onLoadArchetypeProfile) {
+      const newScores = archetypeToScores(arch);
+      onLoadArchetypeProfile(newScores, arch.name);
+      toast({
+        title: `Loaded ${arch.name}'s profile`,
+        description: 'Value scores have been updated to match this character.',
+      });
+    }
   };
 
   const generateImage = async () => {
@@ -188,6 +205,25 @@ export function WhoAmIMostLike({ scores }: WhoAmIMostLikeProps) {
                 >
                   {label}
                 </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Similar characters */}
+        {similarArchetypes.length > 0 && (
+          <div className="pt-3 mt-3 border-t">
+            <p className="text-xs text-muted-foreground mb-2">Similar to…</p>
+            <div className="flex flex-wrap gap-1.5">
+              {similarArchetypes.map((similar) => (
+                <button
+                  key={similar.name}
+                  onClick={() => handleLoadArchetype(similar)}
+                  className="px-2.5 py-1 text-xs rounded-full border border-border bg-background hover:bg-muted hover:border-primary/50 transition-colors cursor-pointer font-medium text-foreground"
+                  title={`Load ${similar.name}'s value profile`}
+                >
+                  {similar.name}
+                </button>
               ))}
             </div>
           </div>

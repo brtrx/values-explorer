@@ -695,3 +695,73 @@ export function getMatchingValues(scores: ValueScores, archetype: Archetype): st
     .slice(0, 4)
     .map(([code]) => code);
 }
+
+/**
+ * Calculate similarity between two archetypes based on their value profiles
+ */
+function calculateArchetypeSimilarity(a: Archetype, b: Archetype): number {
+  let dotProduct = 0;
+  let aMagnitude = 0;
+  let bMagnitude = 0;
+  
+  const allCodes = new Set([
+    ...Object.keys(a.valueProfile),
+    ...Object.keys(b.valueProfile)
+  ]);
+  
+  for (const code of allCodes) {
+    const aVal = a.valueProfile[code] || 0;
+    const bVal = b.valueProfile[code] || 0;
+    
+    dotProduct += aVal * bVal;
+    aMagnitude += aVal * aVal;
+    bMagnitude += bVal * bVal;
+  }
+  
+  aMagnitude = Math.sqrt(aMagnitude);
+  bMagnitude = Math.sqrt(bMagnitude);
+  
+  if (aMagnitude === 0 || bMagnitude === 0) return 0;
+  return dotProduct / (aMagnitude * bMagnitude);
+}
+
+/**
+ * Find archetypes similar to the given archetype (across all categories)
+ */
+export function findSimilarArchetypes(archetype: Archetype, limit: number = 4): Archetype[] {
+  const similarities: { archetype: Archetype; score: number }[] = [];
+  
+  for (const other of ARCHETYPES) {
+    if (other.name === archetype.name) continue;
+    const score = calculateArchetypeSimilarity(archetype, other);
+    similarities.push({ archetype: other, score });
+  }
+  
+  return similarities
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(s => s.archetype);
+}
+
+/**
+ * Convert an archetype's value profile to a full ValueScores object
+ * Weights: 3 = 6.0, 2 = 4.5, 1 = 3.5, unspecified = 3.0
+ */
+export function archetypeToScores(archetype: Archetype): ValueScores {
+  const scores: ValueScores = {} as ValueScores;
+  
+  for (const value of SCHWARTZ_VALUES) {
+    const weight = archetype.valueProfile[value.code];
+    if (weight === 3) {
+      scores[value.code] = 6.0;
+    } else if (weight === 2) {
+      scores[value.code] = 4.5;
+    } else if (weight === 1) {
+      scores[value.code] = 3.5;
+    } else {
+      scores[value.code] = 3.0;
+    }
+  }
+  
+  return scores;
+}

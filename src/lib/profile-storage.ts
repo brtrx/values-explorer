@@ -34,8 +34,13 @@ export async function saveProfile(profile: CreateProfile): Promise<DbProfile> {
     .single();
 
   if (error) {
-    console.error('Error saving profile:', error);
-    throw new Error(`Failed to save profile: ${error.message}`);
+    console.error('Error saving profile:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    });
+    throw new Error('Unable to save profile. Please try again.');
   }
 
   return {
@@ -60,8 +65,13 @@ export async function updateProfile(id: string, profile: Partial<CreateProfile>)
     .single();
 
   if (error) {
-    console.error('Error updating profile:', error);
-    throw new Error(`Failed to update profile: ${error.message}`);
+    console.error('Error updating profile:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    });
+    throw new Error('Unable to update profile. Please try again.');
   }
 
   return {
@@ -81,8 +91,13 @@ export async function loadProfile(id: string): Promise<DbProfile | null> {
     if (error.code === 'PGRST116') {
       return null; // Not found
     }
-    console.error('Error loading profile:', error);
-    throw new Error(`Failed to load profile: ${error.message}`);
+    console.error('Error loading profile:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    });
+    throw new Error('Unable to load profile. Please try again.');
   }
 
   return {

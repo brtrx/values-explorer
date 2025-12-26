@@ -163,94 +163,59 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
-              <span className="text-primary-foreground font-serif font-bold text-lg">S</span>
-            </div>
-            <div>
-              <h1 className="font-serif text-xl font-semibold tracking-tight">
-                Schwartz Values Profile
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                PVQ-RR → LLM Prompt Builder
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Main content - single column layout */}
+      <main className="container max-w-2xl py-8 px-4">
+        <div className="space-y-8">
+          {/* Profile sidebar at top */}
+          <section>
+            <ProfileSidebar
+              name={name}
+              scores={scores}
+              description={description}
+              systemPrompt={systemPrompt}
+              profileId={initialProfile?.id ?? null}
+              isSharedProfile={isSharedProfile}
+              allowOverwrite={allowOverwrite}
+              isSaving={isSaving}
+              onNameChange={handleNameChange}
+              onSave={handleSave}
+              onReset={handleReset}
+              onLoadSample={handleLoadSample}
+              onOverwriteChange={setAllowOverwrite}
+            />
+          </section>
 
-      {/* Main content */}
-      <main className="container py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-[300px_1fr_360px] gap-8">
-          {/* Left sidebar */}
-          <aside className="order-2 xl:order-1">
-            <div className="sticky top-24 space-y-6">
-              <ProfileSidebar
-                name={name}
-                scores={scores}
-                description={description}
-                systemPrompt={systemPrompt}
-                profileId={initialProfile?.id ?? null}
-                isSharedProfile={isSharedProfile}
-                allowOverwrite={allowOverwrite}
-                isSaving={isSaving}
-                onNameChange={handleNameChange}
-                onSave={handleSave}
-                onReset={handleReset}
-                onLoadSample={handleLoadSample}
-                onOverwriteChange={setAllowOverwrite}
-              />
-              
-              {/* Schwartz Circle visualization */}
-              <div className="rounded-xl border bg-card p-4">
-                <h3 className="font-serif text-lg font-semibold mb-4 text-center">
-                  Value Compass
-                </h3>
-                <div className="flex justify-center">
-                  <SchwartzCircle scores={scores} size={240} />
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* Center: Generation + Value editor */}
-          <section className="order-1 xl:order-2 space-y-8">
-            {/* Output section - now at top */}
-            <div>
-              <h2 className="font-serif text-2xl font-semibold mb-2">
-                Output
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Generate a human-readable description and LLM system prompt based on your values.
-              </p>
-              <GenerationPanel
-                scores={scores}
-                description={description}
-                systemPrompt={systemPrompt}
-                onDescriptionChange={handleDescriptionChange}
-                onSystemPromptChange={handleSystemPromptChange}
-                onLoadArchetypeProfile={handleLoadArchetypeProfile}
-              />
-            </div>
-
-            {/* Value editor - now below */}
-            <div>
-              <h2 className="font-serif text-2xl font-semibold mb-2">
-                Value Scores
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Adjust each value from 0.0 to 7.0 using the sliders or input boxes.
-                Values are grouped by Schwartz's four higher-order categories.
-              </p>
-              <ValueEditor scores={scores} onChange={handleScoresChange} />
+          {/* Value Compass visualization */}
+          <section className="rounded-xl border bg-card p-6">
+            <h2 className="font-serif text-xl font-semibold mb-4 text-center">
+              Value Compass
+            </h2>
+            <div className="flex justify-center">
+              <SchwartzCircle scores={scores} size={280} />
             </div>
           </section>
 
-          {/* Right sidebar: removed, now empty placeholder for layout */}
-          <aside className="order-3 hidden xl:block" />
+          {/* Profile Summary */}
+          <GenerationPanel
+            scores={scores}
+            description={description}
+            systemPrompt={systemPrompt}
+            onDescriptionChange={handleDescriptionChange}
+            onSystemPromptChange={handleSystemPromptChange}
+            onLoadArchetypeProfile={handleLoadArchetypeProfile}
+          />
+
+          {/* Edit Profile Scores */}
+          <section>
+            <h2 className="font-serif text-2xl font-semibold mb-2">
+              Edit Profile Scores
+            </h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Adjust each value from 0.0 to 7.0 using the sliders or input boxes.
+              Values are grouped by Schwartz's four higher-order categories.
+            </p>
+            <ValueEditor scores={scores} onChange={handleScoresChange} />
+          </section>
         </div>
       </main>
 

@@ -84,20 +84,6 @@ function ValueQuadrant({ higherOrder, scores, onChange }: ValueQuadrantProps) {
   // Calculate average score for this quadrant
   const avgScore = values.reduce((sum, v) => sum + (scores[v.code] ?? 3.5), 0) / values.length;
 
-  // Handle coarse slider - adjusts all values proportionally
-  const handleCoarseChange = useCallback((newValues: number[]) => {
-    const newAvg = newValues[0];
-    const currentAvg = avgScore;
-    const delta = newAvg - currentAvg;
-    
-    values.forEach((v) => {
-      const currentScore = scores[v.code] ?? 3.5;
-      // Clamp to 0-7 range
-      const newScore = Math.min(7, Math.max(0, currentScore + delta));
-      onChange(v.code, newScore);
-    });
-  }, [avgScore, values, scores, onChange]);
-
   return (
     <AccordionItem value={higherOrder} className="border rounded-xl bg-card overflow-hidden">
       <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
@@ -116,26 +102,7 @@ function ValueQuadrant({ higherOrder, scores, onChange }: ValueQuadrantProps) {
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
-        {/* Coarse-grained slider */}
-        <div className="mb-4 p-3 rounded-lg bg-muted/50 border">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Adjust All</span>
-            <span className="text-xs font-mono text-muted-foreground">{avgScore.toFixed(2)}</span>
-          </div>
-          <Slider
-            value={[avgScore]}
-            min={0}
-            max={7}
-            step={0.1}
-            onValueChange={handleCoarseChange}
-            className="w-full"
-          />
-          <p className="text-xs text-muted-foreground mt-2">
-            Move this slider to shift all {values.length} values in this category together
-          </p>
-        </div>
-        
-        {/* Individual value sliders */}
+        {/* Individual value sliders only - coarse-grained slider removed */}
         <div className="space-y-1 divide-y divide-border/50">
           {values.map((value) => (
             <ValueSlider

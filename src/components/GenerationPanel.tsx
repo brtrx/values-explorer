@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
 import { ValueScores } from '@/lib/schwartz-values';
 import { generateDescription, generateSystemPrompt } from '@/lib/profile-generator';
-import { WhoAmIMostLike } from '@/components/WhoAmIMostLike';
+import { SimilarTo } from '@/components/SimilarTo';
 import { useToast } from '@/hooks/use-toast';
 
 interface GenerationPanelProps {
@@ -46,64 +46,65 @@ export function GenerationPanel({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Who Am I Most Like - Featured component at top */}
-      <WhoAmIMostLike scores={scores} onLoadArchetypeProfile={onLoadArchetypeProfile} />
-
-      {/* Profile Description - As readable text */}
-      <div className="generation-panel">
+    <div className="space-y-8">
+      {/* Profile Summary - plain text display */}
+      <section>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="font-serif font-semibold">Profile Description</h4>
+          <h2 className="font-serif text-2xl font-semibold">Profile Summary</h2>
           {description && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleCopy(description, 'description')}
-              className="copy-button"
+              className="text-muted-foreground hover:text-foreground"
             >
               {copiedField === 'description' ? (
                 <Check className="w-3.5 h-3.5 text-green-500" />
               ) : (
                 <Copy className="w-3.5 h-3.5" />
               )}
-              Copy
+              <span className="ml-1.5">Copy</span>
             </Button>
           )}
         </div>
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-            {description || 'Adjust your value scores to see your profile description...'}
-          </p>
+        <div className="text-sm text-muted-foreground leading-relaxed">
+          {description || 'Adjust your value scores to see your profile description...'}
         </div>
-      </div>
+      </section>
 
-      {/* System prompt output - As code at bottom */}
-      <div className="generation-panel">
+      {/* Similar To... - archetype matching (moved after Profile Summary, before Copy Instructions) */}
+      <SimilarTo scores={scores} onLoadArchetypeProfile={onLoadArchetypeProfile} />
+
+      {/* Copy Instructions - system prompt at bottom */}
+      <section>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="font-serif font-semibold">System Prompt</h4>
+          <h2 className="font-serif text-2xl font-semibold">Copy Instructions</h2>
           {systemPrompt && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleCopy(systemPrompt, 'prompt')}
-              className="copy-button"
+              className="text-muted-foreground hover:text-foreground"
             >
               {copiedField === 'prompt' ? (
                 <Check className="w-3.5 h-3.5 text-green-500" />
               ) : (
                 <Copy className="w-3.5 h-3.5" />
               )}
-              Copy
+              <span className="ml-1.5">Copy</span>
             </Button>
           )}
         </div>
-        <Textarea
-          value={systemPrompt ?? ''}
-          readOnly
-          placeholder="Adjust your value scores to see the system prompt..."
-          className="min-h-[200px] font-mono text-xs resize-none bg-muted/30"
-        />
-      </div>
+        <div className="rounded-lg border bg-muted/30 p-4">
+          <p className="text-xs font-medium text-muted-foreground mb-2">System Prompt</p>
+          <Textarea
+            value={systemPrompt ?? ''}
+            readOnly
+            placeholder="Adjust your value scores to see the system prompt..."
+            className="min-h-[200px] font-mono text-xs resize-none bg-transparent border-0 p-0 focus-visible:ring-0"
+          />
+        </div>
+      </section>
     </div>
   );
 }

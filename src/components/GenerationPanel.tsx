@@ -5,6 +5,7 @@ import { Copy, Check } from 'lucide-react';
 import { ValueScores } from '@/lib/schwartz-values';
 import { generateDescription, generateSystemPrompt } from '@/lib/profile-generator';
 import { SimilarTo } from '@/components/SimilarTo';
+import { ValueEditor } from '@/components/ValueEditor';
 import { useToast } from '@/hooks/use-toast';
 
 interface GenerationPanelProps {
@@ -14,6 +15,7 @@ interface GenerationPanelProps {
   onDescriptionChange: (description: string) => void;
   onSystemPromptChange: (systemPrompt: string) => void;
   onLoadArchetypeProfile?: (scores: ValueScores, name: string) => void;
+  onScoresChange?: (scores: ValueScores) => void;
 }
 
 export function GenerationPanel({
@@ -23,6 +25,7 @@ export function GenerationPanel({
   onDescriptionChange,
   onSystemPromptChange,
   onLoadArchetypeProfile,
+  onScoresChange,
 }: GenerationPanelProps) {
   const [copiedField, setCopiedField] = useState<'description' | 'prompt' | null>(null);
   const { toast } = useToast();
@@ -72,7 +75,21 @@ export function GenerationPanel({
         </div>
       </section>
 
-      {/* Similar To... - archetype matching (moved after Profile Summary, before Copy Instructions) */}
+      {/* Edit Profile Scores - immediately after Profile Summary */}
+      {onScoresChange && (
+        <section>
+          <h2 className="font-serif text-2xl font-semibold mb-2">
+            Edit Profile Scores
+          </h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Adjust each value from 0.0 to 7.0 using the sliders or input boxes.
+            Values are grouped by Schwartz's four higher-order categories.
+          </p>
+          <ValueEditor scores={scores} onChange={onScoresChange} />
+        </section>
+      )}
+
+      {/* Similar To... - archetype matching */}
       <SimilarTo scores={scores} onLoadArchetypeProfile={onLoadArchetypeProfile} />
 
       {/* Copy Instructions - system prompt at bottom */}

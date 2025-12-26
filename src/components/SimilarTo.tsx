@@ -14,57 +14,6 @@ import {
 } from '@/lib/archetypes';
 import { useToast } from '@/hooks/use-toast';
 
-// Default character images - using placeholder avatars based on character archetype
-const CHARACTER_IMAGES: Record<string, string> = {
-  // Fictional Characters
-  'Tony Stark': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=face',
-  'Dumbledore': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=240&h=240&fit=crop&crop=face',
-  'Hermione Granger': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=240&h=240&fit=crop&crop=face',
-  'Leslie Knope': 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=240&h=240&fit=crop&crop=face',
-  'Spock': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&h=240&fit=crop&crop=face',
-  'Forrest Gump': 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=240&h=240&fit=crop&crop=face',
-  'The Joker': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=240&h=240&fit=crop&crop=face',
-  'Yoda': 'https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=240&h=240&fit=crop&crop=face',
-  'Daenerys Targaryen': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=240&h=240&fit=crop&crop=face',
-  'Ron Swanson': 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=240&h=240&fit=crop&crop=face',
-  'Elle Woods': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=240&h=240&fit=crop&crop=face',
-  'Walter White': 'https://images.unsplash.com/photo-1557862921-37829c790f19?w=240&h=240&fit=crop&crop=face',
-  'Samwise Gamgee': 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=240&h=240&fit=crop&crop=face',
-  'Hannibal Lecter': 'https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=240&h=240&fit=crop&crop=face',
-  'Mary Poppins': 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=240&h=240&fit=crop&crop=face',
-  'Jack Sparrow': 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=240&h=240&fit=crop&crop=face',
-  
-  // Historical Figures
-  'Marcus Aurelius': 'https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=240&h=240&fit=crop&crop=face',
-  'Leonardo da Vinci': 'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=240&h=240&fit=crop&crop=face',
-  'Florence Nightingale': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=240&h=240&fit=crop&crop=face',
-  'Mahatma Gandhi': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=240&h=240&fit=crop&crop=face',
-  'Cleopatra': 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=240&h=240&fit=crop&crop=face',
-  'Albert Einstein': 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=240&h=240&fit=crop&crop=face',
-  'Napoleon Bonaparte': 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=240&h=240&fit=crop&crop=face',
-  'Mother Teresa': 'https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?w=240&h=240&fit=crop&crop=face',
-  'Genghis Khan': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=face',
-  'Marie Curie': 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=240&h=240&fit=crop&crop=face',
-  'Abraham Lincoln': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=240&h=240&fit=crop&crop=face',
-  'Nikola Tesla': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&h=240&fit=crop&crop=face',
-  'Queen Victoria': 'https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=240&h=240&fit=crop&crop=face',
-  'Benjamin Franklin': 'https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=240&h=240&fit=crop&crop=face',
-  'Frida Kahlo': 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=240&h=240&fit=crop&crop=face',
-  'Winston Churchill': 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=240&h=240&fit=crop&crop=face',
-  
-  // Superheroes
-  'Captain America': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=face',
-  'Wonder Woman': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=240&h=240&fit=crop&crop=face',
-  'Batman': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=240&h=240&fit=crop&crop=face',
-  'Spider-Man': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&h=240&fit=crop&crop=face',
-  "T'Challa (Black Panther)": 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=face',
-  'Superman': 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=240&h=240&fit=crop&crop=face',
-  'Magneto': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=240&h=240&fit=crop&crop=face',
-};
-
-// Fallback image for characters without a specific image
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=240&h=240&fit=crop&crop=face';
-
 interface SimilarToProps {
   scores: ValueScores;
   onLoadArchetypeProfile?: (scores: ValueScores, name: string) => void;
@@ -111,9 +60,6 @@ export function SimilarTo({ scores, onLoadArchetypeProfile }: SimilarToProps) {
     .map(code => getValueByCode(code)?.label)
     .filter(Boolean);
 
-  // Get the character image from our mapping, or use fallback
-  const characterImage = CHARACTER_IMAGES[archetype.name] || FALLBACK_IMAGE;
-
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
@@ -134,19 +80,6 @@ export function SimilarTo({ scores, onLoadArchetypeProfile }: SimilarToProps) {
 
       <Card className="overflow-hidden">
         <div className="p-5">
-          {/* Archetype image - static default image */}
-          <div className="mb-4">
-            <div className="aspect-square w-full max-w-[200px] mx-auto rounded-xl overflow-hidden bg-muted/50 border">
-              <img 
-                src={characterImage} 
-                alt={`Portrait representing ${archetype.name}`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
-                }}
-              />
-            </div>
-          </div>
 
           {/* Archetype name and description */}
           <div className="text-center mb-4">

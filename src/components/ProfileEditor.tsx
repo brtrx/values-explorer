@@ -195,7 +195,7 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
             </div>
           </section>
 
-          {/* Profile Summary */}
+          {/* Profile Summary & Edit Profile Scores - GenerationPanel handles both + Similar To + Copy Instructions */}
           <GenerationPanel
             scores={scores}
             description={description}
@@ -203,19 +203,8 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
             onDescriptionChange={handleDescriptionChange}
             onSystemPromptChange={handleSystemPromptChange}
             onLoadArchetypeProfile={handleLoadArchetypeProfile}
+            onScoresChange={handleScoresChange}
           />
-
-          {/* Edit Profile Scores */}
-          <section>
-            <h2 className="font-serif text-2xl font-semibold mb-2">
-              Edit Profile Scores
-            </h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Adjust each value from 0.0 to 7.0 using the sliders or input boxes.
-              Values are grouped by Schwartz's four higher-order categories.
-            </p>
-            <ValueEditor scores={scores} onChange={handleScoresChange} />
-          </section>
         </div>
       </main>
 

@@ -149,7 +149,8 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360 }: Overlappin
           <path
             key={archetype.name}
             d={archetype.path}
-            fill={`${archetype.color}20`}
+            fill={archetype.color}
+            fillOpacity={0.25}
             stroke={archetype.color}
             strokeWidth="2"
             className="transition-all duration-300"

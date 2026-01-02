@@ -5,12 +5,6 @@ import {
   HIGHER_ORDER_VALUES,
   HigherOrderValue 
 } from '@/lib/schwartz-values';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface SchwartzCircleProps {
   scores: ValueScores;
@@ -129,28 +123,18 @@ export function SchwartzCircle({ scores, size = 320 }: SchwartzCircleProps) {
           className="transition-all duration-300"
         />
 
-        {/* Data points with tooltips */}
-        {valuePositions.map(({ value, x, y, color, score }) => (
-          <TooltipProvider key={value.code} delayDuration={100}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={5}
-                  fill={color}
-                  stroke="hsl(var(--background))"
-                  strokeWidth="2"
-                  className="transition-all duration-300 cursor-pointer"
-                />
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[200px]">
-                <p className="font-semibold">{value.label}</p>
-                <p className="text-xs text-muted-foreground">{value.description}</p>
-                <p className="text-xs mt-1">Score: {score.toFixed(1)}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        {/* Data points */}
+        {valuePositions.map(({ value, x, y, color }) => (
+          <circle
+            key={value.code}
+            cx={x}
+            cy={y}
+            r={5}
+            fill={color}
+            stroke="hsl(var(--background))"
+            strokeWidth="2"
+            className="transition-all duration-300"
+          />
         ))}
 
         {/* Labels */}

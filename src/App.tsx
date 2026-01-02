@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, HashRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
+import Compare from "./pages/Compare";
 import SharedProfile from "./pages/SharedProfile";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/editor" element={<Index />} />
+            <Route path="/compare" element={<Compare />} />
             <Route path="/p/:id" element={<SharedProfile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

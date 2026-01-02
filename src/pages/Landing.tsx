@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Compass, Users, Sparkles, ArrowRight, Plus, Star } from 'lucide-react';
+import { Compass, Users, Sparkles, ArrowRight, Plus, Star, GitCompare } from 'lucide-react';
 import { DbProfile } from '@/lib/profile-storage';
 import { ValueScores } from '@/lib/schwartz-values';
 import { Json } from '@/integrations/supabase/types';
@@ -81,10 +81,10 @@ export default function Landing() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="gap-2">
-                <a href="#profiles">
-                  <Users className="w-5 h-5" />
-                  Browse Profiles
-                </a>
+                <Link to="/compare">
+                  <GitCompare className="w-5 h-5" />
+                  Compare Archetypes
+                </Link>
               </Button>
             </div>
           </div>

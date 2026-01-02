@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { 
   ValueScores, 
   SCHWARTZ_VALUES,
@@ -6,12 +6,6 @@ import {
   HigherOrderValue,
   getValueByCode
 } from '@/lib/schwartz-values';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface ArchetypeData {
   name: string;
@@ -37,6 +31,14 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360 }: Overlappin
   const maxRadius = (size / 2) - 50;
   const minRadius = 15;
   const labelRadius = maxRadius + 30;
+
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    value: typeof SCHWARTZ_VALUES[0];
+    archetypeName: string;
+    score: number;
+  } | null>(null);
 
   const scoreToRadius = (score: number) => {
     const normalized = score / 7;
@@ -164,37 +166,29 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360 }: Overlappin
           />
         ))}
 
-        {/* Data points for each archetype with tooltips */}
+        {/* Data points for each archetype with hover events */}
         {archetypePaths.map((archetype) => (
           archetype.positions.map((pos, i) => {
             const value = SCHWARTZ_VALUES[i];
             const score = archetype.scores[value.code] ?? 3.5;
             return (
-              <TooltipProvider key={`${archetype.name}-${i}`} delayDuration={100}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <circle
-                      cx={pos.x}
-                      cy={pos.y}
-                      r={4}
-                      fill={archetype.color}
-                      stroke="hsl(var(--background))"
-                      strokeWidth="1.5"
-                      className="transition-all duration-300 cursor-pointer"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[220px]">
-                    <p className="font-semibold">{value.label}</p>
-                    <p className="text-xs text-muted-foreground">{value.description}</p>
-                    <p className="text-xs mt-1">{archetype.name}: {score.toFixed(1)}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <circle
+                key={`${archetype.name}-${i}`}
+                cx={pos.x}
+                cy={pos.y}
+                r={4}
+                fill={archetype.color}
+                stroke="hsl(var(--background))"
+                strokeWidth="1.5"
+                className="transition-all duration-300 cursor-pointer hover:r-6"
+                onMouseEnter={() => setTooltip({ x: pos.x, y: pos.y, value, archetypeName: archetype.name, score })}
+                onMouseLeave={() => setTooltip(null)}
+              />
             );
           })
         ))}
 
-        {/* Labels */}
+        {/* Labels with hover events */}
         {axisData.map((axis) => (
           <text
             key={axis.value.code}
@@ -202,12 +196,38 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360 }: Overlappin
             y={axis.labelY}
             textAnchor={axis.textAnchor}
             dy={axis.dy}
-            className="fill-muted-foreground text-[10px] font-medium"
+            className="fill-muted-foreground text-[10px] font-medium cursor-pointer hover:fill-foreground"
+            onMouseEnter={(e) => setTooltip({ 
+              x: axis.labelX, 
+              y: axis.labelY, 
+              value: axis.value, 
+              archetypeName: '', 
+              score: 0 
+            })}
+            onMouseLeave={() => setTooltip(null)}
           >
             {axis.value.code}
           </text>
         ))}
       </svg>
+
+      {/* Custom tooltip overlay */}
+      {tooltip && (
+        <div
+          className="absolute z-50 pointer-events-none bg-popover border border-border rounded-md px-3 py-2 shadow-md max-w-[220px]"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y - 10,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <p className="font-semibold text-sm">{tooltip.value.label}</p>
+          <p className="text-xs text-muted-foreground">{tooltip.value.description}</p>
+          {tooltip.archetypeName && (
+            <p className="text-xs mt-1">{tooltip.archetypeName}: {tooltip.score.toFixed(1)}</p>
+          )}
+        </div>
+      )}
 
       {/* Archetype Legend */}
       {archetypes.length > 0 && (

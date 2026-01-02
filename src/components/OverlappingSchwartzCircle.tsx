@@ -2,9 +2,6 @@ import { useMemo, useState } from 'react';
 import { 
   ValueScores, 
   SCHWARTZ_VALUES,
-  HIGHER_ORDER_VALUES,
-  HigherOrderValue,
-  getValueByCode
 } from '@/lib/schwartz-values';
 
 interface ArchetypeData {

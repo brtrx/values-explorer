@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,6 +23,11 @@ interface ValueSliderProps {
 
 function ValueSlider({ value, score, onChange }: ValueSliderProps) {
   const [inputValue, setInputValue] = useState(score.toFixed(2));
+
+  // Sync inputValue when score prop changes externally (e.g., archetype selection)
+  useEffect(() => {
+    setInputValue(score.toFixed(2));
+  }, [score]);
 
   const handleSliderChange = useCallback((values: number[]) => {
     const newValue = values[0];

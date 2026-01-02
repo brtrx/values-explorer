@@ -174,19 +174,34 @@ export function SchwartzCircle({ scores, size = 320 }: SchwartzCircleProps) {
         })}
       </svg>
 
-      {/* Legend */}
-      <div className="absolute -bottom-12 left-0 right-0 flex justify-center gap-4 flex-wrap">
-        {(Object.keys(HIGHER_ORDER_VALUES) as HigherOrderValue[]).map((key) => (
-          <div key={key} className="flex items-center gap-1.5">
-            <div 
-              className="w-2.5 h-2.5 rounded-full" 
-              style={{ backgroundColor: HIGHER_ORDER_COLORS[key] }}
-            />
-            <span className="text-[10px] text-muted-foreground">
-              {HIGHER_ORDER_VALUES[key].label.split(' ')[0]}
-            </span>
-          </div>
-        ))}
+      {/* Legend - arranged in 2 rows */}
+      <div className="absolute -bottom-16 left-0 right-0 flex flex-col items-center gap-1.5 px-4">
+        <div className="flex justify-center gap-4">
+          {(['openness', 'self-transcendence'] as HigherOrderValue[]).map((key) => (
+            <div key={key} className="flex items-center gap-1.5">
+              <div 
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0" 
+                style={{ backgroundColor: HIGHER_ORDER_COLORS[key] }}
+              />
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                {HIGHER_ORDER_VALUES[key].label.split(' ')[0]}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center gap-4">
+          {(['conservation', 'self-enhancement'] as HigherOrderValue[]).map((key) => (
+            <div key={key} className="flex items-center gap-1.5">
+              <div 
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0" 
+                style={{ backgroundColor: HIGHER_ORDER_COLORS[key] }}
+              />
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                {HIGHER_ORDER_VALUES[key].label.split(' ')[0]}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

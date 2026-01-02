@@ -186,11 +186,11 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
           </section>
 
           {/* Value Compass visualization */}
-          <section className="rounded-xl border bg-card p-6">
+          <section className="rounded-xl border bg-card p-6 pb-10">
             <h2 className="font-serif text-xl font-semibold mb-4 text-center">
               Value Compass
             </h2>
-            <div className="flex justify-center">
+            <div className="flex justify-center pb-8">
               <SchwartzCircle scores={scores} size={280} />
             </div>
           </section>

@@ -12,7 +12,16 @@ export interface Archetype {
   name: string;
   description: string;
   imagePrompt: string;
-  // Map of value codes to expected relative weight (1-3: 1=present, 2=important, 3=defining)
+  /**
+   * Map of value codes to expected relative weight (-3 to 3):
+   * -3 = Actively opposed/rejected (core antagonism to this value)
+   * -2 = Avoided/dismissed (deliberately avoids this value)
+   * -1 = Downplayed/neglected (low priority, often ignored)
+   *  0 = Neutral (unspecified, defaults to baseline)
+   *  1 = Present (noticeable but not prominent)
+   *  2 = Important (significant motivator)
+   *  3 = Defining (core to identity)
+   */
   valueProfile: Partial<Record<string, number>>;
   category: ArchetypeCategory;
 }
@@ -66,14 +75,14 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Forrest Gump',
     description: 'A pure-hearted soul who values loyalty, tradition, and simple kindness. Success comes through steadfast devotion rather than ambition.',
     imagePrompt: 'A simple man in plaid shirt sitting on a bench, innocent sincere expression, holding a box of chocolates, warm nostalgic lighting, portrait style',
-    valueProfile: { BED: 3, TRD: 3, HUM: 3, BEC: 2, COR: 2 },
+    valueProfile: { BED: 3, TRD: 3, HUM: 3, BEC: 2, COR: 2, POD: -2, ACM: -1, STI: -1 },
     category: 'fictional',
   },
   {
     name: 'The Joker',
     description: 'An agent of chaos who rejects all social conventions. Values stimulation and personal freedom above all, with disdain for rules and tradition.',
     imagePrompt: 'A chaotic figure with green hair and sinister grin, wild unpredictable eyes, purple suit, dark urban backdrop, menacing yet theatrical, portrait style',
-    valueProfile: { STI: 3, SDA: 3, POD: 2, HED: 2 },
+    valueProfile: { STI: 3, SDA: 3, POD: 2, HED: 2, COR: -3, TRD: -3, BEC: -2, HUM: -2, SES: -1 },
     category: 'fictional',
   },
   {
@@ -94,7 +103,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Ron Swanson',
     description: 'A libertarian who values self-reliance, tradition, and personal freedom above all. Skeptical of authority and social obligations.',
     imagePrompt: 'A mustachioed man with stoic expression, plaid shirt, woodworking shop background, rugged individualist, deadpan humor, portrait style',
-    valueProfile: { SDA: 3, TRD: 2, SEO: 2, SDT: 2 },
+    valueProfile: { SDA: 3, TRD: 2, SEO: 2, SDT: 2, COR: -3, BEC: -2, UNC: -1 },
     category: 'fictional',
   },
   {
@@ -108,7 +117,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Walter White',
     description: 'A man transformed by the pursuit of power and legacy. Initially driven by security, ultimately consumed by pride and dominance.',
     imagePrompt: 'A bald man with goatee and glasses, intense calculating gaze, dark shadows, chemistry lab background, dangerous transformation, portrait style',
-    valueProfile: { POD: 3, ACM: 3, FAC: 2, POR: 2, SEO: 2 },
+    valueProfile: { POD: 3, ACM: 3, FAC: 2, POR: 2, SEO: 2, HUM: -3, BEC: -2, COR: -2, UNC: -1 },
     category: 'fictional',
   },
   {
@@ -122,7 +131,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Hannibal Lecter',
     description: 'A cultured predator who values aesthetics, intellectual stimulation, and dominance. Combines refined taste with cold power.',
     imagePrompt: 'An elegant man in fine suit, penetrating intelligent gaze, classical art and wine background, sophisticated and dangerous, portrait style',
-    valueProfile: { POD: 3, SDT: 3, HED: 2, STI: 2, ACM: 2 },
+    valueProfile: { POD: 3, SDT: 3, HED: 2, STI: 2, ACM: 2, BEC: -3, HUM: -3, COR: -2, UNC: -2 },
     category: 'fictional',
   },
   {
@@ -187,7 +196,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Napoleon Bonaparte',
     description: 'An ambitious conqueror driven by glory and dominance. Valued achievement, power, and leaving a lasting legacy.',
     imagePrompt: 'A French emperor in military uniform with medals, hand in coat, commanding presence, battlefield background, ambitious and driven, portrait style',
-    valueProfile: { POD: 3, ACM: 3, FAC: 3, POR: 2, SES: 2 },
+    valueProfile: { POD: 3, ACM: 3, FAC: 3, POR: 2, SES: 2, HUM: -2, UNT: -1, BEC: -1 },
     category: 'historical',
   },
   {
@@ -201,7 +210,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Genghis Khan',
     description: 'A ruthless conqueror who built an empire through dominance and strategic brilliance. Valued power, loyalty, and meritocracy.',
     imagePrompt: 'A Mongol warrior emperor in fur and leather armor, fierce determined gaze, vast steppes background, powerful and merciless, portrait style',
-    valueProfile: { POD: 3, POR: 3, ACM: 2, SDA: 2, SEO: 2 },
+    valueProfile: { POD: 3, POR: 3, ACM: 2, SDA: 2, SEO: 2, HUM: -3, BEC: -2, UNC: -2, UNT: -1 },
     category: 'historical',
   },
   {
@@ -745,22 +754,32 @@ export function findSimilarArchetypes(archetype: Archetype, limit: number = 4): 
 
 /**
  * Convert an archetype's value profile to a full ValueScores object
- * Weights: 3 = 6.0, 2 = 4.5, 1 = 3.5, unspecified = 3.0
+ * Maps weight (-3 to 3) to score (0 to 7):
+ *  -3 (opposed)   = 0.5
+ *  -2 (avoided)   = 1.5
+ *  -1 (downplayed)= 2.5
+ *   0 (neutral)   = 3.5 (baseline)
+ *   1 (present)   = 4.5
+ *   2 (important) = 5.5
+ *   3 (defining)  = 6.5
  */
 export function archetypeToScores(archetype: Archetype): ValueScores {
   const scores: ValueScores = {} as ValueScores;
   
+  // Weight to score mapping: each step is 1.0, centered at 3.5
+  const weightToScore: Record<number, number> = {
+    [-3]: 0.5,
+    [-2]: 1.5,
+    [-1]: 2.5,
+    [0]: 3.5,
+    [1]: 4.5,
+    [2]: 5.5,
+    [3]: 6.5,
+  };
+  
   for (const value of SCHWARTZ_VALUES) {
-    const weight = archetype.valueProfile[value.code];
-    if (weight === 3) {
-      scores[value.code] = 6.0;
-    } else if (weight === 2) {
-      scores[value.code] = 4.5;
-    } else if (weight === 1) {
-      scores[value.code] = 3.5;
-    } else {
-      scores[value.code] = 3.0;
-    }
+    const weight = archetype.valueProfile[value.code] ?? 0;
+    scores[value.code] = weightToScore[weight] ?? 3.5;
   }
   
   return scores;

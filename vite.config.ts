@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/trait-generator/', // To allow github pages to deploy correctly
+  // base: '/trait-generator/', // To allow github pages to deploy correctly
   server: {
     host: "::",
     port: 8080,

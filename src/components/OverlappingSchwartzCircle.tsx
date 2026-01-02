@@ -3,15 +3,8 @@ import {
   ValueScores, 
   SCHWARTZ_VALUES,
   HIGHER_ORDER_VALUES,
-  HigherOrderValue,
-  getValueByCode
+  HigherOrderValue 
 } from '@/lib/schwartz-values';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface ArchetypeData {
   name: string;
@@ -164,34 +157,20 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360 }: Overlappin
           />
         ))}
 
-        {/* Data points for each archetype with tooltips */}
+        {/* Data points for each archetype */}
         {archetypePaths.map((archetype) => (
-          archetype.positions.map((pos, i) => {
-            const value = SCHWARTZ_VALUES[i];
-            const score = archetype.scores[value.code] ?? 3.5;
-            return (
-              <TooltipProvider key={`${archetype.name}-${i}`} delayDuration={100}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <circle
-                      cx={pos.x}
-                      cy={pos.y}
-                      r={4}
-                      fill={archetype.color}
-                      stroke="hsl(var(--background))"
-                      strokeWidth="1.5"
-                      className="transition-all duration-300 cursor-pointer"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[220px]">
-                    <p className="font-semibold">{value.label}</p>
-                    <p className="text-xs text-muted-foreground">{value.description}</p>
-                    <p className="text-xs mt-1">{archetype.name}: {score.toFixed(1)}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            );
-          })
+          archetype.positions.map((pos, i) => (
+            <circle
+              key={`${archetype.name}-${i}`}
+              cx={pos.x}
+              cy={pos.y}
+              r={4}
+              fill={archetype.color}
+              stroke="hsl(var(--background))"
+              strokeWidth="1.5"
+              className="transition-all duration-300"
+            />
+          ))
         ))}
 
         {/* Labels */}

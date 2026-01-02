@@ -259,7 +259,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Winston Churchill',
     description: 'A defiant leader who valued courage, tradition, and national security above all. Combined eloquence with bulldog determination.',
     imagePrompt: 'A stout man in suit with cigar, determined bulldog expression, V for victory sign, wartime Britain, resolute and defiant, portrait style',
-    valueProfile: { SES: 3, TRD: 3, POD: 2, ACM: 2, FAC: 2 },
+    valueProfile: { SES: 3, TRD: 3, POD: 2, ACM: 2, FAC: 2, HUM: -1, UNT: -1 },
     category: 'historical',
   },
 
@@ -268,7 +268,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Captain America',
     description: 'A principled leader who embodies duty, tradition, and selfless service. Balances conformity to ideals with fierce protection of others.',
     imagePrompt: 'A heroic super soldier with star-spangled shield, determined noble expression, patriotic red white and blue costume, heroic pose, dramatic lighting, portrait style',
-    valueProfile: { BED: 3, COR: 3, TRD: 2, SES: 2, UNC: 2 },
+    valueProfile: { BED: 3, COR: 3, TRD: 2, SES: 2, UNC: 2, POD: -2, HED: -1 },
     category: 'superheroes',
   },
   {
@@ -282,7 +282,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Batman',
     description: 'A vigilante driven by justice and self-discipline. Values security, achievement, and independent action over social conformity.',
     imagePrompt: 'A dark knight in black cape and cowl, intense brooding expression, gothic cityscape background, shadows and moonlight, mysterious and powerful, portrait style',
-    valueProfile: { SDA: 3, ACM: 2, SEO: 3, POD: 2, SDT: 2 },
+    valueProfile: { SDA: 3, ACM: 2, SEO: 3, POD: 2, SDT: 2, HED: -2, COR: -1, BEC: -1 },
     category: 'superheroes',
   },
   {
@@ -310,7 +310,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Magneto',
     description: 'A survivor turned revolutionary who values his people above all. Combines protective instincts with willingness to dominate for safety.',
     imagePrompt: 'A powerful mutant in red and purple armor, intense magnetic gaze, helmet and cape, dramatic magnetic field effects, tragic antagonist, portrait style',
-    valueProfile: { SES: 3, POD: 3, SDA: 2, UNC: 2 },
+    valueProfile: { SES: 3, POD: 3, SDA: 2, UNC: 2, UNT: -3, COR: -2, HUM: -1 },
     category: 'superheroes',
   },
   {
@@ -324,14 +324,14 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Wolverine',
     description: 'A loner who struggles between animal instinct and human connection. Values freedom and self-reliance but fiercely protects those he loves.',
     imagePrompt: 'A rugged man with wild hair and adamantium claws, fierce protective snarl, leather jacket, Canadian wilderness, feral yet noble, portrait style',
-    valueProfile: { SDA: 3, SEO: 2, BED: 2, STI: 2 },
+    valueProfile: { SDA: 3, SEO: 2, BED: 2, STI: 2, COR: -3, TRD: -2, FAC: -1 },
     category: 'superheroes',
   },
   {
     name: 'Thanos',
     description: 'A utilitarian tyrant who believes his vision justifies any means. Values his twisted sense of universal balance above individual lives.',
     imagePrompt: 'A purple titan with golden gauntlet, cold calculating expression, cosmic throne, infinity stones glowing, inevitable and driven, portrait style',
-    valueProfile: { POD: 3, UNC: 2, SDT: 2, ACM: 3 },
+    valueProfile: { POD: 3, UNC: 2, SDT: 2, ACM: 3, BEC: -3, BED: -3, HUM: -2, UNT: -2 },
     category: 'superheroes',
   },
   {
@@ -352,7 +352,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Deadpool',
     description: 'An irreverent antihero who values humor, chaos, and doing things his own way. Rejects conventions while occasionally doing good.',
     imagePrompt: 'A masked mercenary in red suit, breaking fourth wall, guns and katanas, comedic chaos, irreverent and unpredictable, portrait style',
-    valueProfile: { STI: 3, SDA: 3, HED: 3 },
+    valueProfile: { STI: 3, SDA: 3, HED: 3, COR: -3, TRD: -2, HUM: -1 },
     category: 'superheroes',
   },
   {
@@ -373,7 +373,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Catwoman',
     description: 'A morally ambiguous thief who values freedom, pleasure, and living by her own rules. Rejects society while maintaining her own code.',
     imagePrompt: 'A sleek woman in black catsuit, playful dangerous smile, rooftop at night, stolen jewels, independent and seductive, portrait style',
-    valueProfile: { SDA: 3, HED: 3, STI: 2, POR: 2 },
+    valueProfile: { SDA: 3, HED: 3, STI: 2, POR: 2, COR: -3, TRD: -2, BEC: -1 },
     category: 'superheroes',
   },
 
@@ -403,7 +403,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Prometheus',
     description: 'The fire-bringer who defied gods to help humanity. Values universal concern, independent action, and progress over tradition.',
     imagePrompt: 'A Titan holding blazing fire, defiant noble expression, rocky mountain setting, dramatic storm clouds, rebellious and heroic, portrait style',
-    valueProfile: { UNC: 3, SDA: 3, STI: 2, HUM: 2 },
+    valueProfile: { UNC: 3, SDA: 3, STI: 2, HUM: 2, COR: -3, TRD: -2, SEO: -1 },
     category: 'mythological',
   },
   {
@@ -417,14 +417,14 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Zeus',
     description: 'King of the gods who rules through power and authority. Values dominance, order, and his own pleasures and prerogatives.',
     imagePrompt: 'A muscular bearded god holding lightning bolt, commanding authoritative expression, Mount Olympus throne, stormy skies, powerful and volatile, portrait style',
-    valueProfile: { POD: 3, POR: 3, HED: 2, FAC: 2, SES: 2 },
+    valueProfile: { POD: 3, POR: 3, HED: 2, FAC: 2, SES: 2, HUM: -3, COR: -2, UNT: -1 },
     category: 'mythological',
   },
   {
     name: 'Loki',
     description: 'The trickster god who values chaos, cleverness, and freedom from rules. Delights in stimulation and outwitting others.',
     imagePrompt: 'A mischievous Norse god with horned helmet, cunning smile, shapeshifting magic, chaotic energy, unpredictable and clever, portrait style',
-    valueProfile: { STI: 3, SDA: 3, SDT: 2, HED: 2 },
+    valueProfile: { STI: 3, SDA: 3, SDT: 2, HED: 2, COR: -3, TRD: -3, BED: -2, HUM: -1 },
     category: 'mythological',
   },
   {
@@ -438,7 +438,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Ares',
     description: 'God of war who values strength, dominance, and the thrill of battle. Embraces conflict and physical power.',
     imagePrompt: 'A fierce warrior god in blood-red armor, aggressive battle-ready expression, sword and shield, battlefield chaos, violent and powerful, portrait style',
-    valueProfile: { POD: 3, STI: 3, ACM: 2, SDA: 2 },
+    valueProfile: { POD: 3, STI: 3, ACM: 2, SDA: 2, UNT: -3, BEC: -3, HUM: -2, COR: -1 },
     category: 'mythological',
   },
   {
@@ -466,7 +466,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Dionysus',
     description: 'God of wine and ecstasy who values pleasure, freedom, and breaking social constraints. Embraces chaos and celebration.',
     imagePrompt: 'A wild god with grape vine crown, ecstatic joyful expression, wine cup overflowing, festival celebration, hedonistic and free, portrait style',
-    valueProfile: { HED: 3, STI: 3, SDA: 2 },
+    valueProfile: { HED: 3, STI: 3, SDA: 2, COR: -3, TRD: -2, SEO: -2, ACM: -1 },
     category: 'mythological',
   },
   {
@@ -487,7 +487,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Kali',
     description: 'Hindu goddess of destruction and liberation. Values transformation, power, and destroying evil to protect the righteous.',
     imagePrompt: 'A fierce dark goddess with multiple arms holding weapons, intense liberating expression, skulls and fire, cosmic destruction, terrifying and protective, portrait style',
-    valueProfile: { POD: 3, SDA: 3, UNC: 2, STI: 2 },
+    valueProfile: { POD: 3, SDA: 3, UNC: 2, STI: 2, HUM: -2, COR: -2, TRD: -1 },
     category: 'mythological',
   },
 
@@ -496,7 +496,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Elizabeth Bennet',
     description: 'A witty heroine who values independence of thought and challenges social conventions. Combines intelligence with warmth and moral integrity.',
     imagePrompt: 'A Regency-era young woman in elegant empire-waist dress, clever sparkling eyes, amused knowing smile, English countryside estate, portrait style',
-    valueProfile: { SDT: 3, SDA: 2, BED: 2, HUM: 2, UNT: 2 },
+    valueProfile: { SDT: 3, SDA: 2, BED: 2, HUM: 2, UNT: 2, FAC: -2, POR: -1, COR: -1 },
     category: 'literary',
   },
   {
@@ -517,7 +517,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Sherlock Holmes',
     description: 'A brilliant detective driven by intellectual challenge. Values knowledge, independent thinking, and achievement through deduction.',
     imagePrompt: 'A Victorian detective with deerstalker cap and magnifying glass, intense analytical gaze, Baker Street study with chemistry equipment, enigmatic and brilliant, portrait style',
-    valueProfile: { SDT: 3, STI: 3, ACM: 2, SDA: 2 },
+    valueProfile: { SDT: 3, STI: 3, ACM: 2, SDA: 2, BEC: -2, HED: -1, TRD: -1 },
     category: 'literary',
   },
   {
@@ -531,7 +531,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Jay Gatsby',
     description: 'A dreamer consumed by ambition and romantic obsession. Values achievement, wealth, and the image he presents to the world.',
     imagePrompt: 'A wealthy man in 1920s tuxedo, hopeful yearning expression, mansion party background, green light in distance, tragic romantic, portrait style',
-    valueProfile: { ACM: 3, FAC: 3, POR: 2, HED: 2 },
+    valueProfile: { ACM: 3, FAC: 3, POR: 2, HED: 2, HUM: -2, UNC: -1, COR: -1 },
     category: 'literary',
   },
   {
@@ -545,7 +545,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Holden Caulfield',
     description: 'A disillusioned youth who rejects phoniness and conformity. Values authenticity and protecting innocence while struggling with connection.',
     imagePrompt: 'A teenage boy in red hunting cap, cynical vulnerable expression, 1950s New York winter, alienated and searching, portrait style',
-    valueProfile: { SDA: 3, UNT: 2, BEC: 2, HUM: 2 },
+    valueProfile: { SDA: 3, UNT: 2, BEC: 2, HUM: 2, COR: -3, FAC: -3, ACM: -2, TRD: -1 },
     category: 'literary',
   },
   {
@@ -559,7 +559,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Dracula',
     description: 'An ancient predator who values power, dominance, and the pleasures of immortality. Combines aristocratic refinement with ruthless hunger.',
     imagePrompt: 'A pale aristocrat in black cape, hypnotic piercing gaze, gothic castle, moonlit and menacing, seductive and dangerous, portrait style',
-    valueProfile: { POD: 3, HED: 2, POR: 2, FAC: 2, STI: 2 },
+    valueProfile: { POD: 3, HED: 2, POR: 2, FAC: 2, STI: 2, BEC: -3, HUM: -3, UNC: -2, COR: -1 },
     category: 'literary',
   },
   {
@@ -573,7 +573,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Heathcliff',
     description: 'A tormented soul consumed by passion and vengeance. Values nothing above his obsessive love, willing to destroy everything else.',
     imagePrompt: 'A dark brooding man on windswept moors, intense tortured expression, Victorian clothing, stormy skies, passionate and destructive, portrait style',
-    valueProfile: { SDA: 3, POD: 2, STI: 2, POR: 2 },
+    valueProfile: { SDA: 3, POD: 2, STI: 2, POR: 2, HUM: -3, BEC: -2, UNC: -2, COR: -1 },
     category: 'literary',
   },
   {
@@ -587,7 +587,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Captain Ahab',
     description: 'A monomaniac driven by vengeance against nature itself. Values nothing but achieving his obsessive goal, regardless of cost.',
     imagePrompt: 'A scarred sea captain with peg leg, obsessed fanatical expression, whaling ship deck, stormy ocean, mad and driven, portrait style',
-    valueProfile: { ACM: 3, SDA: 3, POD: 2, STI: 2 },
+    valueProfile: { ACM: 3, SDA: 3, POD: 2, STI: 2, BEC: -3, SEO: -3, HUM: -2, UNC: -1 },
     category: 'literary',
   },
   {
@@ -601,26 +601,26 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Lady Macbeth',
     description: 'An ambitious schemer who values power and status above all. Willing to sacrifice morality for achievement and dominance.',
     imagePrompt: 'A regal Scottish noblewoman, intense ambitious expression, candlelit castle, bloodstained hands, ruthless and driven, portrait style',
-    valueProfile: { POD: 3, ACM: 3, FAC: 2, POR: 2 },
+    valueProfile: { POD: 3, ACM: 3, FAC: 2, POR: 2, HUM: -3, BEC: -3, UNC: -2, COR: -1 },
     category: 'literary',
   },
 ];
 
 /**
  * Calculate match score using cosine similarity on value intensities
- * This considers the actual magnitude of values, not just rankings
+ * This considers the actual magnitude of values, including negative weights
  */
 function calculateArchetypeMatch(userScores: ValueScores, archetype: Archetype): number {
-  // Normalize user scores to 0-1 range (from 0-7)
+  // Normalize user scores to -1 to 1 range (from 0-7, where 3.5 is neutral)
   const normalizedUser: Record<string, number> = {};
   for (const [code, value] of Object.entries(userScores)) {
-    normalizedUser[code] = value / 7;
+    normalizedUser[code] = (value - 3.5) / 3.5; // -1 to 1
   }
   
-  // Create archetype vector (normalize 1-3 weights to 0-1)
+  // Create archetype vector (normalize -3 to 3 weights to -1 to 1)
   const archetypeVector: Record<string, number> = {};
   for (const [code, weight] of Object.entries(archetype.valueProfile)) {
-    archetypeVector[code] = weight / 3;
+    archetypeVector[code] = weight / 3; // -1 to 1
   }
   
   // Calculate weighted cosine similarity
@@ -649,21 +649,31 @@ function calculateArchetypeMatch(userScores: ValueScores, archetype: Archetype):
   let shapeBonus = 0;
   const userEntries = Object.entries(userScores).sort((a, b) => b[1] - a[1]);
   const topUserCodes = userEntries.slice(0, 5).map(([code]) => code);
-  const bottomUserCodes = userEntries.slice(-3).map(([code]) => code);
+  const bottomUserCodes = userEntries.slice(-5).map(([code]) => code);
   
   // Bonus for matching high values
   for (const [code, weight] of Object.entries(archetype.valueProfile)) {
     if (weight === 3 && topUserCodes.includes(code)) {
       shapeBonus += 0.15;
-    } else if (weight >= 2 && topUserCodes.includes(code)) {
+    } else if (weight === 2 && topUserCodes.includes(code)) {
       shapeBonus += 0.08;
+    }
+    // Bonus for matching low/avoided values (user also has them low)
+    if (weight === -3 && bottomUserCodes.includes(code)) {
+      shapeBonus += 0.12;
+    } else if (weight === -2 && bottomUserCodes.includes(code)) {
+      shapeBonus += 0.06;
     }
   }
   
   // Penalty for archetype's key values being in user's bottom values
   for (const [code, weight] of Object.entries(archetype.valueProfile)) {
     if (weight === 3 && bottomUserCodes.includes(code)) {
-      shapeBonus -= 0.1;
+      shapeBonus -= 0.12;
+    }
+    // Penalty for archetype's avoided values being in user's top values
+    if (weight === -3 && topUserCodes.includes(code)) {
+      shapeBonus -= 0.12;
     }
   }
   

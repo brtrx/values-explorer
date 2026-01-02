@@ -2,3 +2,9 @@ project_id = "fkejnzklhrbujvlckubd"
 
 [functions.generate-archetype-image]
 verify_jwt = false
+
+[functions.generate-conflict-scenario]
+verify_jwt = false
+
+[functions.compare-archetypes]
+verify_jwt = false

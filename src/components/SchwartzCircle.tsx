@@ -1,16 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { 
   ValueScores, 
   SCHWARTZ_VALUES,
   HIGHER_ORDER_VALUES,
   HigherOrderValue 
 } from '@/lib/schwartz-values';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface SchwartzCircleProps {
   scores: ValueScores;
@@ -29,6 +23,13 @@ export function SchwartzCircle({ scores, size = 320 }: SchwartzCircleProps) {
   const maxRadius = (size / 2) - 45;
   const minRadius = 15;
   const labelRadius = maxRadius + 28;
+
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    value: typeof SCHWARTZ_VALUES[0];
+    score: number;
+  } | null>(null);
 
   // Convert score (0-7) to radius
   const scoreToRadius = (score: number) => {
@@ -129,32 +130,24 @@ export function SchwartzCircle({ scores, size = 320 }: SchwartzCircleProps) {
           className="transition-all duration-300"
         />
 
-        {/* Data points with tooltips */}
+        {/* Data points with hover events */}
         {valuePositions.map(({ value, x, y, color, score }) => (
-          <TooltipProvider key={value.code} delayDuration={100}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={5}
-                  fill={color}
-                  stroke="hsl(var(--background))"
-                  strokeWidth="2"
-                  className="transition-all duration-300 cursor-pointer"
-                />
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[200px]">
-                <p className="font-semibold">{value.label}</p>
-                <p className="text-xs text-muted-foreground">{value.description}</p>
-                <p className="text-xs mt-1">Score: {score.toFixed(1)}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <circle
+            key={value.code}
+            cx={x}
+            cy={y}
+            r={5}
+            fill={color}
+            stroke="hsl(var(--background))"
+            strokeWidth="2"
+            className="transition-all duration-300 cursor-pointer"
+            onMouseEnter={() => setTooltip({ x, y, value, score })}
+            onMouseLeave={() => setTooltip(null)}
+          />
         ))}
 
-        {/* Labels */}
-        {valuePositions.map(({ value, labelX, labelY, angle }) => {
+        {/* Labels with hover events */}
+        {valuePositions.map(({ value, labelX, labelY, angle, score }) => {
           // Determine text anchor based on position
           let textAnchor: 'start' | 'middle' | 'end' = 'middle';
           if (angle > -Math.PI / 4 && angle < Math.PI / 4) {
@@ -182,13 +175,31 @@ export function SchwartzCircle({ scores, size = 320 }: SchwartzCircleProps) {
               y={labelY}
               textAnchor={textAnchor}
               dy={dy}
-              className="fill-muted-foreground text-[10px] font-medium"
+              className="fill-muted-foreground text-[10px] font-medium cursor-pointer hover:fill-foreground"
+              onMouseEnter={() => setTooltip({ x: labelX, y: labelY, value, score })}
+              onMouseLeave={() => setTooltip(null)}
             >
               {value.code}
             </text>
           );
         })}
       </svg>
+
+      {/* Custom tooltip overlay */}
+      {tooltip && (
+        <div
+          className="absolute z-50 pointer-events-none bg-popover border border-border rounded-md px-3 py-2 shadow-md max-w-[200px]"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y - 10,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <p className="font-semibold text-sm">{tooltip.value.label}</p>
+          <p className="text-xs text-muted-foreground">{tooltip.value.description}</p>
+          <p className="text-xs mt-1">Score: {tooltip.score.toFixed(1)}</p>
+        </div>
+      )}
 
       {/* Legend - arranged in 2 rows */}
       <div className="absolute -bottom-16 left-0 right-0 flex flex-col items-center gap-1.5 px-4">

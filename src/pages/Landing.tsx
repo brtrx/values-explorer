@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Compass, Sparkles, ArrowRight, Plus, Star, GitCompare, Trash2, Layers } from 'lucide-react';
+import { Compass, Sparkles, ArrowRight, Plus, Star, GitCompare, Trash2, Layers, Users } from 'lucide-react';
 import { DbProfile, deleteProfile } from '@/lib/profile-storage';
 import { ValueScores } from '@/lib/schwartz-values';
 import { Json } from '@/integrations/supabase/types';
@@ -116,6 +116,12 @@ export default function Landing() {
                 <Link to="/carriers">
                   <Layers className="w-5 h-5" />
                   Explore Carriers
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="gap-2">
+                <Link to="/scenarios">
+                  <Users className="w-5 h-5" />
+                  Explore Scenarios
                 </Link>
               </Button>
             </div>

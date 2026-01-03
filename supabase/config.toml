@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.compare-archetypes]
 verify_jwt = false
+
+[functions.generate-persona-scenario]
+verify_jwt = false

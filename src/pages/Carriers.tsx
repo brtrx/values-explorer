@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Info, Zap, TrendingUp, Minus, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Info, Zap, TrendingUp, Minus, ChevronDown, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   Select,
@@ -9,6 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Tooltip,
   TooltipContent,
@@ -28,6 +33,8 @@ import {
   CarrierId,
   getPolarity,
 } from '@/lib/carriers';
+import { getPolarityExplanation } from '@/lib/polarity-explanations';
+import { ValueAbbreviation } from '@/components/ValueAbbreviation';
 import { cn } from '@/lib/utils';
 
 function getPolarityColor(polarity: number): string {
@@ -45,17 +52,49 @@ function getPolarityTextColor(polarity: number): string {
   return 'text-foreground';
 }
 
-function PolarityCell({ polarity }: { polarity: number }) {
+function PolarityCell({ polarity, valueCode, carrierId }: { polarity: number; valueCode: string; carrierId: CarrierId }) {
+  const [open, setOpen] = useState(false);
+  const value = getValueByCode(valueCode);
+  const carrier = CARRIERS[carrierId];
+  const explanation = getPolarityExplanation(valueCode, carrierId);
+
   return (
-    <div 
-      className={cn(
-        'w-full h-8 flex items-center justify-center text-xs font-medium rounded',
-        getPolarityColor(polarity),
-        getPolarityTextColor(polarity)
-      )}
-    >
-      {polarity > 0 ? '+' : ''}{polarity.toFixed(1)}
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            'w-full h-8 flex items-center justify-center text-xs font-medium rounded cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-1 transition-all',
+            getPolarityColor(polarity),
+            getPolarityTextColor(polarity)
+          )}
+          onClick={() => setOpen(true)}
+        >
+          {polarity > 0 ? '+' : ''}{polarity.toFixed(1)}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-4" side="top">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-semibold">{value?.label ?? valueCode}</p>
+              <p className="text-xs text-muted-foreground">{carrier.name}</p>
+            </div>
+            <div className={cn(
+              'px-2 py-1 rounded text-sm font-bold',
+              getPolarityColor(polarity),
+              getPolarityTextColor(polarity)
+            )}>
+              {polarity > 0 ? '+' : ''}{polarity.toFixed(1)}
+            </div>
+          </div>
+          {explanation && (
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {explanation}
+            </p>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -69,6 +108,8 @@ function generateTensionExplanation(
   const valueB = getValueByCode(valueCodeB);
   const polarityA = getPolarity(valueCodeA, carrierId) ?? 0;
   const polarityB = getPolarity(valueCodeB, carrierId) ?? 0;
+  const explanationA = getPolarityExplanation(valueCodeA, carrierId);
+  const explanationB = getPolarityExplanation(valueCodeB, carrierId);
   const diff = Math.abs(polarityA - polarityB);
 
   if (!valueA || !valueB) return '';
@@ -86,13 +127,21 @@ function generateTensionExplanation(
   const aEffect = describePolarity(polarityA);
   const bEffect = describePolarity(polarityB);
 
+  // Build a richer explanation using the polarity explanations
+  let explanation = '';
+  
   if (diff >= 1.2) {
-    return `This carrier creates high tension because ${valueA.label} (${valueA.code}) is ${aEffect} (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}) while ${valueB.label} (${valueB.code}) is ${bEffect} (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}) when ${carrier.name.toLowerCase()} increases. These opposing reactions mean any decision in this context forces a clear tradeoff — satisfying one value necessarily frustrates the other.`;
+    explanation = `This carrier creates **high tension** because the two values respond in opposite ways when ${carrier.name.toLowerCase()} increases.`;
   } else if (diff >= 0.7) {
-    return `This carrier creates moderate tension. When ${carrier.name.toLowerCase()} increases, ${valueA.label} (${valueA.code}) is ${aEffect} (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}) and ${valueB.label} (${valueB.code}) is ${bEffect} (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}). The difference is noticeable but not extreme — decisions may require some compromise but won't feel maximally conflicted.`;
+    explanation = `This carrier creates **moderate tension**. The two values respond differently to changes in ${carrier.name.toLowerCase()}.`;
   } else {
-    return `This carrier creates weak tension because both values respond similarly to changes in ${carrier.name.toLowerCase()}. ${valueA.label} (${valueA.code}) is ${aEffect} (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}) and ${valueB.label} (${valueB.code}) is ${bEffect} (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}). With similar polarities, this carrier won't force a meaningful tradeoff between these two values.`;
+    explanation = `This carrier creates **weak tension** because both values respond similarly to ${carrier.name.toLowerCase()}.`;
   }
+
+  explanation += `\n\n**${valueA.label}** (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}): ${explanationA || `Is ${aEffect} when this carrier increases.`}`;
+  explanation += `\n\n**${valueB.label}** (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}): ${explanationB || `Is ${bEffect} when this carrier increases.`}`;
+
+  return explanation;
 }
 
 function TensionResult({ 
@@ -110,10 +159,23 @@ function TensionResult({
   const carrier = CARRIERS[carrierId];
   const absDiff = Math.abs(polarityDiff);
   const explanation = generateTensionExplanation(valueCodeA, valueCodeB, carrierId);
-  
+  const valueA = getValueByCode(valueCodeA);
+  const valueB = getValueByCode(valueCodeB);
+
+  // Parse markdown-like bold syntax
+  const formatExplanation = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="text-foreground">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="rounded-lg border bg-card overflow-hidden">
+      <div id={`carrier-${carrierId}`} className="rounded-lg border bg-card overflow-hidden scroll-mt-24">
         <CollapsibleTrigger className="w-full">
           <div className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
             <div className={cn(
@@ -127,12 +189,6 @@ function TensionResult({
             </div>
             <div className="flex-1 text-left">
               <h4 className="font-semibold">{carrier.name}</h4>
-              <p className={cn(
-                "text-sm text-muted-foreground",
-                !isOpen && "line-clamp-1"
-              )}>
-                {carrier.description}
-              </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               {absDiff >= 1.2 ? (
@@ -158,36 +214,27 @@ function TensionResult({
         <CollapsibleContent>
           <div className="px-4 pb-4 pt-0 border-t">
             <div className="pt-4 space-y-4">
-              {/* Full description */}
-              <div>
-                <h5 className="text-sm font-medium mb-1">About this carrier</h5>
-                <p className="text-sm text-muted-foreground">{carrier.description}</p>
-              </div>
-              
-              {/* Parameters */}
-              <div>
-                <h5 className="text-sm font-medium mb-2">Tunable parameters</h5>
-                <div className="space-y-1">
-                  {carrier.parameters.map(param => (
-                    <div key={param.id} className="flex items-center justify-between text-xs p-2 rounded bg-muted/50">
-                      <span className="text-muted-foreground">{param.lowLabel}</span>
-                      <span className="px-2 py-0.5 rounded bg-background font-medium">{param.name}</span>
-                      <span className="text-muted-foreground">{param.highLabel}</span>
-                    </div>
+              {/* Explanation */}
+              <div className="p-4 rounded-lg bg-muted/50 border">
+                <h5 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <Info className="w-4 h-4 text-primary" />
+                  Impact on {valueA?.label} vs {valueB?.label} tension
+                </h5>
+                <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
+                  {explanation.split('\n\n').map((para, i) => (
+                    <p key={i}>{formatExplanation(para)}</p>
                   ))}
                 </div>
               </div>
 
-              {/* Explanation */}
-              <div className="p-4 rounded-lg bg-muted/50 border">
-                <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <Info className="w-4 h-4 text-primary" />
-                  Why this carrier {absDiff >= 1.2 ? 'strongly exposes' : absDiff >= 0.7 ? 'moderately exposes' : 'weakly exposes'} this tension
-                </h5>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {explanation}
-                </p>
-              </div>
+              {/* Link to carrier details */}
+              <a 
+                href={`#carrier-list-${carrierId}`} 
+                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+              >
+                <ArrowUp className="w-4 h-4" />
+                View full carrier description & parameters
+              </a>
             </div>
           </div>
         </CollapsibleContent>
@@ -288,7 +335,7 @@ export default function Carriers() {
             {CARRIER_IDS.map(id => {
               const carrier = CARRIERS[id];
               return (
-                <div key={id} className="p-5 rounded-xl border bg-card">
+                <div key={id} id={`carrier-list-${id}`} className="p-5 rounded-xl border bg-card scroll-mt-24">
                   <h3 className="font-serif text-lg font-semibold mb-2">{carrier.name}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{carrier.description}</p>
                   <div className="space-y-2">
@@ -355,23 +402,13 @@ export default function Carriers() {
                     {valuesByQuadrant[quadrant].map(value => (
                       <tr key={value.code} className="hover:bg-muted/50">
                         <td className="p-2 sticky left-0 bg-background z-10">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-sm font-medium cursor-help">
-                                {value.code}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="right" className="max-w-xs">
-                              <p className="font-semibold">{value.label}</p>
-                              <p className="text-xs text-muted-foreground">{value.description}</p>
-                            </TooltipContent>
-                          </Tooltip>
+                          <ValueAbbreviation code={value.code} className="text-sm" />
                         </td>
                         {CARRIER_IDS.map(carrierId => {
                           const polarity = VALUE_POLARITY_MAP[value.code]?.[carrierId] ?? 0;
                           return (
                             <td key={carrierId} className="p-1">
-                              <PolarityCell polarity={polarity} />
+                              <PolarityCell polarity={polarity} valueCode={value.code} carrierId={carrierId} />
                             </td>
                           );
                         })}

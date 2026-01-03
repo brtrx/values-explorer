@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Info, Zap, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ArrowLeft, Info, Zap, TrendingUp, Minus, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   Select,
@@ -14,13 +14,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { SCHWARTZ_VALUES, HIGHER_ORDER_VALUES, HigherOrderValue } from '@/lib/schwartz-values';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { SCHWARTZ_VALUES, HIGHER_ORDER_VALUES, HigherOrderValue, getValueByCode } from '@/lib/schwartz-values';
 import { 
   CARRIERS, 
   CARRIER_IDS, 
   VALUE_POLARITY_MAP, 
   findBestCarriersForTension,
   CarrierId,
+  getPolarity,
 } from '@/lib/carriers';
 import { cn } from '@/lib/utils';
 
@@ -53,47 +59,140 @@ function PolarityCell({ polarity }: { polarity: number }) {
   );
 }
 
+function generateTensionExplanation(
+  valueCodeA: string,
+  valueCodeB: string,
+  carrierId: CarrierId
+): string {
+  const carrier = CARRIERS[carrierId];
+  const valueA = getValueByCode(valueCodeA);
+  const valueB = getValueByCode(valueCodeB);
+  const polarityA = getPolarity(valueCodeA, carrierId) ?? 0;
+  const polarityB = getPolarity(valueCodeB, carrierId) ?? 0;
+  const diff = Math.abs(polarityA - polarityB);
+
+  if (!valueA || !valueB) return '';
+
+  const describePolarity = (p: number) => {
+    if (p >= 0.7) return 'strongly satisfied';
+    if (p >= 0.3) return 'moderately satisfied';
+    if (p > 0.1) return 'slightly satisfied';
+    if (p >= -0.1) return 'largely unaffected';
+    if (p >= -0.3) return 'slightly frustrated';
+    if (p >= -0.7) return 'moderately frustrated';
+    return 'strongly frustrated';
+  };
+
+  const aEffect = describePolarity(polarityA);
+  const bEffect = describePolarity(polarityB);
+
+  if (diff >= 1.2) {
+    return `This carrier creates high tension because ${valueA.label} (${valueA.code}) is ${aEffect} (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}) while ${valueB.label} (${valueB.code}) is ${bEffect} (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}) when ${carrier.name.toLowerCase()} increases. These opposing reactions mean any decision in this context forces a clear tradeoff — satisfying one value necessarily frustrates the other.`;
+  } else if (diff >= 0.7) {
+    return `This carrier creates moderate tension. When ${carrier.name.toLowerCase()} increases, ${valueA.label} (${valueA.code}) is ${aEffect} (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}) and ${valueB.label} (${valueB.code}) is ${bEffect} (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}). The difference is noticeable but not extreme — decisions may require some compromise but won't feel maximally conflicted.`;
+  } else {
+    return `This carrier creates weak tension because both values respond similarly to changes in ${carrier.name.toLowerCase()}. ${valueA.label} (${valueA.code}) is ${aEffect} (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}) and ${valueB.label} (${valueB.code}) is ${bEffect} (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}). With similar polarities, this carrier won't force a meaningful tradeoff between these two values.`;
+  }
+}
+
 function TensionResult({ 
   carrierId, 
-  polarityDiff 
+  polarityDiff,
+  valueCodeA,
+  valueCodeB,
 }: { 
   carrierId: CarrierId; 
   polarityDiff: number;
+  valueCodeA: string;
+  valueCodeB: string;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
   const carrier = CARRIERS[carrierId];
   const absDiff = Math.abs(polarityDiff);
+  const explanation = generateTensionExplanation(valueCodeA, valueCodeB, carrierId);
   
   return (
-    <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
-      <div className={cn(
-        'w-12 h-12 rounded-lg flex items-center justify-center text-lg font-bold',
-        absDiff >= 1.5 ? 'bg-rose-500 text-white' :
-        absDiff >= 1.0 ? 'bg-amber-400 text-amber-900' :
-        absDiff >= 0.5 ? 'bg-yellow-200 text-yellow-800' :
-        'bg-muted text-muted-foreground'
-      )}>
-        {absDiff.toFixed(1)}
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className="rounded-lg border bg-card overflow-hidden">
+        <CollapsibleTrigger className="w-full">
+          <div className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
+            <div className={cn(
+              'w-12 h-12 rounded-lg flex items-center justify-center text-lg font-bold shrink-0',
+              absDiff >= 1.5 ? 'bg-rose-500 text-white' :
+              absDiff >= 1.0 ? 'bg-amber-400 text-amber-900' :
+              absDiff >= 0.5 ? 'bg-yellow-200 text-yellow-800' :
+              'bg-muted text-muted-foreground'
+            )}>
+              {absDiff.toFixed(1)}
+            </div>
+            <div className="flex-1 text-left">
+              <h4 className="font-semibold">{carrier.name}</h4>
+              <p className={cn(
+                "text-sm text-muted-foreground",
+                !isOpen && "line-clamp-1"
+              )}>
+                {carrier.description}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              {absDiff >= 1.2 ? (
+                <span className="flex items-center gap-1 text-sm text-rose-600 font-medium">
+                  <Zap className="w-4 h-4" /> High
+                </span>
+              ) : absDiff >= 0.7 ? (
+                <span className="flex items-center gap-1 text-sm text-amber-600 font-medium">
+                  <TrendingUp className="w-4 h-4" /> Moderate
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Minus className="w-4 h-4" /> Weak
+                </span>
+              )}
+              <ChevronDown className={cn(
+                "w-5 h-5 text-muted-foreground transition-transform",
+                isOpen && "rotate-180"
+              )} />
+            </div>
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-4 pb-4 pt-0 border-t">
+            <div className="pt-4 space-y-4">
+              {/* Full description */}
+              <div>
+                <h5 className="text-sm font-medium mb-1">About this carrier</h5>
+                <p className="text-sm text-muted-foreground">{carrier.description}</p>
+              </div>
+              
+              {/* Parameters */}
+              <div>
+                <h5 className="text-sm font-medium mb-2">Tunable parameters</h5>
+                <div className="space-y-1">
+                  {carrier.parameters.map(param => (
+                    <div key={param.id} className="flex items-center justify-between text-xs p-2 rounded bg-muted/50">
+                      <span className="text-muted-foreground">{param.lowLabel}</span>
+                      <span className="px-2 py-0.5 rounded bg-background font-medium">{param.name}</span>
+                      <span className="text-muted-foreground">{param.highLabel}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Explanation */}
+              <div className="p-4 rounded-lg bg-muted/50 border">
+                <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Info className="w-4 h-4 text-primary" />
+                  Why this carrier {absDiff >= 1.2 ? 'strongly exposes' : absDiff >= 0.7 ? 'moderately exposes' : 'weakly exposes'} this tension
+                </h5>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {explanation}
+                </p>
+              </div>
+            </div>
+          </div>
+        </CollapsibleContent>
       </div>
-      <div className="flex-1">
-        <h4 className="font-semibold">{carrier.name}</h4>
-        <p className="text-sm text-muted-foreground line-clamp-2">{carrier.description}</p>
-      </div>
-      <div className="flex items-center gap-2">
-        {absDiff >= 1.2 ? (
-          <span className="flex items-center gap-1 text-sm text-rose-600 font-medium">
-            <Zap className="w-4 h-4" /> High tension
-          </span>
-        ) : absDiff >= 0.7 ? (
-          <span className="flex items-center gap-1 text-sm text-amber-600 font-medium">
-            <TrendingUp className="w-4 h-4" /> Moderate
-          </span>
-        ) : (
-          <span className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Minus className="w-4 h-4" /> Weak
-          </span>
-        )}
-      </div>
-    </div>
+    </Collapsible>
   );
 }
 
@@ -384,7 +483,9 @@ export default function Carriers() {
                 <TensionResult 
                   key={result.carrier.id} 
                   carrierId={result.carrier.id} 
-                  polarityDiff={result.polarityDiff} 
+                  polarityDiff={result.polarityDiff}
+                  valueCodeA={selectedValueA}
+                  valueCodeB={selectedValueB}
                 />
               ))}
             </div>
@@ -392,7 +493,7 @@ export default function Carriers() {
 
           {(!selectedValueA || !selectedValueB) && (
             <div className="text-center py-12 text-muted-foreground">
-              <TrendingDown className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Info className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>Select two values above to analyze which carriers expose their tension.</p>
             </div>
           )}

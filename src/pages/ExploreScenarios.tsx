@@ -417,6 +417,7 @@ export default function ExploreScenarios() {
                   <OverlappingSchwartzCircle
                     archetypes={personaData}
                     size={340}
+                    tensionLines={tensionLines}
                   />
                 </CardContent>
               </Card>
@@ -439,7 +440,7 @@ export default function ExploreScenarios() {
                         <span className="text-muted-foreground">vs</span>
                         <ValueAbbreviation code={tension.valueB} />
                         <span className="ml-auto text-xs text-muted-foreground">
-                          Tension: {tension.scoreDiff}
+                          Tension: {tension.scoreDiff.toFixed(2)}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">

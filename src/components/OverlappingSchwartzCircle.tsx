@@ -10,9 +10,16 @@ interface ArchetypeData {
   color: string;
 }
 
+interface TensionLine {
+  valueA: string;
+  valueB: string;
+  scoreDiff: number;
+}
+
 interface OverlappingSchwartzCircleProps {
   archetypes: ArchetypeData[];
   size?: number;
+  tensionLines?: TensionLine[];
 }
 
 const ARCHETYPE_COLORS = [
@@ -23,7 +30,7 @@ const ARCHETYPE_COLORS = [
   'hsl(280, 60%, 55%)',
 ];
 
-export function OverlappingSchwartzCircle({ archetypes, size = 360 }: OverlappingSchwartzCircleProps) {
+export function OverlappingSchwartzCircle({ archetypes, size = 360, tensionLines = [] }: OverlappingSchwartzCircleProps) {
   const center = size / 2;
   const maxRadius = (size / 2) - 50;
   const minRadius = 15;
@@ -112,6 +119,34 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360 }: Overlappin
     });
   }, [center, maxRadius, labelRadius]);
 
+  // Calculate tension line positions
+  const tensionLineData = useMemo(() => {
+    const angleStep = (2 * Math.PI) / SCHWARTZ_VALUES.length;
+    const startAngle = -Math.PI / 2;
+    
+    return tensionLines.map((tension, idx) => {
+      const valueAIndex = SCHWARTZ_VALUES.findIndex(v => v.code === tension.valueA);
+      const valueBIndex = SCHWARTZ_VALUES.findIndex(v => v.code === tension.valueB);
+      
+      if (valueAIndex === -1 || valueBIndex === -1) return null;
+      
+      const angleA = startAngle + valueAIndex * angleStep;
+      const angleB = startAngle + valueBIndex * angleStep;
+      
+      // Position at 70% of max radius for visibility
+      const lineRadius = maxRadius * 0.7;
+      
+      return {
+        x1: center + lineRadius * Math.cos(angleA),
+        y1: center + lineRadius * Math.sin(angleA),
+        x2: center + lineRadius * Math.cos(angleB),
+        y2: center + lineRadius * Math.sin(angleB),
+        tension: tension.scoreDiff,
+        index: idx,
+      };
+    }).filter(Boolean);
+  }, [tensionLines, center, maxRadius]);
+
   return (
     <div className="relative flex flex-col items-center">
       <svg width={size} height={size} className="overflow-visible">
@@ -149,6 +184,21 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360 }: Overlappin
             stroke="currentColor"
             strokeWidth="1"
             className="text-border/40"
+          />
+        ))}
+
+        {/* Tension lines */}
+        {tensionLineData.map((line: any) => (
+          <line
+            key={`tension-${line.index}`}
+            x1={line.x1}
+            y1={line.y1}
+            x2={line.x2}
+            y2={line.y2}
+            stroke="hsl(var(--muted-foreground))"
+            strokeWidth="2"
+            strokeDasharray="4 2"
+            opacity={0.6}
           />
         ))}
 

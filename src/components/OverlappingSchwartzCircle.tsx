@@ -38,7 +38,9 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360 }: Overlappin
   } | null>(null);
 
   const scoreToRadius = (score: number) => {
-    const normalized = score / 7;
+    // Archetype profiles use -3 to 3 range, convert to 0-7 for display (3.5 is neutral)
+    const displayScore = score + 3.5;
+    const normalized = Math.max(0, Math.min(1, displayScore / 7));
     return minRadius + normalized * (maxRadius - minRadius);
   };
 

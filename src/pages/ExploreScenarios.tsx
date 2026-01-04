@@ -59,57 +59,71 @@ export default function ExploreScenarios() {
   }, [selectedPersonas]);
 
   // Calculate top tension lines between the two personas
+  // Calculate geometric position on circumplex for a value
+  const getValuePosition = (valueIndex: number, score: number) => {
+    const angleStep = (2 * Math.PI) / SCHWARTZ_VALUES.length;
+    const startAngle = -Math.PI / 2;
+    const angle = startAngle + valueIndex * angleStep;
+    // Convert -3 to 3 score range to radius (0-7 display range)
+    const displayScore = score + 3.5;
+    const radius = displayScore / 7;
+    return {
+      x: radius * Math.cos(angle),
+      y: radius * Math.sin(angle),
+    };
+  };
+
+  // Calculate Euclidean distance between two points
+  const getDistance = (p1: { x: number; y: number }, p2: { x: number; y: number }) => {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+  };
+
   const tensionLines = useMemo(() => {
     if (personaData.length !== 2) return [];
     
-    const [p1, p2] = personaData;
+    const [persona1, persona2] = personaData;
     const tensions: TensionLine[] = [];
     
-    // For each value, calculate the difference between personas
-    SCHWARTZ_VALUES.forEach(value => {
-      const score1 = p1.valueProfile[value.code] ?? 0;
-      const score2 = p2.valueProfile[value.code] ?? 0;
-      const diff = Math.abs(score1 - score2);
-      
-      if (diff >= 2) {
-        // Find carriers that would amplify this tension
-        const otherValues = SCHWARTZ_VALUES.filter(v => v.code !== value.code);
+    // For each pair of values, calculate geometric distance between persona positions
+    SCHWARTZ_VALUES.forEach((valueA, indexA) => {
+      SCHWARTZ_VALUES.forEach((valueB, indexB) => {
+        if (indexA >= indexB) return; // Avoid duplicates
         
-        // Find opposing values in the other persona
-        otherValues.forEach(otherValue => {
-          const otherScore1 = p1.valueProfile[otherValue.code] ?? 0;
-          const otherScore2 = p2.valueProfile[otherValue.code] ?? 0;
+        const score1A = persona1.valueProfile[valueA.code] ?? 0;
+        const score1B = persona1.valueProfile[valueB.code] ?? 0;
+        const score2A = persona2.valueProfile[valueA.code] ?? 0;
+        const score2B = persona2.valueProfile[valueB.code] ?? 0;
+        
+        // Get positions for each persona on both values
+        const pos1A = getValuePosition(indexA, score1A);
+        const pos1B = getValuePosition(indexB, score1B);
+        const pos2A = getValuePosition(indexA, score2A);
+        const pos2B = getValuePosition(indexB, score2B);
+        
+        // Calculate cross-distances: how far apart are the personas on opposing values?
+        // Tension = distance from persona1's valueA to persona2's valueB + vice versa
+        const crossDistance = getDistance(pos1A, pos2B) + getDistance(pos1B, pos2A);
+        
+        // Only consider significant tensions
+        if (crossDistance > 1.0) {
+          const carrierImpacts = findBestCarriersForTension(valueA.code, valueB.code, 3);
           
-          // Look for cases where one persona values something highly that the other opposes
-          if ((score1 >= 2 && otherScore2 >= 2 && score2 <= 0 && otherScore1 <= 0) ||
-              (score2 >= 2 && otherScore1 >= 2 && score1 <= 0 && otherScore2 <= 0)) {
-            
-            const carrierImpacts = findBestCarriersForTension(value.code, otherValue.code, 3);
-            
-            tensions.push({
-              valueA: value.code,
-              valueB: otherValue.code,
-              scoreDiff: diff + Math.abs(otherScore1 - otherScore2),
-              carriers: carrierImpacts.map(c => ({
-                carrierId: c.carrier.id as CarrierId,
-                polarityDiff: c.polarityDiff,
-              })),
-            });
-          }
-        });
-      }
+          tensions.push({
+            valueA: valueA.code,
+            valueB: valueB.code,
+            scoreDiff: crossDistance,
+            carriers: carrierImpacts.map(c => ({
+              carrierId: c.carrier.id as CarrierId,
+              polarityDiff: c.polarityDiff,
+            })),
+          });
+        }
+      });
     });
     
-    // Sort by combined score difference and take top 3 unique value pairs
-    const seen = new Set<string>();
+    // Sort by geometric distance and take top 3
     return tensions
       .sort((a, b) => b.scoreDiff - a.scoreDiff)
-      .filter(t => {
-        const key = [t.valueA, t.valueB].sort().join('-');
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
       .slice(0, 3);
   }, [personaData]);
 

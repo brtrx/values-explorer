@@ -340,7 +340,12 @@ export default function Carriers() {
               return (
                 <div key={id} id={`carrier-list-${id}`} className="p-5 rounded-xl border bg-card scroll-mt-24">
                   <h3 className="font-serif text-lg font-semibold mb-2">{carrier.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{carrier.description}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{carrier.description}</p>
+                  <div className="p-3 rounded-lg bg-muted/50 border border-dashed mb-4">
+                    <p className="text-xs text-muted-foreground italic">
+                      <span className="font-medium not-italic">Example:</span> {carrier.example}
+                    </p>
+                  </div>
                   <div className="space-y-2">
                     {carrier.parameters.map(param => (
                       <div key={param.id} className="flex items-center justify-between text-xs">

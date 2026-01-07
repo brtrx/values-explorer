@@ -60,6 +60,8 @@ export interface Carrier {
   id: CarrierId;
   name: string;
   description: string;
+  /** A concrete example scenario illustrating this carrier in action */
+  example: string;
   /** 
    * Parameters that can be tuned to intensify or soften the carrier.
    * Each parameter represents a dimension of the carrier that affects
@@ -77,6 +79,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'risk_uncertainty',
     name: 'Risk / Uncertainty',
     description: 'The degree of unknown outcomes, potential loss, or unpredictable consequences. High risk forces tradeoffs between security-seeking and opportunity-seeking values.',
+    example: 'A startup founder must decide whether to leave a stable job to pursue an unproven business idea with uncertain chances of success.',
     parameters: [
       {
         id: 'stakes',
@@ -109,6 +112,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'control_authority',
     name: 'Control / Authority',
     description: 'Who has decision-making power and how it is distributed. Creates tension between autonomy-seeking and hierarchy-respecting values.',
+    example: 'A team member disagrees with their manager\'s directive and must decide whether to voice concerns or follow instructions.',
     parameters: [
       {
         id: 'hierarchy',
@@ -141,6 +145,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'resources_allocation',
     name: 'Resources / Allocation',
     description: 'Scarcity of material goods, money, or tangible assets. Forces choices between self-interest and collective welfare.',
+    example: 'A bonus pool must be divided among team members who contributed unequally to a successful project.',
     parameters: [
       {
         id: 'scarcity',
@@ -173,6 +178,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'time_urgency',
     name: 'Time / Urgency',
     description: 'Pressure from deadlines, windows of opportunity, or time-sensitive demands. Forces tradeoffs between deliberation and action.',
+    example: 'A job offer expires in 48 hours, but you\'re still waiting to hear back from your dream company.',
     parameters: [
       {
         id: 'deadline',
@@ -205,6 +211,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'attention_recognition',
     name: 'Attention / Recognition',
     description: 'Visibility, credit, reputation, and social acknowledgment. Creates tension between self-promotion and humility values.',
+    example: 'You completed most of the work on a group project, but the presentation slot only allows one person to present to leadership.',
     parameters: [
       {
         id: 'audience_size',
@@ -237,6 +244,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'norm_enforcement',
     name: 'Norm Enforcement / Rule Flexibility',
     description: 'How strictly rules, laws, and social norms are applied. Forces tradeoffs between conformity and self-direction.',
+    example: 'A compassionate exception to a company policy would help one employee but set a precedent that others may exploit.',
     parameters: [
       {
         id: 'enforcement_strictness',
@@ -269,6 +277,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'choice_freedom',
     name: 'Choice Freedom / Constraint',
     description: 'The range of available options and freedom to choose among them. Exposes tension between autonomy and security.',
+    example: 'An employee is offered a promotion that requires relocating to another country—accept or stay in current role.',
     parameters: [
       {
         id: 'option_range',
@@ -301,6 +310,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'inclusion_exclusion',
     name: 'Inclusion / Exclusion',
     description: 'Who belongs, who is accepted, and who is left out. Forces tradeoffs between in-group loyalty and universal concern.',
+    example: 'A social group must decide whether to invite a controversial but talented newcomer who might disrupt group harmony.',
     parameters: [
       {
         id: 'group_selectivity',
@@ -333,6 +343,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'truth_disclosure',
     name: 'Truth Disclosure / Concealment',
     description: 'Decisions about revealing or hiding information. Creates tension between honesty and protection values.',
+    example: 'A doctor must decide how much to tell a patient about a grim prognosis when the family requests optimism.',
     parameters: [
       {
         id: 'harm_potential',
@@ -365,6 +376,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'effort_sacrifice',
     name: 'Effort / Sacrifice',
     description: 'Personal cost in energy, comfort, or wellbeing required by a choice. Exposes tension between self-care and commitment values.',
+    example: 'A parent must choose between attending their child\'s recital or staying late to meet a critical work deadline.',
     parameters: [
       {
         id: 'cost_level',
@@ -397,6 +409,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'change_stability',
     name: 'Change / Stability',
     description: 'Tension between preserving the status quo and embracing transformation. Exposes openness vs. conservation values.',
+    example: 'A traditional family business must decide whether to modernize operations or preserve practices passed down for generations.',
     parameters: [
       {
         id: 'disruption_scope',
@@ -429,6 +442,7 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
     id: 'boundary_permeability',
     name: 'Boundary Permeability',
     description: 'Who counts as "us" — the flexibility of in-group/out-group boundaries. Forces tradeoffs between universalism and particularism.',
+    example: 'A community must decide whether to share limited emergency resources with neighboring towns during a crisis.',
     parameters: [
       {
         id: 'boundary_rigidity',

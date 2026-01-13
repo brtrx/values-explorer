@@ -10,6 +10,7 @@ import { SCHWARTZ_VALUES } from '@/lib/schwartz-values';
 import { CARRIERS, VALUE_POLARITY_MAP, CarrierId, findBestCarriersForTension, getCarrierById } from '@/lib/carriers';
 import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircle';
 import { ValueAbbreviation } from '@/components/ValueAbbreviation';
+import { VideoPromptPanel } from '@/components/VideoPromptPanel';
 import { toast } from 'sonner';
 
 const SCENARIO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-persona-scenario`;
@@ -530,7 +531,15 @@ export default function ExploreScenarios() {
               <CardTitle>Generated Scenario</CardTitle>
             </CardHeader>
             <CardContent className="prose prose-sm max-w-none dark:prose-invert">
-              {scenario ? renderScenario(scenario) : (
+              {scenario ? (
+                <>
+                  {renderScenario(scenario)}
+                  <VideoPromptPanel 
+                    scenario={scenario} 
+                    archetypeNames={selectedPersonas} 
+                  />
+                </>
+              ) : (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Generating...

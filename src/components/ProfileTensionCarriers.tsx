@@ -42,6 +42,9 @@ function ProfileSensitivityDot({
   const position = ((sensitivity + max) / (2 * max)) * 100;
   const isPositive = sensitivity >= 0;
   
+  // Determine tooltip alignment based on position to prevent overflow
+  const tooltipAlign = position < 30 ? 'left' : position > 70 ? 'right' : 'center';
+  
   return (
     <div 
       className="absolute top-1/2 -translate-y-1/2 group"
@@ -51,7 +54,12 @@ function ProfileSensitivityDot({
         "w-3 h-3 rounded-full border-2 border-background shadow-sm -translate-x-1/2",
         isPositive ? "bg-emerald-500" : "bg-rose-500"
       )} />
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 rounded bg-popover border shadow-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+      <div className={cn(
+        "absolute bottom-full mb-1 px-2 py-1 rounded bg-popover border shadow-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10",
+        tooltipAlign === 'left' && "left-0",
+        tooltipAlign === 'right' && "right-0",
+        tooltipAlign === 'center' && "left-1/2 -translate-x-1/2"
+      )}>
         {name}: {sensitivity > 0 ? '+' : ''}{sensitivity.toFixed(2)}
       </div>
     </div>

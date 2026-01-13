@@ -6,6 +6,7 @@ import { ValueScores } from '@/lib/schwartz-values';
 import { generateDescription, generateSystemPrompt } from '@/lib/profile-generator';
 import { SimilarTo } from '@/components/SimilarTo';
 import { ValueEditor } from '@/components/ValueEditor';
+import { CarrierSensitivityPanel } from '@/components/CarrierSensitivityPanel';
 import { useToast } from '@/hooks/use-toast';
 
 interface GenerationPanelProps {
@@ -91,6 +92,11 @@ export function GenerationPanel({
 
       {/* Similar To... - archetype matching */}
       <SimilarTo scores={scores} onLoadArchetypeProfile={onLoadArchetypeProfile} />
+
+      {/* Carrier Sensitivity Analysis */}
+      <section className="rounded-xl border bg-card p-6">
+        <CarrierSensitivityPanel scores={scores} />
+      </section>
 
       {/* Copy Instructions - system prompt at bottom */}
       <section>

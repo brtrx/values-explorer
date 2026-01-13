@@ -6,6 +6,7 @@ import { ArrowLeft, Sparkles, Loader2, X } from 'lucide-react';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircle';
 import { ConflictScenario } from '@/components/ConflictScenario';
+import { ProfileTensionCarriers } from '@/components/ProfileTensionCarriers';
 import { toast } from 'sonner';
 
 const COMPARE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compare-archetypes`;
@@ -292,6 +293,9 @@ export default function Compare() {
                     </p>
                   )}
                 </div>
+
+                {/* Tension-Amplifying Carriers */}
+                <ProfileTensionCarriers profiles={selectedArchetypeData} />
 
                 <ConflictScenario selectedArchetypes={selectedArchetypes} />
               </>

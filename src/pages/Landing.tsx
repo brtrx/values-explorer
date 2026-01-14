@@ -86,101 +86,144 @@ export default function Landing() {
       {/* Hero Section */}
       <header className="relative overflow-hidden">
         <div className="absolute inset-0 gradient-hero opacity-5" />
-        <div className="container relative py-20 md:py-32">
+        <div className="container relative py-16 md:py-24">
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-hero mb-6 shadow-glow">
               <Compass className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-              Schwartz Values
-              <span className="block text-primary">Profile Builder</span>
+            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
+              Exploring Values
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Map your personal values using the scientifically validated PVQ-RR framework, 
-              then generate AI-ready personality profiles and system prompts.
+            <p className="text-lg text-muted-foreground mb-8">
+              A Philosophical Experiment by Justin Tauber
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="gap-2">
-                <Link to="/editor">
-                  <Plus className="w-5 h-5" />
-                  Create New Profile
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="gap-2">
-                <Link to="/compare">
-                  <GitCompare className="w-5 h-5" />
-                  Compare Archetypes
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="gap-2">
-                <Link to="/carriers">
-                  <Layers className="w-5 h-5" />
-                  Explore Carriers
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="gap-2">
-                <Link to="/scenarios">
-                  <Users className="w-5 h-5" />
-                  Explore Scenarios
-                </Link>
-              </Button>
-            </div>
           </div>
         </div>
       </header>
 
-      {/* How It Works */}
-      <section className="py-16 border-t bg-muted/30">
+      {/* Overview Section */}
+      <section className="py-12 border-t">
         <div className="container">
-          <h2 className="font-serif text-3xl font-bold text-center mb-12">
-            How It Works
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="text-center p-6">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4">
-                <span className="font-serif text-xl font-bold">1</span>
-              </div>
-              <h3 className="font-serif text-xl font-semibold mb-2">Set Your Values</h3>
-              <p className="text-muted-foreground">
-                Adjust 19 value dimensions across four quadrants: Openness, Self-Enhancement, 
-                Conservation, and Self-Transcendence.
+          <div className="max-w-3xl mx-auto prose prose-lg">
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              This site is an interactive exploration of human values—what we care about, why it matters, 
+              and how different value priorities create both harmony and conflict. Using Schwartz's 
+              scientifically validated framework, you can map value profiles, discover tensions, and 
+              explore how values express themselves through everyday carriers like money, time, and attention.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Schwartz Theory Section */}
+      <section className="py-12 border-t bg-muted/30">
+        <div className="container">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="font-serif text-2xl font-bold mb-6">The Schwartz Theory of Basic Values</h2>
+            <div className="space-y-4 text-muted-foreground">
+              <p>
+                Shalom Schwartz's theory identifies 19 universal values that exist across all human cultures. 
+                These values—from Security and Tradition to Stimulation and Self-Direction—are arranged in a 
+                circular structure where adjacent values are compatible and opposing values are in tension.
               </p>
-            </div>
-            <div className="text-center p-6">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4">
-                <span className="font-serif text-xl font-bold">2</span>
-              </div>
-              <h3 className="font-serif text-xl font-semibold mb-2">Discover Matches</h3>
-              <p className="text-muted-foreground">
-                See which famous figures, heroes, gods, and literary characters share 
-                your value profile.
-              </p>
-            </div>
-            <div className="text-center p-6">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4">
-                <span className="font-serif text-xl font-bold">3</span>
-              </div>
-              <h3 className="font-serif text-xl font-semibold mb-2">Generate Prompts</h3>
-              <p className="text-muted-foreground">
-                Get AI-ready system prompts that capture the personality essence for 
-                use with ChatGPT, Claude, or other LLMs.
+              <p>
+                The theory has been validated across 80+ countries and hundreds of thousands of participants, 
+                making it one of the most robust cross-cultural frameworks for understanding what humans 
+                fundamentally care about. The circular structure reveals a deeper truth: pursuing some values 
+                necessarily comes at the cost of others.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Start with an Example */}
-      <section className="py-16 border-t bg-muted/30">
+      {/* Tensions & Carriers Section */}
+      <section className="py-12 border-t">
         <div className="container">
-          <div className="text-center mb-12">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="font-serif text-2xl font-bold mb-6">Tensions & Carriers</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Value Tensions</h3>
+                <p className="text-muted-foreground">
+                  Not all values can be maximized simultaneously. Security opposes Stimulation. 
+                  Self-Enhancement conflicts with Self-Transcendence. Understanding these tensions 
+                  helps explain interpersonal conflicts and internal dilemmas—they're not failures 
+                  of character, but fundamental trade-offs in what we can prioritize.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Value Carriers</h3>
+                <p className="text-muted-foreground">
+                  Values don't exist in abstraction—they're expressed through "carriers" like money, 
+                  time, attention, and social status. Each carrier has a different polarity for each 
+                  value. Understanding carriers reveals how abstract values become concrete conflicts 
+                  and how the same resource can mean completely different things to different people.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What You Can Do Section */}
+      <section className="py-12 border-t bg-muted/30">
+        <div className="container">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="font-serif text-2xl font-bold mb-6">What You Can Do Here</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Link to="/editor" className="group p-5 rounded-xl border bg-card hover:border-primary/30 hover:shadow-md transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <Plus className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold group-hover:text-primary transition-colors">Create Value Profiles</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Build profiles for yourself, fictional characters, or archetypes. See which famous figures share your values.
+                </p>
+              </Link>
+              <Link to="/compare" className="group p-5 rounded-xl border bg-card hover:border-primary/30 hover:shadow-md transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <GitCompare className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold group-hover:text-primary transition-colors">Compare Profiles</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Visualize tensions between different value schemes and discover where conflicts arise.
+                </p>
+              </Link>
+              <Link to="/carriers" className="group p-5 rounded-xl border bg-card hover:border-primary/30 hover:shadow-md transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <Layers className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold group-hover:text-primary transition-colors">Explore Carriers</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  See how values express through concrete carriers like money, time, and attention.
+                </p>
+              </Link>
+              <Link to="/scenarios" className="group p-5 rounded-xl border bg-card hover:border-primary/30 hover:shadow-md transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold group-hover:text-primary transition-colors">Explore Scenarios</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Generate AI-powered scenarios that explore how different values create conflict.
+                </p>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Start with Example Value Schemes */}
+      <section className="py-12 border-t">
+        <div className="container">
+          <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4">
               <Star className="w-6 h-6" />
             </div>
-            <h2 className="font-serif text-3xl font-bold">Start with an Example</h2>
+            <h2 className="font-serif text-2xl font-bold">Start with Example Value Schemes</h2>
             <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
-              Explore value profiles of famous characters and historical figures. 
-              Click any name to load their profile and see how they map.
+              Explore value profiles of archetypes, characters, and historical figures. 
+              Click any name to load their profile.
             </p>
           </div>
 
@@ -207,7 +250,7 @@ export default function Landing() {
       </section>
 
       {/* Saved Profiles */}
-      <section id="profiles" className="py-16 border-t">
+      <section id="profiles" className="py-12 border-t bg-muted/30">
         <div className="container">
           <div className="flex items-center justify-between mb-8">
             <div>

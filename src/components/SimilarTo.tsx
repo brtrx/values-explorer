@@ -30,9 +30,9 @@ export function SimilarTo({ scores, onLoadArchetypeProfile }: SimilarToProps) {
   useEffect(() => {
     const newArchetype = findBestArchetype(scores, category);
     setArchetype(newArchetype);
-    // Calculate match percentage (score is roughly 0-1.5, normalize to 0-100)
+    // Calculate match percentage (score is 0-1, convert to 0-100%)
     const rawScore = getMatchScore(scores, newArchetype);
-    const percent = Math.min(100, Math.round(rawScore * 70 + 20)); // Scale to 20-100%
+    const percent = Math.round(rawScore * 100);
     setMatchPercent(percent);
     // Find similar archetypes
     setSimilarArchetypes(findSimilarArchetypes(newArchetype, 4));

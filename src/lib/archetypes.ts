@@ -607,77 +607,53 @@ export const ARCHETYPES: Archetype[] = [
 ];
 
 /**
- * Calculate match score using cosine similarity on value intensities
- * This considers the actual magnitude of values, including negative weights
+ * Calculate match score using Euclidean distance on actual value positions
+ * This properly measures how close the user's profile is to the archetype
+ * Returns a value from 0 to 1, where 1 is a perfect match
  */
 function calculateArchetypeMatch(userScores: ValueScores, archetype: Archetype): number {
-  // Normalize user scores to -1 to 1 range (from 0-7, where 3.5 is neutral)
-  const normalizedUser: Record<string, number> = {};
-  for (const [code, value] of Object.entries(userScores)) {
-    normalizedUser[code] = (value - 3.5) / 3.5; // -1 to 1
-  }
-  
-  // Create archetype vector (normalize -3 to 3 weights to -1 to 1)
-  const archetypeVector: Record<string, number> = {};
-  for (const [code, weight] of Object.entries(archetype.valueProfile)) {
-    archetypeVector[code] = weight / 3; // -1 to 1
-  }
-  
-  // Calculate weighted cosine similarity
-  // We use all 19 values, with archetype having 0 for non-specified values
-  let dotProduct = 0;
-  let userMagnitude = 0;
-  let archetypeMagnitude = 0;
+  // Convert archetype weights to the 0-7 scale for direct comparison
+  const archetypeScores: Record<string, number> = {};
+  const weightToScore: Record<number, number> = {
+    [-3]: 0.5,
+    [-2]: 1.5,
+    [-1]: 2.5,
+    [0]: 3.5,
+    [1]: 4.5,
+    [2]: 5.5,
+    [3]: 6.5,
+  };
   
   for (const value of SCHWARTZ_VALUES) {
-    const userVal = normalizedUser[value.code] || 0;
-    const archVal = archetypeVector[value.code] || 0;
+    const weight = archetype.valueProfile[value.code] ?? 0;
+    archetypeScores[value.code] = weightToScore[weight] ?? 3.5;
+  }
+  
+  // Calculate squared Euclidean distance between profiles
+  let sumSquaredDiff = 0;
+  let maxPossibleDiff = 0;
+  
+  for (const value of SCHWARTZ_VALUES) {
+    const userVal = userScores[value.code] ?? 3.5;
+    const archVal = archetypeScores[value.code];
     
-    dotProduct += userVal * archVal;
-    userMagnitude += userVal * userVal;
-    archetypeMagnitude += archVal * archVal;
+    const diff = userVal - archVal;
+    sumSquaredDiff += diff * diff;
+    
+    // Max possible difference is 6.5 (from 0.5 to 7 or vice versa)
+    maxPossibleDiff += 6.5 * 6.5;
   }
   
-  userMagnitude = Math.sqrt(userMagnitude);
-  archetypeMagnitude = Math.sqrt(archetypeMagnitude);
+  // Convert distance to similarity (0 = max distance, 1 = identical)
+  const distance = Math.sqrt(sumSquaredDiff);
+  const maxDistance = Math.sqrt(maxPossibleDiff);
+  const similarity = 1 - (distance / maxDistance);
   
-  if (userMagnitude === 0 || archetypeMagnitude === 0) return 0;
+  // Apply a curve to spread out the middle values
+  // Most profiles will be 50-80% similar, this spreads that range
+  const curved = Math.pow(similarity, 1.5);
   
-  const cosineSimilarity = dotProduct / (userMagnitude * archetypeMagnitude);
-  
-  // Also consider profile shape similarity (relative rankings matter too)
-  let shapeBonus = 0;
-  const userEntries = Object.entries(userScores).sort((a, b) => b[1] - a[1]);
-  const topUserCodes = userEntries.slice(0, 5).map(([code]) => code);
-  const bottomUserCodes = userEntries.slice(-5).map(([code]) => code);
-  
-  // Bonus for matching high values
-  for (const [code, weight] of Object.entries(archetype.valueProfile)) {
-    if (weight === 3 && topUserCodes.includes(code)) {
-      shapeBonus += 0.15;
-    } else if (weight === 2 && topUserCodes.includes(code)) {
-      shapeBonus += 0.08;
-    }
-    // Bonus for matching low/avoided values (user also has them low)
-    if (weight === -3 && bottomUserCodes.includes(code)) {
-      shapeBonus += 0.12;
-    } else if (weight === -2 && bottomUserCodes.includes(code)) {
-      shapeBonus += 0.06;
-    }
-  }
-  
-  // Penalty for archetype's key values being in user's bottom values
-  for (const [code, weight] of Object.entries(archetype.valueProfile)) {
-    if (weight === 3 && bottomUserCodes.includes(code)) {
-      shapeBonus -= 0.12;
-    }
-    // Penalty for archetype's avoided values being in user's top values
-    if (weight === -3 && topUserCodes.includes(code)) {
-      shapeBonus -= 0.12;
-    }
-  }
-  
-  return cosineSimilarity + shapeBonus;
+  return curved;
 }
 
 export function findBestArchetype(scores: ValueScores, category: ArchetypeCategory): Archetype {

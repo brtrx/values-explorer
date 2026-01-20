@@ -118,7 +118,14 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360, tensionLines
     });
   }, [center, maxRadius, labelRadius]);
 
-  // Calculate tension line positions
+  // Different dash patterns for each tension line
+  const DASH_PATTERNS = [
+    '6 3',      // Line 1: medium dashes
+    '2 2',      // Line 2: short dashes (dotted)
+    '8 4 2 4',  // Line 3: dash-dot pattern
+  ];
+
+  // Calculate tension line positions - lines pivot through center
   const tensionLineData = useMemo(() => {
     const angleStep = (2 * Math.PI) / SCHWARTZ_VALUES.length;
     const startAngle = -Math.PI / 2;
@@ -132,8 +139,8 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360, tensionLines
       const angleA = startAngle + valueAIndex * angleStep;
       const angleB = startAngle + valueBIndex * angleStep;
       
-      // Position at 70% of max radius for visibility
-      const lineRadius = maxRadius * 0.7;
+      // Position at 75% of max radius for visibility
+      const lineRadius = maxRadius * 0.75;
       
       return {
         x1: center + lineRadius * Math.cos(angleA),
@@ -142,6 +149,8 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360, tensionLines
         y2: center + lineRadius * Math.sin(angleB),
         tension: tension.scoreDiff,
         index: idx,
+        valueA: tension.valueA,
+        valueB: tension.valueB,
       };
     }).filter(Boolean);
   }, [tensionLines, center, maxRadius]);
@@ -186,18 +195,17 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360, tensionLines
           />
         ))}
 
-        {/* Tension lines */}
+        {/* Tension lines - bent through center with distinct dash patterns */}
         {tensionLineData.map((line: any) => (
-          <line
+          <path
             key={`tension-${line.index}`}
-            x1={line.x1}
-            y1={line.y1}
-            x2={line.x2}
-            y2={line.y2}
+            d={`M ${line.x1},${line.y1} L ${center},${center} L ${line.x2},${line.y2}`}
+            fill="none"
             stroke="hsl(var(--muted-foreground))"
             strokeWidth="2"
-            strokeDasharray="4 2"
-            opacity={0.6}
+            strokeDasharray={DASH_PATTERNS[line.index % DASH_PATTERNS.length]}
+            opacity={0.7}
+            className="transition-all duration-300"
           />
         ))}
 

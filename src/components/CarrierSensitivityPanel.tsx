@@ -8,6 +8,7 @@ import {
   CarrierSensitivity,
   CarrierInternalTension,
 } from '@/lib/carrier-sensitivity';
+import { CARRIERS, CarrierId } from '@/lib/carriers';
 import { ValueAbbreviation } from '@/components/ValueAbbreviation';
 import {
   Collapsible,
@@ -62,6 +63,9 @@ function TopCarrierCard({ sensitivity, maxSensitivity }: {
             </div>
             <div className="flex-1 text-left min-w-0">
               <h4 className="font-medium text-sm truncate">{sensitivity.carrierName}</h4>
+              <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
+                {CARRIERS[sensitivity.carrierId as CarrierId]?.description}
+              </p>
               <SensitivityBar value={sensitivity.totalSensitivity} max={maxSensitivity} />
             </div>
             <ChevronDown className={cn(
@@ -112,6 +116,9 @@ function InternalTensionCard({ tension }: { tension: CarrierInternalTension }) {
             </div>
             <div className="flex-1 text-left min-w-0">
               <h4 className="font-medium text-sm truncate">{tension.carrierName}</h4>
+              <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
+                {CARRIERS[tension.carrierId as CarrierId]?.description}
+              </p>
               <p className="text-xs text-muted-foreground">
                 Range: {tension.range.toFixed(2)} (σ: {tension.standardDeviation.toFixed(3)})
               </p>

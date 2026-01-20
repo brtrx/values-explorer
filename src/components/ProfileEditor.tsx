@@ -34,6 +34,11 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
   const [isSaving, setIsSaving] = useState(false);
   const [isModified, setIsModified] = useState(false);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Load draft on mount for new profiles, or load archetype from sessionStorage
   useEffect(() => {
     if (!initialProfile) {

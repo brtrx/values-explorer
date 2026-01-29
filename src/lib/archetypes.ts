@@ -1,12 +1,13 @@
 // Archetype categories and definitions for "Who Am I Most Like" feature
 import { ValueScores, getValueByCode, SCHWARTZ_VALUES } from './schwartz-values';
 
-export type ArchetypeCategory = 
-  | 'fictional' 
-  | 'historical' 
-  | 'superheroes' 
-  | 'mythological' 
-  | 'literary';
+export type ArchetypeCategory =
+  | 'fictional'
+  | 'historical'
+  | 'superheroes'
+  | 'mythological'
+  | 'literary'
+  | 'cultural';
 
 export interface Archetype {
   name: string;
@@ -32,6 +33,7 @@ export const ARCHETYPE_CATEGORIES: { value: ArchetypeCategory; label: string; de
   { value: 'superheroes', label: 'Superheroes & Comics', description: 'Heroes and villains from comic books' },
   { value: 'mythological', label: 'Gods & Mythology', description: 'Deities and supernatural beings' },
   { value: 'literary', label: 'Literary Characters', description: 'Characters from famous novels' },
+  { value: 'cultural', label: 'Cultural Roles', description: 'Archetypal social and cultural role expectations' },
 ];
 
 export const ARCHETYPES: Archetype[] = [
@@ -603,6 +605,38 @@ export const ARCHETYPES: Archetype[] = [
     imagePrompt: 'A regal Scottish noblewoman, intense ambitious expression, candlelit castle, bloodstained hands, ruthless and driven, portrait style',
     valueProfile: { POD: 3, ACM: 3, FAC: 2, POR: 2, HUM: -3, BEC: -3, UNC: -2, COR: -1 },
     category: 'literary',
+  },
+
+  // ============ CULTURAL ROLES ============
+  {
+    name: 'Patrick',
+    description: 'The traditional patriarchal man who embodies authority, protection, and provision. Values power, honor, tradition, and maintaining social order while expecting respect and leadership within family and community.',
+    imagePrompt: 'A stern traditional patriarch in formal attire, commanding authoritative presence, family portrait setting, provider and protector role, dignified and conventional, portrait style',
+    valueProfile: {
+      POD: 2, POR: 2, FAC: 2, ACM: 2, // Power, resources, reputation, achievement emphasized
+      SDA: 2, SDT: 1, STI: 1, HED: 1, // Independence valued, moderate stimulation/pleasure
+      SEO: 2, SES: 2, TRD: 2, // Security and tradition strongly valued
+      COR: 2, COI: 1, // Rule-following important, interpersonal conformity moderate
+      HUM: -1, UNT: -1, // Humility and tolerance de-emphasized
+      BED: 2, BEC: 1, // Dependability high, caring moderate (protector/provider)
+      UNC: 0, UNN: 0, // Universal concern and nature neutral
+    },
+    category: 'cultural',
+  },
+  {
+    name: 'Patricia',
+    description: 'The traditional patriarchal woman who embodies nurturing, devotion, and domestic virtue. Values caring for others, maintaining tradition, and interpersonal harmony while prioritizing family reputation and humble service.',
+    imagePrompt: 'A modest traditional woman in conservative dress, gentle nurturing expression, domestic home setting, caretaker and homemaker role, warm and dutiful, portrait style',
+    valueProfile: {
+      POD: -2, POR: -2, ACM: -1, // Power and achievement strongly discouraged
+      SDT: -1, SDA: -2, STI: -2, HED: -2, // Self-direction, stimulation, pleasure suppressed
+      FAC: 2, // Reputation through modesty and family honor important
+      SEO: 2, SES: 2, TRD: 3, // Security and tradition paramount
+      COR: 2, COI: 3, HUM: 2, // Conformity, interpersonal harmony, humility emphasized
+      BEC: 3, BED: 3, // Caring and dependability central to identity
+      UNC: 1, UNN: 0, UNT: 0, // Compassion moderate, nature/tolerance neutral
+    },
+    category: 'cultural',
   },
 ];
 

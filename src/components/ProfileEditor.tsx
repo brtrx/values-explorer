@@ -217,10 +217,13 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
             scores={scores}
             description={description}
             systemPrompt={systemPrompt}
+            profileName={name}
+            profileId={initialProfile?.id ?? null}
             onDescriptionChange={handleDescriptionChange}
             onSystemPromptChange={handleSystemPromptChange}
             onLoadArchetypeProfile={handleLoadArchetypeProfile}
             onScoresChange={handleScoresChange}
+            onRequestSave={handleSave}
           />
         </div>
       </main>

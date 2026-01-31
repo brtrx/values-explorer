@@ -13,20 +13,26 @@ interface GenerationPanelProps {
   scores: ValueScores;
   description: string | null;
   systemPrompt: string | null;
+  profileName: string;
+  profileId: string | null;
   onDescriptionChange: (description: string) => void;
   onSystemPromptChange: (systemPrompt: string) => void;
   onLoadArchetypeProfile?: (scores: ValueScores, name: string) => void;
   onScoresChange?: (scores: ValueScores) => void;
+  onRequestSave?: () => Promise<string | null>;
 }
 
 export function GenerationPanel({
   scores,
   description,
   systemPrompt,
+  profileName,
+  profileId,
   onDescriptionChange,
   onSystemPromptChange,
   onLoadArchetypeProfile,
   onScoresChange,
+  onRequestSave,
 }: GenerationPanelProps) {
   const [copiedField, setCopiedField] = useState<'description' | 'prompt' | null>(null);
   const { toast } = useToast();
@@ -91,7 +97,14 @@ export function GenerationPanel({
       )}
 
       {/* Similar To... - archetype matching */}
-      <SimilarTo scores={scores} onLoadArchetypeProfile={onLoadArchetypeProfile} />
+      <SimilarTo
+        scores={scores}
+        profileName={profileName}
+        profileId={profileId}
+        profileDescription={description}
+        onLoadArchetypeProfile={onLoadArchetypeProfile}
+        onRequestSave={onRequestSave}
+      />
 
       {/* Carrier Sensitivity Analysis */}
       <section className="rounded-xl border bg-card p-6">

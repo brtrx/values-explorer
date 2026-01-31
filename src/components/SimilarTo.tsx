@@ -1,30 +1,45 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { GitCompare } from 'lucide-react';
 import { ValueScores, getValueByCode } from '@/lib/schwartz-values';
-import { 
-  ArchetypeCategory, 
-  ARCHETYPE_CATEGORIES, 
-  findBestArchetype, 
+import {
+  ArchetypeCategory,
+  ARCHETYPE_CATEGORIES,
+  findBestArchetype,
   getMatchingValues,
   getMatchScore,
   findSimilarArchetypes,
   archetypeToScores,
-  Archetype 
+  Archetype
 } from '@/lib/archetypes';
 import { useToast } from '@/hooks/use-toast';
 
 interface SimilarToProps {
   scores: ValueScores;
+  profileName: string;
+  profileId: string | null;
+  profileDescription?: string | null;
   onLoadArchetypeProfile?: (scores: ValueScores, name: string) => void;
+  onRequestSave?: () => Promise<string | null>;
 }
 
-export function SimilarTo({ scores, onLoadArchetypeProfile }: SimilarToProps) {
+export function SimilarTo({
+  scores,
+  profileName,
+  profileId,
+  profileDescription,
+  onLoadArchetypeProfile,
+  onRequestSave
+}: SimilarToProps) {
   const [category, setCategory] = useState<ArchetypeCategory>('fictional');
   const [archetype, setArchetype] = useState<Archetype | null>(null);
   const [similarArchetypes, setSimilarArchetypes] = useState<Archetype[]>([]);
   const [matchPercent, setMatchPercent] = useState(0);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Update archetype when scores or category change
   useEffect(() => {
@@ -51,6 +66,35 @@ export function SimilarTo({ scores, onLoadArchetypeProfile }: SimilarToProps) {
         description: 'Value scores have been updated to match this character.',
       });
     }
+  };
+
+  // Navigate to compare page with the current profile and selected archetype
+  const handleCompareWithArchetype = async (archetypeName: string) => {
+    // If profile is not saved, prompt to save first
+    if (!profileId && onRequestSave) {
+      toast({
+        title: 'Save profile first',
+        description: 'Please name and save your profile before comparing.',
+      });
+      const savedId = await onRequestSave();
+      if (!savedId) {
+        return; // User cancelled save
+      }
+    }
+
+    // Store comparison data in sessionStorage
+    const compareData = {
+      customProfile: {
+        name: profileName,
+        scores: scores,
+        description: profileDescription || undefined,
+      },
+      archetypeName: archetypeName,
+    };
+    sessionStorage.setItem('compareProfiles', JSON.stringify(compareData));
+
+    // Navigate to compare page
+    navigate('/compare');
   };
 
   if (!archetype) return null;
@@ -100,6 +144,19 @@ export function SimilarTo({ scores, onLoadArchetypeProfile }: SimilarToProps) {
             {archetype.description}
           </p>
 
+          {/* Compare Profiles button */}
+          <div className="flex justify-center mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleCompareWithArchetype(archetype.name)}
+              className="gap-2"
+            >
+              <GitCompare className="w-4 h-4" />
+              Compare Profiles
+            </Button>
+          </div>
+
           {/* Matching values */}
           {matchingLabels.length > 0 && (
             <div className="pt-3 border-t">
@@ -117,17 +174,17 @@ export function SimilarTo({ scores, onLoadArchetypeProfile }: SimilarToProps) {
             </div>
           )}
 
-          {/* Similar characters */}
+          {/* Similar characters - click to compare */}
           {similarArchetypes.length > 0 && (
             <div className="pt-3 mt-3 border-t">
-              <p className="text-xs text-muted-foreground mb-2">Similar:</p>
+              <p className="text-xs text-muted-foreground mb-2">Compare with similar:</p>
               <div className="flex flex-wrap gap-1.5">
                 {similarArchetypes.map((similar) => (
                   <button
                     key={similar.name}
-                    onClick={() => handleLoadArchetype(similar)}
+                    onClick={() => handleCompareWithArchetype(similar.name)}
                     className="px-2.5 py-1 text-xs rounded-full border border-border bg-background hover:bg-muted hover:border-primary/50 transition-colors cursor-pointer font-medium text-foreground"
-                    title={`Load ${similar.name}'s value profile`}
+                    title={`Compare your profile with ${similar.name}`}
                   >
                     {similar.name}
                   </button>

@@ -1,26 +1,57 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Sparkles, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, X, User } from 'lucide-react';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircle';
 import { ConflictScenario } from '@/components/ConflictScenario';
 import { ProfileTensionCarriers } from '@/components/ProfileTensionCarriers';
+import { ValueScores } from '@/lib/schwartz-values';
 import { toast } from 'sonner';
 
 const COMPARE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compare-archetypes`;
 
+// Custom profile type for user-created profiles
+interface CustomProfile {
+  name: string;
+  scores: ValueScores;
+  description?: string;
+}
+
 export default function Compare() {
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
+  const [customProfiles, setCustomProfiles] = useState<CustomProfile[]>([]);
   const [comparison, setComparison] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
     ARCHETYPE_CATEGORIES.map(c => c.value)
   );
 
+  // Load pre-selected comparison data from sessionStorage on mount
+  useEffect(() => {
+    const compareData = sessionStorage.getItem('compareProfiles');
+    if (compareData) {
+      try {
+        const { customProfile, archetypeName } = JSON.parse(compareData);
+        if (customProfile) {
+          setCustomProfiles([customProfile]);
+        }
+        if (archetypeName) {
+          setSelectedArchetypes([archetypeName]);
+        }
+      } catch (e) {
+        console.error('Failed to parse compare data:', e);
+      }
+      sessionStorage.removeItem('compareProfiles');
+    }
+  }, []);
+
+  // Total selected count (archetypes + custom profiles)
+  const totalSelected = selectedArchetypes.length + customProfiles.length;
+
   const selectedArchetypeData = useMemo(() => {
-    return selectedArchetypes.map((name, index) => {
+    const archetypeData = selectedArchetypes.map((name) => {
       const archetype = ARCHETYPES.find(a => a.name === name)!;
       return {
         name: archetype.name,
@@ -28,20 +59,33 @@ export default function Compare() {
         color: '',
       };
     });
-  }, [selectedArchetypes]);
+
+    const customData = customProfiles.map((profile) => ({
+      name: profile.name,
+      scores: profile.scores,
+      color: '',
+    }));
+
+    return [...customData, ...archetypeData];
+  }, [selectedArchetypes, customProfiles]);
 
   const toggleArchetype = (name: string) => {
     setSelectedArchetypes(prev => {
       if (prev.includes(name)) {
         return prev.filter(n => n !== name);
       }
-      if (prev.length >= 5) {
-        toast.error('Maximum 5 archetypes can be compared at once');
+      if (prev.length + customProfiles.length >= 5) {
+        toast.error('Maximum 5 profiles can be compared at once');
         return prev;
       }
       return [...prev, name];
     });
     setComparison(''); // Clear comparison when selection changes
+  };
+
+  const removeCustomProfile = (name: string) => {
+    setCustomProfiles(prev => prev.filter(p => p.name !== name));
+    setComparison('');
   };
 
   const toggleCategory = (category: string) => {
@@ -52,15 +96,29 @@ export default function Compare() {
     );
   };
 
+  // Convert ValueScores (0-7) to valueProfile weights (-3 to 3) for AI comparison
+  const scoresToValueProfile = (scores: ValueScores): Record<string, number> => {
+    const profile: Record<string, number> = {};
+    for (const [code, score] of Object.entries(scores)) {
+      // Convert 0-7 scale to -3 to 3 weight (3.5 = 0)
+      const weight = Math.round(score - 3.5);
+      if (weight !== 0) {
+        profile[code] = Math.max(-3, Math.min(3, weight));
+      }
+    }
+    return profile;
+  };
+
   const generateComparison = async () => {
-    if (selectedArchetypes.length < 2) {
-      toast.error('Select at least 2 archetypes to compare');
+    if (totalSelected < 2) {
+      toast.error('Select at least 2 profiles to compare');
       return;
     }
 
     setIsGenerating(true);
     setComparison('');
 
+    // Build data for archetypes
     const archetypesData = selectedArchetypes.map(name => {
       const archetype = ARCHETYPES.find(a => a.name === name)!;
       return {
@@ -70,6 +128,15 @@ export default function Compare() {
       };
     });
 
+    // Build data for custom profiles
+    const customProfilesData = customProfiles.map(profile => ({
+      name: profile.name,
+      description: profile.description || 'A custom user-created value profile',
+      valueProfile: scoresToValueProfile(profile.scores),
+    }));
+
+    const allProfilesData = [...customProfilesData, ...archetypesData];
+
     try {
       const response = await fetch(COMPARE_URL, {
         method: 'POST',
@@ -77,7 +144,7 @@ export default function Compare() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ archetypes: archetypesData }),
+        body: JSON.stringify({ archetypes: allProfilesData }),
       });
 
       if (!response.ok) {
@@ -170,14 +237,15 @@ export default function Compare() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="font-serif text-lg font-semibold">
-                Select Archetypes ({selectedArchetypes.length}/5)
+                Select Profiles ({totalSelected}/5)
               </h2>
-              {selectedArchetypes.length > 0 && (
-                <Button 
-                  variant="ghost" 
+              {totalSelected > 0 && (
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => {
                     setSelectedArchetypes([]);
+                    setCustomProfiles([]);
                     setComparison('');
                   }}
                 >
@@ -186,9 +254,20 @@ export default function Compare() {
               )}
             </div>
 
-            {/* Selected chips */}
-            {selectedArchetypes.length > 0 && (
+            {/* Selected chips - custom profiles first, then archetypes */}
+            {totalSelected > 0 && (
               <div className="flex flex-wrap gap-2">
+                {customProfiles.map(profile => (
+                  <button
+                    key={`custom-${profile.name}`}
+                    onClick={() => removeCustomProfile(profile.name)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground text-sm border-2 border-primary"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    {profile.name}
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                ))}
                 {selectedArchetypes.map(name => (
                   <button
                     key={name}
@@ -242,7 +321,7 @@ export default function Compare() {
 
           {/* Right: Visualization & Comparison */}
           <div className="space-y-6">
-            {selectedArchetypes.length >= 2 ? (
+            {totalSelected >= 2 ? (
               <>
                 <div className="rounded-xl border bg-card p-6">
                   <h2 className="font-serif text-lg font-semibold mb-4 text-center">

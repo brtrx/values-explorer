@@ -96,22 +96,12 @@ export function GenerationPanel({
         </section>
       )}
 
-      {/* Similar To... - archetype matching */}
-      <SimilarTo
-        scores={scores}
-        profileName={profileName}
-        profileId={profileId}
-        profileDescription={description}
-        onLoadArchetypeProfile={onLoadArchetypeProfile}
-        onRequestSave={onRequestSave}
-      />
-
       {/* Carrier Sensitivity Analysis */}
       <section className="rounded-xl border bg-card p-6">
         <CarrierSensitivityPanel scores={scores} />
       </section>
 
-      {/* Copy Instructions - system prompt at bottom */}
+      {/* Copy Instructions - system prompt */}
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-serif text-2xl font-semibold">Copy Instructions</h2>
@@ -141,6 +131,16 @@ export function GenerationPanel({
           />
         </div>
       </section>
+
+      {/* Similar To... - archetype matching (at bottom) */}
+      <SimilarTo
+        scores={scores}
+        profileName={profileName}
+        profileId={profileId}
+        profileDescription={description}
+        onLoadArchetypeProfile={onLoadArchetypeProfile}
+        onRequestSave={onRequestSave}
+      />
     </div>
   );
 }

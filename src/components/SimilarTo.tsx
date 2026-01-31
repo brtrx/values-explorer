@@ -179,16 +179,20 @@ export function SimilarTo({
             <div className="pt-3 mt-3 border-t">
               <p className="text-xs text-muted-foreground mb-2">Compare with similar:</p>
               <div className="flex flex-wrap gap-1.5">
-                {similarArchetypes.map((similar) => (
-                  <button
-                    key={similar.name}
-                    onClick={() => handleCompareWithArchetype(similar.name)}
-                    className="px-2.5 py-1 text-xs rounded-full border border-border bg-background hover:bg-muted hover:border-primary/50 transition-colors cursor-pointer font-medium text-foreground"
-                    title={`Compare your profile with ${similar.name}`}
-                  >
-                    {similar.name}
-                  </button>
-                ))}
+                {similarArchetypes.map((similar) => {
+                  const similarMatchPercent = Math.round(getMatchScore(scores, similar) * 100);
+                  return (
+                    <button
+                      key={similar.name}
+                      onClick={() => handleCompareWithArchetype(similar.name)}
+                      className="px-2.5 py-1 text-xs rounded-full border border-border bg-background hover:bg-muted hover:border-primary/50 transition-colors cursor-pointer font-medium text-foreground"
+                      title={`Compare your profile with ${similar.name}`}
+                    >
+                      {similar.name}
+                      <span className="ml-1 text-muted-foreground">{similarMatchPercent}%</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

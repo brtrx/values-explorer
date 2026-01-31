@@ -48,6 +48,28 @@ npm run dev
 
 The app will be available at http://localhost:8080
 
+## Environment Variables
+
+Create a `.env` file based on `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `VITE_SUPABASE_URL` | Your Supabase project URL | Yes |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon/public key | Yes |
+| `OPENAI_API_KEY` | OpenAI API key for AI features | Yes (for Edge Functions) |
+
+The `OPENAI_API_KEY` must be set as a Supabase secret for the Edge Functions:
+
+```bash
+supabase secrets set OPENAI_API_KEY=sk-your-key-here
+```
+
 ## Available Scripts
 
 ```bash

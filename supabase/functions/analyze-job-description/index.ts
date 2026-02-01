@@ -36,6 +36,8 @@ The 19 values are:
 - UNN (Universalism – nature): Preservation of natural environment
 - UNT (Universalism – tolerance): Acceptance of those different from oneself
 
+For each value with "high" or "medium" confidence, provide a brief rationale that quotes specific phrases from the job description. Keep rationales concise (1-2 short quoted phrases). Do NOT include rationales for "unspecified" values.
+
 Return ONLY a valid JSON object with this structure:
 {
   "scores": {
@@ -49,6 +51,10 @@ Return ONLY a valid JSON object with this structure:
     "SDA": "medium",
     "STI": "unspecified",
     ...all 19 values
+  },
+  "rationales": {
+    "SDT": "\"innovative problem-solving\" and \"creative solutions\"",
+    "SDA": "\"autonomous work environment\""
   }
 }
 
@@ -66,6 +72,7 @@ const VALUE_CODES = [
 interface AnalysisResult {
   scores: Record<string, number>;
   confidence: Record<string, "high" | "medium" | "unspecified">;
+  rationales: Record<string, string>;
 }
 
 function validateAndNormalizeResult(parsed: unknown): AnalysisResult {
@@ -85,6 +92,10 @@ function validateAndNormalizeResult(parsed: unknown): AnalysisResult {
 
   const scores: Record<string, number> = {};
   const confidence: Record<string, "high" | "medium" | "unspecified"> = {};
+  const rationales: Record<string, string> = {};
+
+  // Get rationales from response (optional field)
+  const rawRationales = result.rationales as Record<string, unknown> | undefined;
 
   for (const code of VALUE_CODES) {
     // Validate and normalize score
@@ -102,9 +113,17 @@ function validateAndNormalizeResult(parsed: unknown): AnalysisResult {
     } else {
       confidence[code] = 'unspecified';
     }
+
+    // Extract rationale only for high/medium confidence values
+    if (rawRationales && (confidence[code] === 'high' || confidence[code] === 'medium')) {
+      const rationale = rawRationales[code];
+      if (typeof rationale === 'string' && rationale.trim().length > 0) {
+        rationales[code] = rationale.trim();
+      }
+    }
   }
 
-  return { scores, confidence };
+  return { scores, confidence, rationales };
 }
 
 serve(async (req) => {
@@ -154,7 +173,7 @@ serve(async (req) => {
           { role: "user", content: `Analyze this job description and return the Schwartz value scores:\n\n${jobDescription}` },
         ],
         temperature: 0.3,
-        max_tokens: 1000,
+        max_tokens: 1500,
       }),
     });
 

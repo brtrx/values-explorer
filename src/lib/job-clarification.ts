@@ -215,6 +215,9 @@ export function calculateUpdatedScores(
 
   for (const code of undecidedValueCodes) {
     const polarity = getPolarity(code, carrierId);
+    // Skip values without polarity data to avoid NaN
+    if (polarity === undefined) continue;
+
     const currentScore = currentScores[code] ?? 3.5;
 
     // Formula: newScore = currentScore + (polarity × responseStrength × 3.5)

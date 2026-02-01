@@ -251,7 +251,7 @@ export function ClarificationPanel({
             value={[maxCarriers]}
             onValueChange={([v]) => setMaxCarriers(v)}
             min={1}
-            max={4}
+            max={8}
             step={1}
           />
         </div>
@@ -359,7 +359,7 @@ export function ClarificationPanel({
       {/* Scenarios */}
       {scenarios.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-sm font-medium">Clarifying Scenarios</h3>
+          <h3 className="text-sm font-medium">Clarifying Scenarios to pose to the hiring manager</h3>
 
           {scenarios.map(scenario => {
             const carrier = analysis.selectedCarriers.find(

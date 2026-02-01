@@ -409,7 +409,7 @@ export function ClarificationPanel({
                 {/* 5-point response scale */}
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground text-center">
-                    What response would you prefer from the hiring manager?
+                    Which approach do you think this role would favor?
                   </p>
                   <div className="flex justify-center gap-1">
                     {([1, 2, 3, 4, 5] as const).map(value => {

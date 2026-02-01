@@ -222,7 +222,16 @@ const JobAnalysis = () => {
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-                  {Object.entries(results.confidence).map(([code, level]) => (
+                  {Object.entries(results.confidence)
+                    .sort(([codeA, levelA], [codeB, levelB]) => {
+                      // Sort by confidence level first (high → medium → unspecified)
+                      const levelOrder = { high: 0, medium: 1, unspecified: 2 };
+                      const levelDiff = levelOrder[levelA] - levelOrder[levelB];
+                      if (levelDiff !== 0) return levelDiff;
+                      // Then alphabetically by code
+                      return codeA.localeCompare(codeB);
+                    })
+                    .map(([code, level]) => (
                     <div key={code} className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
                         level === 'high' ? 'bg-green-500' :

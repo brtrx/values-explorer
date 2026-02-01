@@ -19,10 +19,12 @@ const HIGHER_ORDER_COLORS: Record<HigherOrderValue, string> = {
 };
 
 export function SchwartzCircle({ scores, size = 320 }: SchwartzCircleProps) {
+  const labelPadding = 35; // Space for labels outside the chart
+  const chartSize = size - (labelPadding * 2);
   const center = size / 2;
-  const maxRadius = (size / 2) - 45;
+  const maxRadius = chartSize / 2 - 20;
   const minRadius = 15;
-  const labelRadius = maxRadius + 28;
+  const labelRadius = maxRadius + 25;
 
   const [tooltip, setTooltip] = useState<{
     x: number;

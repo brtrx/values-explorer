@@ -6,9 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { SchwartzCircle } from '@/components/SchwartzCircle';
 import { ValueEditor } from '@/components/ValueEditor';
+import { ClarificationPanel } from '@/components/ClarificationPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { ValueScores } from '@/lib/schwartz-values';
+import type { ConfidenceLevel } from '@/lib/job-clarification';
 
 // Rate limiting constants
 const RATE_LIMIT = 20;
@@ -56,7 +58,7 @@ function getTimeUntilReset(): string {
 
 interface AnalysisResult {
   scores: ValueScores;
-  confidence: Record<string, 'high' | 'medium' | 'unspecified'>;
+  confidence: Record<string, ConfidenceLevel>;
 }
 
 const JobAnalysis = () => {
@@ -99,12 +101,23 @@ const JobAnalysis = () => {
       setRateLimitState(getRateLimitState());
       toast.success('Analysis complete!');
 
+
     } catch (error) {
       console.error('Analysis error:', error);
       const message = error instanceof Error ? error.message : 'Failed to analyze job description';
       toast.error(message);
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  // Handle score updates from ClarificationPanel
+  const handleScoresUpdate = (newScores: ValueScores) => {
+    if (results) {
+      setResults({
+        ...results,
+        scores: newScores,
+      });
     }
   };
 
@@ -222,6 +235,14 @@ const JobAnalysis = () => {
                 </div>
               </section>
 
+              {/* Clarification Panel */}
+              <ClarificationPanel
+                jobDescription={jobDescription}
+                scores={results.scores}
+                confidence={results.confidence}
+                onScoresUpdate={handleScoresUpdate}
+              />
+
               {/* Detailed Scores */}
               <section className="rounded-xl border bg-card p-6">
                 <h2 className="font-serif text-xl font-semibold mb-4">Detailed Scores</h2>
@@ -231,7 +252,7 @@ const JobAnalysis = () => {
                 </p>
                 <ValueEditor
                   scores={results.scores}
-                  onChange={() => {}}
+                  onChange={handleScoresUpdate}
                 />
               </section>
             </>

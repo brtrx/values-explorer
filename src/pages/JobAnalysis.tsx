@@ -59,6 +59,7 @@ function getTimeUntilReset(): string {
 interface AnalysisResult {
   scores: ValueScores;
   confidence: Record<string, ConfidenceLevel>;
+  rationales?: Record<string, string>;
 }
 
 const JobAnalysis = () => {
@@ -221,7 +222,7 @@ const JobAnalysis = () => {
                     <span>Unspecified - No relevant information</span>
                   </div>
                 </div>
-                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+                <div className="mt-4 space-y-1 text-sm">
                   {Object.entries(results.confidence)
                     .sort(([codeA, levelA], [codeB, levelB]) => {
                       // Sort by confidence level first (high → medium → unspecified)
@@ -231,16 +232,24 @@ const JobAnalysis = () => {
                       // Then alphabetically by code
                       return codeA.localeCompare(codeB);
                     })
-                    .map(([code, level]) => (
-                    <div key={code} className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        level === 'high' ? 'bg-green-500' :
-                        level === 'medium' ? 'bg-yellow-500' : 'bg-gray-400'
-                      }`} />
-                      <span className="font-mono text-xs">{code}</span>
-                      <span className="text-muted-foreground">{level}</span>
-                    </div>
-                  ))}
+                    .map(([code, level]) => {
+                      const rationale = results.rationales?.[code];
+                      return (
+                        <div key={code} className="flex items-start gap-2">
+                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                            level === 'high' ? 'bg-green-500' :
+                            level === 'medium' ? 'bg-yellow-500' : 'bg-gray-400'
+                          }`} />
+                          <span className="font-mono text-xs flex-shrink-0">{code}</span>
+                          <span className="text-muted-foreground flex-shrink-0">{level}</span>
+                          {rationale && (
+                            <span className="text-xs text-muted-foreground italic truncate">
+                              — {rationale}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </section>
 

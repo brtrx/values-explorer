@@ -150,24 +150,33 @@ export function SchwartzCircle({ scores, size = 320 }: SchwartzCircleProps) {
 
         {/* Labels with hover events */}
         {valuePositions.map(({ value, labelX, labelY, angle, score }) => {
-          // Determine text anchor based on position
+          // Determine text anchor based on position around the circle
+          // angle: -π/2 = top, 0 = right, π/2 = bottom, ±π = left
           let textAnchor: 'start' | 'middle' | 'end' = 'middle';
-          if (angle > -Math.PI / 4 && angle < Math.PI / 4) {
-            textAnchor = 'middle'; // top
-          } else if (angle >= Math.PI / 4 && angle <= (3 * Math.PI) / 4) {
-            textAnchor = 'start'; // right
-          } else if (angle > (3 * Math.PI) / 4 || angle < -(3 * Math.PI) / 4) {
-            textAnchor = 'middle'; // bottom
-          } else {
-            textAnchor = 'end'; // left
+          const normalizedAngle = angle;
+
+          // Right side of circle (roughly -π/3 to π/3)
+          if (normalizedAngle > -Math.PI / 3 && normalizedAngle < Math.PI / 3) {
+            textAnchor = 'start';
+          }
+          // Left side of circle (roughly 2π/3 to -2π/3, wrapping around ±π)
+          else if (normalizedAngle > (2 * Math.PI) / 3 || normalizedAngle < -(2 * Math.PI) / 3) {
+            textAnchor = 'end';
+          }
+          // Top and bottom - middle anchor
+          else {
+            textAnchor = 'middle';
           }
 
-          // Adjust vertical alignment
+          // Adjust vertical alignment based on position
           let dy = '0.35em';
-          if (angle > -Math.PI * 0.6 && angle < -Math.PI * 0.4) {
-            dy = '0.8em'; // top area
-          } else if (angle > Math.PI * 0.4 && angle < Math.PI * 0.6) {
-            dy = '-0.3em'; // bottom area
+          // Top area - push text down slightly
+          if (normalizedAngle < -Math.PI / 3 && normalizedAngle > -(2 * Math.PI) / 3) {
+            dy = '0.7em';
+          }
+          // Bottom area - push text up slightly
+          else if (normalizedAngle > Math.PI / 3 && normalizedAngle < (2 * Math.PI) / 3) {
+            dy = '0em';
           }
 
           return (

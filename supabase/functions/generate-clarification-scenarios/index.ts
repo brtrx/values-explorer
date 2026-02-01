@@ -60,15 +60,18 @@ Values favored by LOW ${c.carrierName}: ${lowValues || "none strongly"}`;
 
     const systemPrompt = `You are an expert in organizational psychology and Schwartz's Theory of Basic Human Values.
 
-Your task is to generate clarifying scenarios for a job description. These scenarios help candidates understand what values are actually prioritized in the role, beyond what the job description explicitly states.
+Your task is to generate clarifying questions that a candidate can ask a hiring manager during an interview. These questions help candidates understand what values are actually prioritized in the role, beyond what the job description explicitly states.
 
 For each scenario:
-1. Create a realistic, job-specific situation based on the provided job description
-2. Present two behavioral options (A and B) that authentically represent different value priorities
-3. Make both options reasonable - neither should be obviously "wrong"
-4. Option A should favor values with HIGH polarity on the given carrier dimension
-5. Option B should favor values with LOW polarity on the given carrier dimension
-6. Keep scenarios concise (2-3 sentences for setup, 1 sentence per option)
+1. Create a realistic, job-specific hypothetical situation based on the provided job description
+2. Frame it as a question to ask the hiring manager about what they would prefer
+3. Present two behavioral options (A and B) that authentically represent different value priorities
+4. Make both options reasonable - neither should be obviously "wrong"
+5. Option A should favor values with HIGH polarity on the given carrier dimension
+6. Option B should favor values with LOW polarity on the given carrier dimension
+7. Keep scenarios concise (2-3 sentences for setup ending with "Would you prefer them to...", 1 sentence per option)
+
+IMPORTANT: Frame scenarios in THIRD PERSON as questions about "the person in this role" - NOT in second person ("you"). These are questions for candidates to ask hiring managers.
 
 Value code reference:
 - SDT/SDA: Self-direction (thought/action) - Independence, creativity
@@ -85,13 +88,13 @@ Value code reference:
 
 Return valid JSON only, no markdown.`;
 
-    const userPrompt = `Generate clarifying scenarios for this job:
+    const userPrompt = `Generate clarifying questions for a candidate to ask a hiring manager about this job:
 
 ${jobTitle ? `JOB TITLE: ${jobTitle}\n` : ""}
 JOB DESCRIPTION:
 ${jobDescription}
 
-Generate ONE scenario for EACH of these carriers:
+Generate ONE scenario/question for EACH of these carriers:
 ${carrierPrompts}
 
 Return JSON in this exact format:
@@ -100,9 +103,9 @@ Return JSON in this exact format:
     {
       "carrierId": "the_carrier_id",
       "carrierName": "Carrier Name",
-      "setup": "Imagine you're in this role and [specific situation from the job]...",
-      "optionA": "You would [specific action favoring high-polarity values]",
-      "optionB": "You would [specific action favoring low-polarity values]",
+      "setup": "Imagine [specific situation from the job], leaving the person in this role [context]. Would you prefer them to...",
+      "optionA": "[Specific action favoring high-polarity values, starting with a verb]",
+      "optionB": "[Specific action favoring low-polarity values, starting with a verb]",
       "interpretationA": "This suggests the role values [high-polarity value names]",
       "interpretationB": "This suggests the role values [low-polarity value names]"
     }

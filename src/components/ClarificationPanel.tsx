@@ -251,7 +251,7 @@ export function ClarificationPanel({
             value={[maxCarriers]}
             onValueChange={([v]) => setMaxCarriers(v)}
             min={1}
-            max={4}
+            max={8}
             step={1}
           />
         </div>
@@ -359,7 +359,7 @@ export function ClarificationPanel({
       {/* Scenarios */}
       {scenarios.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-sm font-medium">Clarifying Scenarios</h3>
+          <h3 className="text-sm font-medium">Clarifying Scenarios to pose to the hiring manager</h3>
 
           {scenarios.map(scenario => {
             const carrier = analysis.selectedCarriers.find(
@@ -409,7 +409,7 @@ export function ClarificationPanel({
                 {/* 5-point response scale */}
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground text-center">
-                    Which approach do you think this role would favor?
+                    What response would you prefer from the hiring manager?
                   </p>
                   <div className="flex justify-center gap-1">
                     {([1, 2, 3, 4, 5] as const).map(value => {

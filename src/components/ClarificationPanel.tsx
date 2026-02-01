@@ -9,6 +9,7 @@ import {
   analyzeForClarification,
   calculateUpdatedScores,
   responseToStrength,
+  selectOptimalCarriers,
   CarrierSpreadInfo,
   UndecidedValue,
 } from '@/lib/job-clarification';
@@ -49,19 +50,96 @@ export function ClarificationPanel({
   const [isGenerating, setIsGenerating] = useState(false);
   const [regeneratingCarrier, setRegeneratingCarrier] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [selectedValueCodes, setSelectedValueCodes] = useState<Set<string>>(new Set());
+  // Store the analysis snapshot used when generating scenarios
+  const [generatedAnalysis, setGeneratedAnalysis] = useState<{
+    undecidedValues: UndecidedValue[];
+    selectedCarriers: CarrierSpreadInfo[];
+  } | null>(null);
 
-  // Analyze the job description results
-  const analysis = useMemo(
-    () => analyzeForClarification(scores, confidence, maxCarriers, minSpread),
-    [scores, confidence, maxCarriers, minSpread]
+  // Get all undecided values first (before filtering)
+  const allUndecidedAnalysis = useMemo(
+    () => analyzeForClarification(scores, confidence, 12, 0), // Get all possible
+    [scores, confidence]
   );
 
+  // Filter analysis based on selected values
+  const analysis = useMemo(() => {
+    // If no values selected, use all undecided values
+    const valuesToUse = selectedValueCodes.size > 0
+      ? allUndecidedAnalysis.undecidedValues.filter(v => selectedValueCodes.has(v.code))
+      : allUndecidedAnalysis.undecidedValues;
+
+    if (valuesToUse.length < 2) {
+      return {
+        undecidedValues: valuesToUse,
+        selectedCarriers: [],
+        canClarify: false,
+        reason: valuesToUse.length === 0
+          ? 'Select at least 2 values to clarify.'
+          : 'Select at least 2 values to generate meaningful comparisons.',
+      };
+    }
+
+    // Use selectOptimalCarriers with filtered values
+    const carriers = selectOptimalCarriers(valuesToUse, maxCarriers, minSpread);
+
+    if (carriers.length === 0) {
+      return {
+        undecidedValues: valuesToUse,
+        selectedCarriers: [],
+        canClarify: false,
+        reason: `No carriers meet the minimum spread threshold of ${minSpread}. Try lowering the threshold.`,
+      };
+    }
+
+    return {
+      undecidedValues: valuesToUse,
+      selectedCarriers: carriers,
+      canClarify: true,
+    };
+  }, [allUndecidedAnalysis, selectedValueCodes, maxCarriers, minSpread]);
+
+  // Toggle value selection
+  const toggleValueSelection = (code: string) => {
+    setSelectedValueCodes(prev => {
+      const next = new Set(prev);
+      if (next.has(code)) {
+        next.delete(code);
+      } else {
+        next.add(code);
+      }
+      return next;
+    });
+    // Clear scenarios when selection changes
+    setScenarios([]);
+    setResponses({});
+    setGeneratedAnalysis(null);
+  };
+
+  // Select/deselect all values
+  const selectAllValues = () => {
+    setSelectedValueCodes(new Set(allUndecidedAnalysis.undecidedValues.map(v => v.code)));
+    setScenarios([]);
+    setResponses({});
+    setGeneratedAnalysis(null);
+  };
+
+  const deselectAllValues = () => {
+    setSelectedValueCodes(new Set());
+    setScenarios([]);
+    setResponses({});
+    setGeneratedAnalysis(null);
+  };
+
   // Calculate preview of updated scores based on current responses
+  // Use generatedAnalysis if available (for consistency with generated scenarios)
   const previewScores = useMemo(() => {
     if (Object.keys(responses).length === 0) return null;
 
+    const analysisToUse = generatedAnalysis || analysis;
     let updatedScores = { ...scores };
-    const undecidedCodes = analysis.undecidedValues.map(v => v.code);
+    const undecidedCodes = analysisToUse.undecidedValues.map(v => v.code);
 
     for (const [carrierId, response] of Object.entries(responses)) {
       const strength = responseToStrength(response);
@@ -74,7 +152,7 @@ export function ClarificationPanel({
     }
 
     return updatedScores;
-  }, [responses, scores, analysis.undecidedValues]);
+  }, [responses, scores, analysis, generatedAnalysis]);
 
   const generateScenarios = async () => {
     if (!analysis.canClarify) return;
@@ -82,6 +160,12 @@ export function ClarificationPanel({
     setIsGenerating(true);
     setScenarios([]);
     setResponses({});
+
+    // Store the current analysis snapshot
+    setGeneratedAnalysis({
+      undecidedValues: analysis.undecidedValues,
+      selectedCarriers: analysis.selectedCarriers,
+    });
 
     try {
       const response = await fetch(CLARIFICATION_URL, {
@@ -119,7 +203,9 @@ export function ClarificationPanel({
   };
 
   const regenerateScenario = async (carrierId: string) => {
-    const carrier = analysis.selectedCarriers.find(c => c.carrierId === carrierId);
+    // Use stored analysis if available, otherwise fall back to current
+    const analysisToUse = generatedAnalysis || analysis;
+    const carrier = analysisToUse.selectedCarriers.find(c => c.carrierId === carrierId);
     if (!carrier) return;
 
     setRegeneratingCarrier(carrierId);
@@ -270,70 +356,103 @@ export function ClarificationPanel({
         </div>
       </div>
 
-      {/* Undecided values summary */}
+      {/* Undecided values selection */}
       <div>
-        <h3 className="text-sm font-medium mb-2">
-          Undecided Values ({analysis.undecidedValues.length})
-        </h3>
-        <div className="flex flex-wrap gap-1.5">
-          {analysis.undecidedValues.map(v => (
-            <span
-              key={v.code}
-              className="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800"
-              title={`Confidence: ${v.confidence}`}
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-medium">
+            Select Values to Clarify ({selectedValueCodes.size > 0 ? selectedValueCodes.size : allUndecidedAnalysis.undecidedValues.length} of {allUndecidedAnalysis.undecidedValues.length})
+          </h3>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={selectAllValues}
+              className="text-xs h-6 px-2"
             >
-              {v.label}
-            </span>
-          ))}
+              Select All
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={deselectAllValues}
+              className="text-xs h-6 px-2"
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mb-2">
+          Click values to select which ones you want to explore. Fewer values = more focused scenarios.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {allUndecidedAnalysis.undecidedValues.map(v => {
+            const isSelected = selectedValueCodes.size === 0 || selectedValueCodes.has(v.code);
+            return (
+              <button
+                key={v.code}
+                onClick={() => toggleValueSelection(v.code)}
+                className={`px-2 py-0.5 text-xs rounded-full transition-colors ${
+                  isSelected
+                    ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                }`}
+                title={`${v.label} - Confidence: ${v.confidence}${isSelected ? ' (selected)' : ' (click to select)'}`}
+              >
+                {v.code}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Polarity matrix - showing our work */}
-      <div>
-        <h3 className="text-sm font-medium mb-2">
-          Value × Carrier Polarity Matrix
-          <span className="font-normal text-muted-foreground ml-2">
-            (spread shown in header)
-          </span>
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs border-collapse">
-            <thead>
-              <tr>
-                <th className="text-left p-2 border-b">Value</th>
-                {analysis.selectedCarriers.map(c => (
-                  <th key={c.carrierId} className="p-2 border-b text-center">
-                    <div>{c.carrierName}</div>
-                    <div className="text-muted-foreground font-normal">
-                      spread: {c.spread.toFixed(2)}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {analysis.undecidedValues.map(value => (
-                <tr key={value.code}>
-                  <td className="p-2 border-b font-medium">{value.label}</td>
-                  {analysis.selectedCarriers.map(carrier => {
-                    const polarityInfo = carrier.allPolarities.find(p => p.code === value.code);
-                    const polarity = polarityInfo?.polarity ?? 0;
-                    return (
-                      <td key={carrier.carrierId} className="p-2 border-b text-center">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded ${getPolarityColor(polarity)}`}
-                        >
-                          {polarity >= 0 ? '+' : ''}{polarity.toFixed(1)}
-                        </span>
-                      </td>
-                    );
-                  })}
+      {analysis.selectedCarriers.length > 0 && (
+        <div>
+          <h3 className="text-sm font-medium mb-2">
+            Value × Carrier Polarity Matrix
+            <span className="font-normal text-muted-foreground ml-2">
+              (spread shown in header)
+            </span>
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr>
+                  <th className="text-left p-2 border-b">Value</th>
+                  {analysis.selectedCarriers.map(c => (
+                    <th key={c.carrierId} className="p-2 border-b text-center">
+                      <div>{c.carrierName}</div>
+                      <div className="text-muted-foreground font-normal">
+                        spread: {c.spread.toFixed(2)}
+                      </div>
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {analysis.undecidedValues.map(value => (
+                  <tr key={value.code}>
+                    <td className="p-2 border-b font-medium">{value.label}</td>
+                    {analysis.selectedCarriers.map(carrier => {
+                      const polarityInfo = carrier.allPolarities.find(p => p.code === value.code);
+                      const polarity = polarityInfo?.polarity ?? 0;
+                      return (
+                        <td key={carrier.carrierId} className="p-2 border-b text-center">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded ${getPolarityColor(polarity)}`}
+                          >
+                            {polarity >= 0 ? '+' : ''}{polarity.toFixed(1)}
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Generate button */}
       {scenarios.length === 0 && (
@@ -357,12 +476,12 @@ export function ClarificationPanel({
       )}
 
       {/* Scenarios */}
-      {scenarios.length > 0 && (
+      {scenarios.length > 0 && generatedAnalysis && (
         <div className="space-y-4">
           <h3 className="text-sm font-medium">Clarifying Scenarios to pose to the hiring manager</h3>
 
           {scenarios.map(scenario => {
-            const carrier = analysis.selectedCarriers.find(
+            const carrier = generatedAnalysis.selectedCarriers.find(
               c => c.carrierId === scenario.carrierId
             );
             const currentResponse = responses[scenario.carrierId];
@@ -470,12 +589,12 @@ export function ClarificationPanel({
             <Card className="p-4 space-y-4 border-primary/50">
               <h4 className="font-medium">Score Update Preview</h4>
               <p className="text-xs text-muted-foreground">
-                Based on your {Object.keys(responses).length} response(s), these undecided values
+                Based on your {Object.keys(responses).length} response(s), these values
                 would be adjusted:
               </p>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                {analysis.undecidedValues.map(v => {
+                {generatedAnalysis.undecidedValues.map(v => {
                   const oldScore = scores[v.code] ?? 3.5;
                   const newScore = previewScores[v.code] ?? 3.5;
                   const delta = newScore - oldScore;

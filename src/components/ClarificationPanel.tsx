@@ -65,19 +65,24 @@ export function ClarificationPanel({
 
   // Filter analysis based on selected values
   const analysis = useMemo(() => {
-    // If no values selected, use all undecided values
-    const valuesToUse = selectedValueCodes.size > 0
-      ? allUndecidedAnalysis.undecidedValues.filter(v => selectedValueCodes.has(v.code))
-      : allUndecidedAnalysis.undecidedValues;
+    // If no values selected, return empty (user must select values)
+    if (selectedValueCodes.size === 0) {
+      return {
+        undecidedValues: [],
+        selectedCarriers: [],
+        canClarify: false,
+        reason: 'Select at least 2 values to clarify.',
+      };
+    }
+
+    const valuesToUse = allUndecidedAnalysis.undecidedValues.filter(v => selectedValueCodes.has(v.code));
 
     if (valuesToUse.length < 2) {
       return {
         undecidedValues: valuesToUse,
         selectedCarriers: [],
         canClarify: false,
-        reason: valuesToUse.length === 0
-          ? 'Select at least 2 values to clarify.'
-          : 'Select at least 2 values to generate meaningful comparisons.',
+        reason: 'Select at least 2 values to generate meaningful comparisons.',
       };
     }
 
@@ -275,11 +280,12 @@ export function ClarificationPanel({
     return 'bg-gray-100 text-gray-600';
   };
 
-  if (!analysis.canClarify) {
+  // Early return only if there are no undecided values at all
+  if (allUndecidedAnalysis.undecidedValues.length === 0) {
     return (
       <section className="rounded-xl border bg-card p-6">
         <h2 className="font-serif text-xl font-semibold mb-4">Clarify Uncertain Values</h2>
-        <p className="text-sm text-muted-foreground">{analysis.reason}</p>
+        <p className="text-sm text-muted-foreground">All values have high confidence - no clarification needed.</p>
       </section>
     );
   }
@@ -326,41 +332,11 @@ export function ClarificationPanel({
         </div>
       )}
 
-      {/* Configuration sliders */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Maximum carriers</span>
-            <span className="font-medium">{maxCarriers}</span>
-          </div>
-          <Slider
-            value={[maxCarriers]}
-            onValueChange={([v]) => setMaxCarriers(v)}
-            min={1}
-            max={8}
-            step={1}
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Minimum spread threshold</span>
-            <span className="font-medium">{minSpread.toFixed(1)}</span>
-          </div>
-          <Slider
-            value={[minSpread]}
-            onValueChange={([v]) => setMinSpread(v)}
-            min={0.4}
-            max={1.4}
-            step={0.1}
-          />
-        </div>
-      </div>
-
-      {/* Undecided values selection */}
+      {/* Undecided values selection - always visible */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-medium">
-            Select Values to Clarify ({selectedValueCodes.size > 0 ? selectedValueCodes.size : allUndecidedAnalysis.undecidedValues.length} of {allUndecidedAnalysis.undecidedValues.length})
+            Select Values to Clarify ({selectedValueCodes.size} of {allUndecidedAnalysis.undecidedValues.length})
           </h3>
           <div className="flex gap-2">
             <Button
@@ -371,14 +347,16 @@ export function ClarificationPanel({
             >
               Select All
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={deselectAllValues}
-              className="text-xs h-6 px-2"
-            >
-              Clear
-            </Button>
+            {selectedValueCodes.size > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={deselectAllValues}
+                className="text-xs h-6 px-2"
+              >
+                Clear
+              </Button>
+            )}
           </div>
         </div>
         <p className="text-xs text-muted-foreground mb-2">
@@ -386,7 +364,7 @@ export function ClarificationPanel({
         </p>
         <div className="flex flex-wrap gap-1.5">
           {allUndecidedAnalysis.undecidedValues.map(v => {
-            const isSelected = selectedValueCodes.size === 0 || selectedValueCodes.has(v.code);
+            const isSelected = selectedValueCodes.has(v.code);
             return (
               <button
                 key={v.code}
@@ -403,7 +381,42 @@ export function ClarificationPanel({
             );
           })}
         </div>
+        {selectedValueCodes.size === 1 && (
+          <p className="text-xs text-amber-600 mt-2">Select at least one more value to generate comparisons.</p>
+        )}
       </div>
+
+      {/* Configuration sliders - only show when we have 2+ values selected */}
+      {analysis.canClarify && (
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Maximum carriers</span>
+              <span className="font-medium">{maxCarriers}</span>
+            </div>
+            <Slider
+              value={[maxCarriers]}
+              onValueChange={([v]) => setMaxCarriers(v)}
+              min={1}
+              max={8}
+              step={1}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Minimum spread threshold</span>
+              <span className="font-medium">{minSpread.toFixed(1)}</span>
+            </div>
+            <Slider
+              value={[minSpread]}
+              onValueChange={([v]) => setMinSpread(v)}
+              min={0.4}
+              max={1.4}
+              step={0.1}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Polarity matrix - showing our work */}
       {analysis.selectedCarriers.length > 0 && (

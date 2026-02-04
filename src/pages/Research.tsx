@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, CheckCircle, AlertTriangle, GitCompare, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { BookOpen, CheckCircle, AlertTriangle, GitCompare, ExternalLink } from 'lucide-react';
+import { Navigation } from '@/components/Navigation';
 
 interface Citation {
   authors: string;
@@ -123,23 +123,10 @@ function CitationLink({ id }: { id: keyof typeof CITATIONS }) {
 export default function Research() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container py-4 flex items-center gap-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Link>
-          </Button>
-          <div>
-            <h1 className="font-serif text-2xl font-bold">Research Background</h1>
-            <p className="text-sm text-muted-foreground">
-              Literature review of the tension carriers framework
-            </p>
-          </div>
-        </div>
-      </header>
+      <Navigation
+        title="Research Background"
+        description="Literature review of the tension carriers framework"
+      />
 
       {/* Introduction */}
       <section className="py-12 border-b">

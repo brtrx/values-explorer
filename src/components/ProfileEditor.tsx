@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { SchwartzCircle } from '@/components/SchwartzCircle';
 import { GenerationPanel } from '@/components/GenerationPanel';
 import { ProfileSidebar } from '@/components/ProfileSidebar';
+import { Navigation } from '@/components/Navigation';
 import { ValueScores, DEFAULT_SCORES } from '@/lib/schwartz-values';
 import { useProfileDraft } from '@/hooks/use-profile-draft';
 import { saveProfile, updateProfile, saveDraft } from '@/lib/profile-storage';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 
 interface ProfileEditorProps {
   initialProfile?: {
@@ -169,20 +168,14 @@ export function ProfileEditor({ initialProfile, isSharedProfile = false }: Profi
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation
+        title="Profile Editor"
+        description="Create and edit value profiles"
+      />
+
       {/* Main content - single column layout */}
       <main className="container max-w-2xl py-8 px-4">
         <div className="space-y-8">
-          {/* Back button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-
           {/* Profile sidebar at top */}
           <section>
             <ProfileSidebar

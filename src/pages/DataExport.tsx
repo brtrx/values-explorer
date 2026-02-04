@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Download, Loader2, Database } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Navigation } from '@/components/Navigation';
 
 const AVAILABLE_TABLES = [
   { name: 'profiles', label: 'Profiles' },
@@ -94,12 +94,13 @@ export default function DataExport() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-md mx-auto">
-        <Link to="/" className="text-sm text-muted-foreground hover:text-foreground mb-4 inline-block">
-          ← Back to home
-        </Link>
-        
+    <div className="min-h-screen bg-background">
+      <Navigation
+        title="Data Export"
+        description="Download database tables as CSV"
+      />
+
+      <div className="container max-w-md py-8">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

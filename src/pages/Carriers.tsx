@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Info, Zap, TrendingUp, Minus, ChevronDown, ArrowUp, BookOpen } from 'lucide-react';
+import { Info, Zap, TrendingUp, Minus, ChevronDown, ArrowUp, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Navigation } from '@/components/Navigation';
 import { 
   Select,
   SelectContent,
@@ -272,23 +273,10 @@ export default function Carriers() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container py-4 flex items-center gap-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Link>
-          </Button>
-          <div>
-            <h1 className="font-serif text-2xl font-bold">Tension Carriers & Polarity</h1>
-            <p className="text-sm text-muted-foreground">
-              Decision-space primitives that expose value tensions
-            </p>
-          </div>
-        </div>
-      </header>
+      <Navigation
+        title="Tension Carriers & Polarity"
+        description="Decision-space primitives that expose value tensions"
+      />
 
       {/* Conceptual Overview */}
       <section className="py-12 border-b">

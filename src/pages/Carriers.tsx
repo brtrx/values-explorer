@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Info, Zap, TrendingUp, Minus, ChevronDown, ArrowUp } from 'lucide-react';
+import { ArrowLeft, Info, Zap, TrendingUp, Minus, ChevronDown, ArrowUp, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   Select,
@@ -319,9 +319,29 @@ export default function Carriers() {
                 <div>
                   <p className="font-medium mb-2">Why Carriers Matter</p>
                   <p className="text-sm text-muted-foreground">
-                    Without a relevant carrier, two people with very different values may behave identically — 
+                    Without a relevant carrier, two people with very different values may behave identically —
                     no scarcity means no forced choice. Carriers are the "pressure" that reveals what people truly prioritize.
                   </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 not-prose mt-6">
+              <div className="flex gap-3">
+                <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium mb-2 text-amber-900 dark:text-amber-200">Important Caveats</p>
+                  <p className="text-sm text-amber-800 dark:text-amber-300 mb-3">
+                    Research supports that situational features systematically generate value tension. However:
+                  </p>
+                  <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-1 mb-3">
+                    <li>• Carrier effects are <strong>probabilistic, not deterministic</strong> — individual differences in identity, experience, and coping resources moderate their impact</li>
+                    <li>• The 12 carriers are <strong>analytical lenses, not independent variables</strong> — in practice, they overlap and correlate</li>
+                    <li>• Effects are <strong>culturally and institutionally mediated</strong> — authority and autonomy tensions differ across contexts (healthcare vs. military vs. startups)</li>
+                  </ul>
+                  <Link to="/research" className="text-sm text-amber-700 dark:text-amber-400 hover:underline font-medium">
+                    Read the full research background →
+                  </Link>
                 </div>
               </div>
             </div>
@@ -559,6 +579,11 @@ export default function Carriers() {
               PVQ-RR (Revised)
             </a>
             {' '}by Shalom H. Schwartz
+          </p>
+          <p className="mt-2">
+            <Link to="/research" className="text-primary hover:underline">
+              Research background for the tension carriers framework
+            </Link>
           </p>
         </div>
       </footer>

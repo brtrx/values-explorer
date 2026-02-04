@@ -11,6 +11,7 @@ import ExploreScenarios from "./pages/ExploreScenarios";
 import SharedProfile from "./pages/SharedProfile";
 import DataExport from "./pages/DataExport";
 import JobAnalysis from "./pages/JobAnalysis";
+import Research from "./pages/Research";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => {
             <Route path="/p/:id" element={<SharedProfile />} />
             <Route path="/export" element={<DataExport />} />
             <Route path="/job-analysis" element={<JobAnalysis />} />
+            <Route path="/research" element={<Research />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

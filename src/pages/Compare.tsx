@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Sparkles, Loader2, X, User } from 'lucide-react';
+import { Sparkles, Loader2, X, User } from 'lucide-react';
+import { Navigation } from '@/components/Navigation';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircle';
 import { ConflictScenario } from '@/components/ConflictScenario';
@@ -215,21 +215,10 @@ export default function Compare() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="container flex items-center gap-4 py-4">
-          <Button asChild variant="ghost" size="icon">
-            <Link to="/">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="font-serif text-xl font-bold">Compare Archetypes</h1>
-            <p className="text-sm text-muted-foreground">
-              Select 2-5 characters to compare their value profiles
-            </p>
-          </div>
-        </div>
-      </header>
+      <Navigation
+        title="Compare Profiles"
+        description="Select 2-5 profiles to compare their values"
+      />
 
       <main className="container py-8">
         <div className="grid lg:grid-cols-2 gap-8">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Navigation } from '@/components/Navigation';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { SchwartzCircle } from '@/components/SchwartzCircle';
@@ -124,29 +124,13 @@ const JobAnalysis = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation
+        title="Job Description Analyzer"
+        description="Infer Schwartz values from job descriptions"
+      />
+
       <main className="container max-w-2xl py-8 px-4">
         <div className="space-y-8">
-          {/* Back button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Button>
-
-          {/* Page Title */}
-          <div>
-            <h1 className="font-serif text-3xl font-bold tracking-tight">
-              Job Description Analyzer
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Paste a job description to infer its underlying Schwartz values
-            </p>
-          </div>
-
           {/* Warning Banner */}
           <Alert>
             <AlertCircle className="h-4 w-4" />

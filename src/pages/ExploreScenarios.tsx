@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Users, Zap, Play, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, Zap, Play, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Navigation } from '@/components/Navigation';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -317,19 +317,10 @@ export default function ExploreScenarios() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back</span>
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold">Explore Scenarios</h1>
-            <p className="text-sm text-muted-foreground">Compare personas and generate conflict scenarios</p>
-          </div>
-        </div>
-      </header>
+      <Navigation
+        title="Explore Scenarios"
+        description="Compare personas and generate conflict scenarios"
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-2 gap-8">

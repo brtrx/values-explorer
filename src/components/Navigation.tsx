@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Compass, Users, Layers, Sparkles, FileDown, Briefcase, BookOpen, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +34,7 @@ interface NavigationProps {
 
 export function Navigation({ title, description }: NavigationProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   return (
@@ -55,23 +56,22 @@ export function Navigation({ title, description }: NavigationProps) {
                 <div key={item.to}>
                   {index === 1 && <DropdownMenuSeparator />}
                   {index === NAV_ITEMS.length - 1 && <DropdownMenuSeparator />}
-                  <DropdownMenuItem asChild disabled={isActive}>
-                    <Link
-                      to={item.to}
-                      className={`flex items-start gap-3 py-2 ${isActive ? 'bg-muted' : ''}`}
-                    >
-                      <Icon className="w-4 h-4 mt-0.5 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className={`font-medium ${isActive ? 'text-primary' : ''}`}>
-                          {item.label}
-                        </div>
-                        {item.description && (
-                          <div className="text-xs text-muted-foreground truncate">
-                            {item.description}
-                          </div>
-                        )}
+                  <DropdownMenuItem
+                    disabled={isActive}
+                    onSelect={() => navigate(item.to)}
+                    className={`flex items-start gap-3 py-2 cursor-pointer ${isActive ? 'bg-muted' : ''}`}
+                  >
+                    <Icon className="w-4 h-4 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-medium ${isActive ? 'text-primary' : ''}`}>
+                        {item.label}
                       </div>
-                    </Link>
+                      {item.description && (
+                        <div className="text-xs text-muted-foreground truncate">
+                          {item.description}
+                        </div>
+                      )}
+                    </div>
                   </DropdownMenuItem>
                 </div>
               );

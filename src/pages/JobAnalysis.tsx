@@ -63,7 +63,6 @@ interface AnalysisResult {
 }
 
 const JobAnalysis = () => {
-  const navigate = useNavigate();
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);

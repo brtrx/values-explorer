@@ -9,6 +9,7 @@ import { Json } from '@/integrations/supabase/types';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 import { useToast } from '@/hooks/use-toast';
 import { SchwartzCircle } from '@/components/SchwartzCircle';
+import { Navigation } from '@/components/Navigation';
 
 function jsonToScores(json: Json): ValueScores {
   return json as unknown as ValueScores;
@@ -84,6 +85,11 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation
+        title="Exploring Values"
+        description="A philosophical experiment on human values"
+      />
+
       {/* Hero Section */}
       <header className="relative overflow-hidden">
         <div className="absolute inset-0 gradient-hero opacity-5" />

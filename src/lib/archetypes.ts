@@ -119,7 +119,7 @@ export const ARCHETYPES: Archetype[] = [
     name: 'Walter White',
     description: 'A man transformed by the pursuit of power and legacy. Initially driven by security, ultimately consumed by pride and dominance.',
     imagePrompt: 'A bald man with goatee and glasses, intense calculating gaze, dark shadows, chemistry lab background, dangerous transformation, portrait style',
-    valueProfile: { POD: 3, ACM: 3, FAC: 2, POR: 2, HUM: -3, BEC: -3, BED: -2, COR: -2, UNC: -1 },
+    valueProfile: { POD: 3, ACM: 3, SDA: 3, FAC: 2, POR: 2, HUM: -3, BEC: -3, BED: -2, COR: -2, UNC: -1 },
     category: 'fictional',
   },
   {

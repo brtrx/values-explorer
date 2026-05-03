@@ -2,21 +2,43 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Swords } from 'lucide-react';
 import { toast } from 'sonner';
-import { Archetype, ARCHETYPES } from '@/lib/archetypes';
+import { ARCHETYPES } from '@/lib/archetypes';
+import { ValueScores } from '@/lib/schwartz-values';
 
 const CONFLICT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-conflict-scenario`;
 
-interface ConflictScenarioProps {
-  selectedArchetypes: string[];
+interface CustomProfile {
+  name: string;
+  scores: ValueScores;
+  description?: string;
 }
 
-export function ConflictScenario({ selectedArchetypes }: ConflictScenarioProps) {
+interface ConflictScenarioProps {
+  selectedArchetypes: string[];
+  customProfiles?: CustomProfile[];
+}
+
+// Converts ValueScores (0–7 scale) to valueProfile weights (-3 to 3)
+function scoresToValueProfile(scores: ValueScores): Record<string, number> {
+  const profile: Record<string, number> = {};
+  for (const [code, score] of Object.entries(scores)) {
+    const weight = Math.round(score - 3.5);
+    if (weight !== 0) {
+      profile[code] = Math.max(-3, Math.min(3, weight));
+    }
+  }
+  return profile;
+}
+
+export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: ConflictScenarioProps) {
   const [scenario, setScenario] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const totalSelected = selectedArchetypes.length + customProfiles.length;
+
   const generateScenario = async () => {
-    if (selectedArchetypes.length < 2) {
-      toast.error('Select at least 2 archetypes to generate a conflict');
+    if (totalSelected < 2) {
+      toast.error('Select at least 2 profiles to generate a conflict');
       return;
     }
 
@@ -32,6 +54,14 @@ export function ConflictScenario({ selectedArchetypes }: ConflictScenarioProps) 
       };
     });
 
+    const customProfilesData = customProfiles.map(profile => ({
+      name: profile.name,
+      description: profile.description ?? 'A custom user-created value profile',
+      valueProfile: scoresToValueProfile(profile.scores),
+    }));
+
+    const allProfilesData = [...customProfilesData, ...archetypesData];
+
     try {
       const response = await fetch(CONFLICT_URL, {
         method: 'POST',
@@ -39,17 +69,21 @@ export function ConflictScenario({ selectedArchetypes }: ConflictScenarioProps) 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ archetypes: archetypesData }),
+        body: JSON.stringify({ archetypes: allProfilesData }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        let message = 'Failed to generate scenario';
+        try {
+          const error = await response.json();
+          message = error.error || message;
+        } catch { /* non-JSON body */ }
         if (response.status === 429) {
           toast.error('Rate limit exceeded. Please try again later.');
         } else if (response.status === 402) {
           toast.error('AI credits exhausted. Please add funds.');
         } else {
-          toast.error(error.error || 'Failed to generate scenario');
+          toast.error(message);
         }
         setIsGenerating(false);
         return;
@@ -148,7 +182,7 @@ export function ConflictScenario({ selectedArchetypes }: ConflictScenarioProps) 
         </h2>
         <Button 
           onClick={generateScenario}
-          disabled={isGenerating || selectedArchetypes.length < 2}
+          disabled={isGenerating || totalSelected < 2}
           variant="outline"
           className="gap-2"
         >

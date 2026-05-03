@@ -148,13 +148,17 @@ export default function Compare() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        let message = 'Failed to generate comparison';
+        try {
+          const error = await response.json();
+          message = error.error || message;
+        } catch { /* non-JSON body */ }
         if (response.status === 429) {
           toast.error('Rate limit exceeded. Please try again later.');
         } else if (response.status === 402) {
           toast.error('AI credits exhausted. Please add funds.');
         } else {
-          toast.error(error.error || 'Failed to generate comparison');
+          toast.error(message);
         }
         setIsGenerating(false);
         return;
@@ -365,7 +369,7 @@ export default function Compare() {
                 {/* Tension-Amplifying Carriers */}
                 <ProfileTensionCarriers profiles={selectedArchetypeData} />
 
-                <ConflictScenario selectedArchetypes={selectedArchetypes} />
+                <ConflictScenario selectedArchetypes={selectedArchetypes} customProfiles={customProfiles} />
               </>
             ) : (
               <div className="rounded-xl border bg-card/50 p-12 text-center">

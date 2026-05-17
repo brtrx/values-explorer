@@ -10,7 +10,7 @@ An interactive philosophical tool for exploring Schwartz's Theory of Basic Human
 - **Schwartz Circumplex Visualization**: Interactive circular display of value relationships
 - **Archetype Library**: 80+ pre-built character profiles (historical figures, fictional characters, mythological beings)
 - **Profile Comparison**: Compare multiple profiles to identify value alignments and tensions
-- **Carrier Analysis**: Explore 12 decision-space dimensions that force value trade-offs
+- **Stressor Analysis**: Explore 12 decision-space dimensions that place stress on value preferences, forcing trade-offs
 - **AI Scenario Generation**: Generate narratives that reveal how value tensions play out
 
 ## Schwartz Values Framework
@@ -91,7 +91,7 @@ src/
 ├── lib/             # Core business logic
 │   ├── schwartz-values.ts
 │   ├── archetypes.ts
-│   └── carriers.ts
+│   └── stressors.ts
 ├── hooks/           # Custom React hooks
 └── integrations/    # Supabase client config
 

@@ -6,7 +6,7 @@ AI assistant guide for the `brtrx/values-explorer` codebase.
 
 ## Project Overview
 
-**Values Explorer** is a React SPA for exploring human values using Schwartz's Theory of Basic Values (PVQ-RR). Users create value profiles for themselves or characters, compare them, discover value tensions through "carriers," and generate AI-powered conflict scenarios.
+**Values Explorer** is a React SPA for exploring human values using Schwartz's Theory of Basic Values (PVQ-RR). Users create value profiles for themselves or characters, compare them, discover value tensions through "stressors," and generate AI-powered conflict scenarios.
 
 Live: `https://brtrx.github.io/values-explorer/`
 
@@ -77,8 +77,8 @@ values-explorer/
 │   │   ├── ConflictScenario.tsx   # AI scenario display
 │   │   ├── GenerationPanel.tsx    # Trigger AI generation
 │   │   ├── ClarificationPanel.tsx # Deep-dive question interface
-│   │   ├── CarrierSensitivityPanel.tsx
-│   │   ├── ProfileTensionCarriers.tsx
+│   │   ├── StressorSensitivityPanel.tsx
+│   │   ├── ProfileStressors.tsx
 │   │   ├── SimilarTo.tsx          # Archetype matching
 │   │   ├── ProfileSidebar.tsx     # Profile metadata editing
 │   │   ├── Navigation.tsx         # Top nav dropdown
@@ -88,7 +88,7 @@ values-explorer/
 │   │   ├── Landing.tsx            # Home: archetype browser + saved profiles
 │   │   ├── Index.tsx              # Profile editor wrapper
 │   │   ├── Compare.tsx            # Multi-profile comparison
-│   │   ├── Carriers.tsx           # Tension carrier explorer
+│   │   ├── Stressors.tsx          # Stressor explorer
 │   │   ├── ExploreScenarios.tsx   # AI scenario generation
 │   │   ├── JobAnalysis.tsx        # Analyze job descriptions
 │   │   ├── DataExport.tsx         # Export profiles as JSON
@@ -98,8 +98,8 @@ values-explorer/
 │   ├── lib/
 │   │   ├── schwartz-values.ts     # 19 PVQ-RR value definitions + helpers
 │   │   ├── archetypes.ts          # 90+ character profiles with value weights
-│   │   ├── carriers.ts            # 12 tension carrier definitions
-│   │   ├── carrier-sensitivity.ts # Maps values → carrier polarities
+│   │   ├── stressors.ts           # 12 stressor definitions
+│   │   ├── stressor-sensitivity.ts # Maps values → stressor polarities
 │   │   ├── profile-storage.ts     # Supabase CRUD + localStorage draft
 │   │   ├── profile-generator.ts   # AI profile generation logic
 │   │   ├── polarity-explanations.ts
@@ -143,7 +143,7 @@ Defined in `src/App.tsx`:
 | `/` | `Landing` | Home page, archetype browser |
 | `/editor` | `Index` | Create/edit a value profile |
 | `/compare` | `Compare` | Compare multiple profiles |
-| `/carriers` | `Carriers` | Explore tension carriers |
+| `/stressors` | `Stressors` | Explore stressors |
 | `/scenarios` | `ExploreScenarios` | AI scenario generation |
 | `/job-analysis` | `JobAnalysis` | Analyze job descriptions |
 | `/export` | `DataExport` | Export profiles as JSON |
@@ -190,11 +190,11 @@ Default score: `3.5` (midpoint of 1–6 range). Source in `src/lib/schwartz-valu
 
 Inter-page state: `sessionStorage.loadArchetype` passes an archetype to the editor.
 
-### Tension Carriers
+### Stressors
 
-12 "decision-space primitives" in `src/lib/carriers.ts` — constraints that force value tradeoffs and make latent value differences visible. Examples: `risk_uncertainty`, `control_authority`, `resources_allocation`, `time_urgency`, `attention_recognition`, `norm_enforcement`.
+12 "decision-space primitives" in `src/lib/stressors.ts` — constraints that place stress on value preferences, forcing tradeoffs and making latent value differences visible. Examples: `risk_uncertainty`, `control_authority`, `resources_allocation`, `time_urgency`, `attention_recognition`, `norm_enforcement`.
 
-Each carrier has a **polarity vector** mapping each Schwartz value to `+1/−1`, indicating whether increasing that carrier's intensity satisfies or frustrates the value. Opposite polarities on a carrier = visible conflict between two values.
+Each stressor has a **polarity vector** mapping each Schwartz value to `+1/−1`, indicating whether increasing that stressor's intensity satisfies or frustrates the value. Opposite polarities on a stressor = visible conflict between two values.
 
 ### Profiles
 
@@ -308,7 +308,7 @@ When working on Claude-assisted tasks, develop on the designated branch and push
 | `src/App.tsx` | All routes defined here |
 | `src/lib/schwartz-values.ts` | Canonical value definitions and helpers |
 | `src/lib/archetypes.ts` | All 90+ archetype profiles |
-| `src/lib/carriers.ts` | Carrier framework and polarity vectors |
+| `src/lib/stressors.ts` | Stressor framework and polarity vectors |
 | `src/lib/profile-storage.ts` | All Supabase DB operations |
 | `src/integrations/supabase/client.ts` | Supabase client (singleton) |
 | `src/integrations/supabase/types.ts` | Auto-generated DB types (do not edit) |

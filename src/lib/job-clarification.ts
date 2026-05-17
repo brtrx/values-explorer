@@ -1,20 +1,20 @@
 /**
  * Job Clarification Logic
  *
- * This module implements the algorithm for identifying which tension carriers
+ * This module implements the algorithm for identifying which stressors
  * would best help clarify undecided values in a job description analysis.
  *
- * Algorithm: Maximum Spread Carrier Selection
- * - For each carrier, calculate the "spread" of polarities across undecided values
- * - Spread = max(polarities) - min(polarities) for that carrier
- * - Select carriers with highest spread, as they best differentiate the undecided values
+ * Algorithm: Maximum Spread Stressor Selection
+ * - For each stressor, calculate the "spread" of polarities across undecided values
+ * - Spread = max(polarities) - min(polarities) for that stressor
+ * - Select stressors with highest spread, as they best differentiate the undecided values
  *
  * Note: Future enhancement could use variance instead of range for spread calculation.
  * See GitHub issue for discussion of variance vs range tradeoffs.
  */
 
 import { ValueScores, getValueByCode } from './schwartz-values';
-import { CarrierId, CARRIERS, getPolarity } from './carriers';
+import { StressorId, STRESSORS, getPolarity } from './stressors';
 
 export type ConfidenceLevel = 'high' | 'medium' | 'unspecified';
 
@@ -25,10 +25,10 @@ export interface UndecidedValue {
   confidence: ConfidenceLevel;
 }
 
-export interface CarrierSpreadInfo {
-  carrierId: CarrierId;
-  carrierName: string;
-  carrierDescription: string;
+export interface StressorSpreadInfo {
+  stressorId: StressorId;
+  stressorName: string;
+  stressorDescription: string;
   spread: number;
   minPolarity: number;
   maxPolarity: number;
@@ -39,7 +39,7 @@ export interface CarrierSpreadInfo {
 
 export interface ClarificationResult {
   undecidedValues: UndecidedValue[];
-  selectedCarriers: CarrierSpreadInfo[];
+  selectedStressors: StressorSpreadInfo[];
   canClarify: boolean;
   reason?: string;
 }
@@ -71,20 +71,20 @@ export function identifyUndecidedValues(
 }
 
 /**
- * Calculate spread for a single carrier across undecided values
+ * Calculate spread for a single stressor across undecided values
  * Spread = max(polarities) - min(polarities)
- * Higher spread means the carrier better differentiates the values
+ * Higher spread means the stressor better differentiates the values
  */
-function calculateCarrierSpread(
-  carrierId: CarrierId,
+function calculateStressorSpread(
+  stressorId: StressorId,
   undecidedValues: UndecidedValue[]
-): CarrierSpreadInfo {
-  const carrier = CARRIERS[carrierId];
+): StressorSpreadInfo {
+  const stressor = STRESSORS[stressorId];
 
   const polarities = undecidedValues.map(v => ({
     code: v.code,
     label: v.label,
-    polarity: getPolarity(v.code, carrierId),
+    polarity: getPolarity(v.code, stressorId),
   }));
 
   const polarityValues = polarities.map(p => p.polarity);
@@ -102,9 +102,9 @@ function calculateCarrierSpread(
     .sort((a, b) => a.polarity - b.polarity);
 
   return {
-    carrierId,
-    carrierName: carrier.name,
-    carrierDescription: carrier.description,
+    stressorId,
+    stressorName: stressor.name,
+    stressorDescription: stressor.description,
     spread,
     minPolarity,
     maxPolarity,
@@ -115,35 +115,35 @@ function calculateCarrierSpread(
 }
 
 /**
- * Select optimal carriers that maximize differentiation of undecided values
+ * Select optimal stressors that maximize differentiation of undecided values
  *
  * @param undecidedValues - Values with medium/unspecified confidence
- * @param maxCarriers - Maximum number of carriers to select (default 4)
- * @param minSpread - Minimum spread threshold to consider a carrier useful (default 0.8)
- * @returns Ranked list of carriers with their spread info
+ * @param maxStressors - Maximum number of stressors to select (default 4)
+ * @param minSpread - Minimum spread threshold to consider a stressor useful (default 0.8)
+ * @returns Ranked list of stressors with their spread info
  */
-export function selectOptimalCarriers(
+export function selectOptimalStressors(
   undecidedValues: UndecidedValue[],
-  maxCarriers: number = 4,
+  maxStressors: number = 4,
   minSpread: number = 0.8
-): CarrierSpreadInfo[] {
+): StressorSpreadInfo[] {
   if (undecidedValues.length < 2) {
     return [];
   }
 
-  // Calculate spread for all carriers
-  const carrierIds = Object.keys(CARRIERS) as CarrierId[];
-  const allCarrierSpreads = carrierIds.map(id =>
-    calculateCarrierSpread(id, undecidedValues)
+  // Calculate spread for all stressors
+  const stressorIds = Object.keys(STRESSORS) as StressorId[];
+  const allStressorSpreads = stressorIds.map(id =>
+    calculateStressorSpread(id, undecidedValues)
   );
 
   // Sort by spread descending and filter by minimum threshold
-  const qualifyingCarriers = allCarrierSpreads
+  const qualifyingStressors = allStressorSpreads
     .filter(c => c.spread >= minSpread)
     .sort((a, b) => b.spread - a.spread);
 
-  // Return top N carriers
-  return qualifyingCarriers.slice(0, maxCarriers);
+  // Return top N stressors
+  return qualifyingStressors.slice(0, maxStressors);
 }
 
 /**
@@ -152,7 +152,7 @@ export function selectOptimalCarriers(
 export function analyzeForClarification(
   scores: ValueScores,
   confidence: Record<string, ConfidenceLevel>,
-  maxCarriers: number = 4,
+  maxStressors: number = 4,
   minSpread: number = 0.8
 ): ClarificationResult {
   const undecidedValues = identifyUndecidedValues(scores, confidence);
@@ -160,7 +160,7 @@ export function analyzeForClarification(
   if (undecidedValues.length === 0) {
     return {
       undecidedValues: [],
-      selectedCarriers: [],
+      selectedStressors: [],
       canClarify: false,
       reason: 'All values have high confidence - no clarification needed.',
     };
@@ -169,26 +169,26 @@ export function analyzeForClarification(
   if (undecidedValues.length === 1) {
     return {
       undecidedValues,
-      selectedCarriers: [],
+      selectedStressors: [],
       canClarify: false,
       reason: 'Only one undecided value - need at least two to generate meaningful comparisons.',
     };
   }
 
-  const selectedCarriers = selectOptimalCarriers(undecidedValues, maxCarriers, minSpread);
+  const selectedStressors = selectOptimalStressors(undecidedValues, maxStressors, minSpread);
 
-  if (selectedCarriers.length === 0) {
+  if (selectedStressors.length === 0) {
     return {
       undecidedValues,
-      selectedCarriers: [],
+      selectedStressors: [],
       canClarify: false,
-      reason: `No carriers meet the minimum spread threshold of ${minSpread}. Try lowering the threshold.`,
+      reason: `No stressors meet the minimum spread threshold of ${minSpread}. Try lowering the threshold.`,
     };
   }
 
   return {
     undecidedValues,
-    selectedCarriers,
+    selectedStressors,
     canClarify: true,
   };
 }
@@ -200,21 +200,21 @@ export function analyzeForClarification(
  * Where responseStrength ranges from -1.0 (strongly favor B) to +1.0 (strongly favor A)
  *
  * @param currentScores - Current value scores
- * @param carrierId - The carrier used in the scenario
+ * @param stressorId - The stressor used in the scenario
  * @param responseStrength - User's response: -1.0 to +1.0
  * @param undecidedValueCodes - Only update these values
  * @returns Updated scores object
  */
 export function calculateUpdatedScores(
   currentScores: ValueScores,
-  carrierId: CarrierId,
+  stressorId: StressorId,
   responseStrength: number,
   undecidedValueCodes: string[]
 ): ValueScores {
   const updatedScores = { ...currentScores };
 
   for (const code of undecidedValueCodes) {
-    const polarity = getPolarity(code, carrierId);
+    const polarity = getPolarity(code, stressorId);
     // Skip values without polarity data to avoid NaN
     if (polarity === undefined) continue;
 

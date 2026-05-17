@@ -1,22 +1,22 @@
 /**
- * Carrier Sensitivity Analysis
+ * Stressor Sensitivity Analysis
  * 
  * This module provides functions to analyze how a value profile (a set of weighted values)
- * interacts with carriers. It calculates:
+ * interacts with stressors. It calculates:
  * 
- * 1. Value-Weighted Carrier Matrix: Adjusts the polarity matrix based on value weights
- * 2. Carrier Sensitivity Vector: Total weighted polarity for each carrier
- * 3. Internal Tension Carriers: Carriers with high variance in sensitivity
- * 4. Profile Tension Carriers: Carriers that antagonize tensions between profiles
+ * 1. Value-Weighted Stressor Matrix: Adjusts the polarity matrix based on value weights
+ * 2. Stressor Sensitivity Vector: Total weighted polarity for each stressor
+ * 3. Internal Stressors: Stressors with high variance in sensitivity
+ * 4. Profile Stressors: Stressors that antagonize tensions between profiles
  */
 
 import { 
-  CarrierId, 
-  CARRIER_IDS, 
-  CARRIERS,
+  StressorId, 
+  STRESSOR_IDS, 
+  STRESSORS,
   VALUE_POLARITY_MAP,
   getPolarity,
-} from './carriers';
+} from './stressors';
 import { 
   ValueScores, 
   SCHWARTZ_VALUES,
@@ -24,28 +24,28 @@ import {
 } from './schwartz-values';
 
 /**
- * Represents a single cell in the value-weighted carrier matrix
+ * Represents a single cell in the value-weighted stressor matrix
  */
 export interface WeightedPolarityCell {
   valueCode: string;
-  carrierId: CarrierId;
+  stressorId: StressorId;
   rawPolarity: number;
   valueWeight: number;
   weightedPolarity: number;
 }
 
 /**
- * The full value-weighted carrier matrix
+ * The full value-weighted stressor matrix
  */
-export type ValueWeightedCarrierMatrix = WeightedPolarityCell[];
+export type ValueWeightedStressorMatrix = WeightedPolarityCell[];
 
 /**
- * A sensitivity score for a carrier, with contributing values
+ * A sensitivity score for a stressor, with contributing values
  */
-export interface CarrierSensitivity {
-  carrierId: CarrierId;
-  carrierName: string;
-  /** Total weighted polarity - positive means carrier satisfies profile, negative frustrates */
+export interface StressorSensitivity {
+  stressorId: StressorId;
+  stressorName: string;
+  /** Total weighted polarity - positive means stressor satisfies profile, negative frustrates */
   totalSensitivity: number;
   /** Absolute magnitude of sensitivity */
   absoluteSensitivity: number;
@@ -60,11 +60,11 @@ export interface CarrierSensitivity {
 }
 
 /**
- * Internal tension analysis for a carrier
+ * Internal tension analysis for a stressor
  */
-export interface CarrierInternalTension {
-  carrierId: CarrierId;
-  carrierName: string;
+export interface StressorInternalTension {
+  stressorId: StressorId;
+  stressorName: string;
   /** Range of weighted polarities (max - min) */
   range: number;
   /** Standard deviation of weighted polarities */
@@ -75,19 +75,19 @@ export interface CarrierInternalTension {
 }
 
 /**
- * Profile tension carrier - a carrier that antagonizes tensions between profiles
+ * Profile stressor - a stressor that antagonizes tensions between profiles
  */
-export interface ProfileTensionCarrier {
-  carrierId: CarrierId;
-  carrierName: string;
-  /** How much this carrier would amplify the tension between profiles */
+export interface ProfileStressor {
+  stressorId: StressorId;
+  stressorName: string;
+  /** How much this stressor would amplify the tension between profiles */
   tensionScore: number;
   /** Per-profile sensitivities */
   profileSensitivities: {
     profileName: string;
     sensitivity: number;
   }[];
-  /** The profiles most in conflict on this carrier */
+  /** The profiles most in conflict on this stressor */
   conflictingProfiles: [string, string];
   conflictMagnitude: number;
 }
@@ -102,25 +102,25 @@ function normalizeScoreToWeight(score: number): number {
 }
 
 /**
- * Calculate the value-weighted carrier matrix for a given profile.
+ * Calculate the value-weighted stressor matrix for a given profile.
  * 
  * This adjusts each polarity by the normalized weight of each value in the profile.
  */
-export function calculateWeightedCarrierMatrix(
+export function calculateWeightedStressorMatrix(
   scores: ValueScores
-): ValueWeightedCarrierMatrix {
-  const matrix: ValueWeightedCarrierMatrix = [];
+): ValueWeightedStressorMatrix {
+  const matrix: ValueWeightedStressorMatrix = [];
   
   for (const value of SCHWARTZ_VALUES) {
     const valueWeight = normalizeScoreToWeight(scores[value.code] ?? 3.5);
     
-    for (const carrierId of CARRIER_IDS) {
-      const rawPolarity = getPolarity(value.code, carrierId) ?? 0;
+    for (const stressorId of STRESSOR_IDS) {
+      const rawPolarity = getPolarity(value.code, stressorId) ?? 0;
       const weightedPolarity = rawPolarity * valueWeight;
       
       matrix.push({
         valueCode: value.code,
-        carrierId,
+        stressorId,
         rawPolarity,
         valueWeight,
         weightedPolarity,
@@ -132,27 +132,27 @@ export function calculateWeightedCarrierMatrix(
 }
 
 /**
- * Calculate the carrier sensitivity vector for a profile.
+ * Calculate the stressor sensitivity vector for a profile.
  * 
- * For each carrier, this sums the weighted polarities across all values
- * to get the total sensitivity of the profile to that carrier.
+ * For each stressor, this sums the weighted polarities across all values
+ * to get the total sensitivity of the profile to that stressor.
  */
-export function calculateCarrierSensitivityVector(
+export function calculateStressorSensitivityVector(
   scores: ValueScores,
   topContributorCount: number = 5
-): CarrierSensitivity[] {
-  const matrix = calculateWeightedCarrierMatrix(scores);
+): StressorSensitivity[] {
+  const matrix = calculateWeightedStressorMatrix(scores);
   
-  const sensitivities: CarrierSensitivity[] = CARRIER_IDS.map(carrierId => {
-    const carrierCells = matrix.filter(cell => cell.carrierId === carrierId);
+  const sensitivities: StressorSensitivity[] = STRESSOR_IDS.map(stressorId => {
+    const stressorCells = matrix.filter(cell => cell.stressorId === stressorId);
     
-    const totalSensitivity = carrierCells.reduce(
+    const totalSensitivity = stressorCells.reduce(
       (sum, cell) => sum + cell.weightedPolarity,
       0
     );
     
     // Get top contributors sorted by absolute contribution
-    const contributions = carrierCells
+    const contributions = stressorCells
       .map(cell => ({
         valueCode: cell.valueCode,
         valueLabel: getValueByCode(cell.valueCode)?.label ?? cell.valueCode,
@@ -164,8 +164,8 @@ export function calculateCarrierSensitivityVector(
       .slice(0, topContributorCount);
     
     return {
-      carrierId,
-      carrierName: CARRIERS[carrierId].name,
+      stressorId,
+      stressorName: STRESSORS[stressorId].name,
       totalSensitivity,
       absoluteSensitivity: Math.abs(totalSensitivity),
       topContributors: contributions,
@@ -177,30 +177,30 @@ export function calculateCarrierSensitivityVector(
 }
 
 /**
- * Get the top N most sensitive carriers for a profile.
+ * Get the top N most sensitive stressors for a profile.
  */
-export function getTopSensitiveCarriers(
+export function getTopSensitiveStressors(
   scores: ValueScores,
   count: number = 5
-): CarrierSensitivity[] {
-  return calculateCarrierSensitivityVector(scores).slice(0, count);
+): StressorSensitivity[] {
+  return calculateStressorSensitivityVector(scores).slice(0, count);
 }
 
 /**
- * Calculate internal tension carriers - those with the biggest range of
+ * Calculate internal stressors - those with the biggest range of
  * weighted polarities within a profile.
  * 
  * High internal tension means the profile has values that respond very
- * differently to the same carrier, creating internal conflict.
+ * differently to the same stressor, creating internal conflict.
  */
-export function calculateInternalTensionCarriers(
+export function calculateInternalTensionStressors(
   scores: ValueScores
-): CarrierInternalTension[] {
-  const matrix = calculateWeightedCarrierMatrix(scores);
+): StressorInternalTension[] {
+  const matrix = calculateWeightedStressorMatrix(scores);
   
-  const tensions: CarrierInternalTension[] = CARRIER_IDS.map(carrierId => {
-    const carrierCells = matrix.filter(cell => cell.carrierId === carrierId);
-    const weightedPolarities = carrierCells.map(c => c.weightedPolarity);
+  const tensions: StressorInternalTension[] = STRESSOR_IDS.map(stressorId => {
+    const stressorCells = matrix.filter(cell => cell.stressorId === stressorId);
+    const weightedPolarities = stressorCells.map(c => c.weightedPolarity);
     
     const max = Math.max(...weightedPolarities);
     const min = Math.min(...weightedPolarities);
@@ -211,12 +211,12 @@ export function calculateInternalTensionCarriers(
     const variance = weightedPolarities.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / weightedPolarities.length;
     const standardDeviation = Math.sqrt(variance);
     
-    const highestCell = carrierCells.find(c => c.weightedPolarity === max)!;
-    const lowestCell = carrierCells.find(c => c.weightedPolarity === min)!;
+    const highestCell = stressorCells.find(c => c.weightedPolarity === max)!;
+    const lowestCell = stressorCells.find(c => c.weightedPolarity === min)!;
     
     return {
-      carrierId,
-      carrierName: CARRIERS[carrierId].name,
+      stressorId,
+      stressorName: STRESSORS[stressorId].name,
       range,
       standardDeviation,
       highestValue: {
@@ -237,35 +237,35 @@ export function calculateInternalTensionCarriers(
 }
 
 /**
- * Get the top N carriers with highest internal tension.
+ * Get the top N stressors with highest internal tension.
  */
-export function getTopInternalTensionCarriers(
+export function getTopInternalTensionStressors(
   scores: ValueScores,
   count: number = 5
-): CarrierInternalTension[] {
-  return calculateInternalTensionCarriers(scores).slice(0, count);
+): StressorInternalTension[] {
+  return calculateInternalTensionStressors(scores).slice(0, count);
 }
 
 /**
- * Calculate which carriers most antagonize the tensions between multiple profiles.
+ * Calculate which stressors most antagonize the tensions between multiple profiles.
  * 
- * This finds carriers where profiles have opposing sensitivities,
- * meaning the carrier would pull them in different directions.
+ * This finds stressors where profiles have opposing sensitivities,
+ * meaning the stressor would pull them in different directions.
  */
-export function calculateProfileTensionCarriers(
+export function calculateProfileStressors(
   profiles: { name: string; scores: ValueScores }[]
-): ProfileTensionCarrier[] {
+): ProfileStressor[] {
   if (profiles.length < 2) return [];
   
   // Calculate sensitivity for each profile
   const profileSensitivities = profiles.map(profile => ({
     name: profile.name,
-    sensitivities: calculateCarrierSensitivityVector(profile.scores),
+    sensitivities: calculateStressorSensitivityVector(profile.scores),
   }));
   
-  const tensionCarriers: ProfileTensionCarrier[] = CARRIER_IDS.map(carrierId => {
-    const carrierSensitivities = profileSensitivities.map(ps => {
-      const sens = ps.sensitivities.find(s => s.carrierId === carrierId);
+  const tensionStressors: ProfileStressor[] = STRESSOR_IDS.map(stressorId => {
+    const stressorSensitivities = profileSensitivities.map(ps => {
+      const sens = ps.sensitivities.find(s => s.stressorId === stressorId);
       return {
         profileName: ps.name,
         sensitivity: sens?.totalSensitivity ?? 0,
@@ -276,16 +276,16 @@ export function calculateProfileTensionCarriers(
     let maxDiff = 0;
     let conflictingProfiles: [string, string] = [profiles[0].name, profiles[1].name];
     
-    for (let i = 0; i < carrierSensitivities.length; i++) {
-      for (let j = i + 1; j < carrierSensitivities.length; j++) {
+    for (let i = 0; i < stressorSensitivities.length; i++) {
+      for (let j = i + 1; j < stressorSensitivities.length; j++) {
         const diff = Math.abs(
-          carrierSensitivities[i].sensitivity - carrierSensitivities[j].sensitivity
+          stressorSensitivities[i].sensitivity - stressorSensitivities[j].sensitivity
         );
         if (diff > maxDiff) {
           maxDiff = diff;
           conflictingProfiles = [
-            carrierSensitivities[i].profileName,
-            carrierSensitivities[j].profileName,
+            stressorSensitivities[i].profileName,
+            stressorSensitivities[j].profileName,
           ];
         }
       }
@@ -293,34 +293,34 @@ export function calculateProfileTensionCarriers(
     
     // Calculate overall tension score (sum of all pairwise differences)
     let tensionScore = 0;
-    for (let i = 0; i < carrierSensitivities.length; i++) {
-      for (let j = i + 1; j < carrierSensitivities.length; j++) {
+    for (let i = 0; i < stressorSensitivities.length; i++) {
+      for (let j = i + 1; j < stressorSensitivities.length; j++) {
         tensionScore += Math.abs(
-          carrierSensitivities[i].sensitivity - carrierSensitivities[j].sensitivity
+          stressorSensitivities[i].sensitivity - stressorSensitivities[j].sensitivity
         );
       }
     }
     
     return {
-      carrierId,
-      carrierName: CARRIERS[carrierId].name,
+      stressorId,
+      stressorName: STRESSORS[stressorId].name,
       tensionScore,
-      profileSensitivities: carrierSensitivities,
+      profileSensitivities: stressorSensitivities,
       conflictingProfiles,
       conflictMagnitude: maxDiff,
     };
   });
   
   // Sort by tension score (highest first)
-  return tensionCarriers.sort((a, b) => b.tensionScore - a.tensionScore);
+  return tensionStressors.sort((a, b) => b.tensionScore - a.tensionScore);
 }
 
 /**
- * Get the top N carriers that most antagonize profile tensions.
+ * Get the top N stressors that most antagonize profile tensions.
  */
-export function getTopProfileTensionCarriers(
+export function getTopProfileStressors(
   profiles: { name: string; scores: ValueScores }[],
   count: number = 5
-): ProfileTensionCarrier[] {
-  return calculateProfileTensionCarriers(profiles).slice(0, count);
+): ProfileStressor[] {
+  return calculateProfileStressors(profiles).slice(0, count);
 }

@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import { ChevronDown, Swords, Users } from 'lucide-react';
 import { ValueScores } from '@/lib/schwartz-values';
 import {
-  getTopProfileTensionCarriers,
-  ProfileTensionCarrier,
-} from '@/lib/carrier-sensitivity';
+  getTopProfileStressors,
+  ProfileStressor,
+} from '@/lib/stressor-sensitivity';
 import {
   Collapsible,
   CollapsibleContent,
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
-interface ProfileTensionCarriersProps {
+interface ProfileStressorsProps {
   profiles: { name: string; scores: ValueScores }[];
 }
 
@@ -66,19 +66,19 @@ function ProfileSensitivityDot({
   );
 }
 
-function TensionCarrierCard({ 
-  carrier, 
+function TensionStressorCard({ 
+  stressor, 
   maxTension,
   maxSensitivity,
 }: { 
-  carrier: ProfileTensionCarrier; 
+  stressor: ProfileStressor; 
   maxTension: number;
   maxSensitivity: number;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   
-  const tensionLevel = carrier.tensionScore >= maxTension * 0.7 ? 'high' 
-    : carrier.tensionScore >= maxTension * 0.4 ? 'moderate' 
+  const tensionLevel = stressor.tensionScore >= maxTension * 0.7 ? 'high' 
+    : stressor.tensionScore >= maxTension * 0.4 ? 'moderate' 
     : 'low';
   
   return (
@@ -95,11 +95,11 @@ function TensionCarrierCard({
               <Swords className="w-5 h-5" />
             </div>
             <div className="flex-1 text-left min-w-0">
-              <h4 className="font-medium text-sm truncate">{carrier.carrierName}</h4>
+              <h4 className="font-medium text-sm truncate">{stressor.stressorName}</h4>
               <div className="flex items-center gap-2 mt-1">
-                <TensionBar value={carrier.tensionScore} max={maxTension} />
+                <TensionBar value={stressor.tensionScore} max={maxTension} />
                 <span className="text-xs text-muted-foreground font-mono w-12 text-right">
-                  {carrier.tensionScore.toFixed(2)}
+                  {stressor.tensionScore.toFixed(2)}
                 </span>
               </div>
             </div>
@@ -121,7 +121,7 @@ function TensionCarrierCard({
                   {/* Center line */}
                   <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
                   {/* Profile dots */}
-                  {carrier.profileSensitivities.map((ps, i) => (
+                  {stressor.profileSensitivities.map((ps, i) => (
                     <ProfileSensitivityDot 
                       key={i}
                       name={ps.profileName}
@@ -143,10 +143,10 @@ function TensionCarrierCard({
                   <Users className="w-4 h-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Highest conflict:</span>
                   <span className="font-medium">
-                    {carrier.conflictingProfiles[0]} vs {carrier.conflictingProfiles[1]}
+                    {stressor.conflictingProfiles[0]} vs {stressor.conflictingProfiles[1]}
                   </span>
                   <span className="text-muted-foreground ml-auto">
-                    Δ{carrier.conflictMagnitude.toFixed(2)}
+                    Δ{stressor.conflictMagnitude.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -158,22 +158,22 @@ function TensionCarrierCard({
   );
 }
 
-export function ProfileTensionCarriers({ profiles }: ProfileTensionCarriersProps) {
-  const tensionCarriers = useMemo(
-    () => getTopProfileTensionCarriers(profiles, 6),
+export function ProfileStressors({ profiles }: ProfileStressorsProps) {
+  const tensionStressors = useMemo(
+    () => getTopProfileStressors(profiles, 6),
     [profiles]
   );
   
   const maxTension = useMemo(() => {
-    return Math.max(...tensionCarriers.map(c => c.tensionScore), 0.1);
-  }, [tensionCarriers]);
+    return Math.max(...tensionStressors.map(c => c.tensionScore), 0.1);
+  }, [tensionStressors]);
   
   const maxSensitivity = useMemo(() => {
-    const allSensitivities = tensionCarriers.flatMap(c => 
+    const allSensitivities = tensionStressors.flatMap(c => 
       c.profileSensitivities.map(ps => Math.abs(ps.sensitivity))
     );
     return Math.max(...allSensitivities, 0.5);
-  }, [tensionCarriers]);
+  }, [tensionStressors]);
   
   if (profiles.length < 2) {
     return null;
@@ -182,17 +182,17 @@ export function ProfileTensionCarriers({ profiles }: ProfileTensionCarriersProps
   return (
     <div className="rounded-xl border bg-card p-6">
       <h2 className="font-serif text-lg font-semibold mb-2">
-        Tension-Amplifying Carriers
+        Tension-Amplifying Stressors
       </h2>
       <p className="text-sm text-muted-foreground mb-4">
-        These carriers would most amplify conflicts between the selected profiles. 
+        These stressors would most amplify conflicts between the selected profiles. 
         Scenarios involving these pressures will reveal the sharpest value differences.
       </p>
       <div className="space-y-2">
-        {tensionCarriers.map(carrier => (
-          <TensionCarrierCard 
-            key={carrier.carrierId} 
-            carrier={carrier} 
+        {tensionStressors.map(stressor => (
+          <TensionStressorCard 
+            key={stressor.stressorId} 
+            stressor={stressor} 
             maxTension={maxTension}
             maxSensitivity={maxSensitivity}
           />

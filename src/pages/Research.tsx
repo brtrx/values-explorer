@@ -125,7 +125,7 @@ export default function Research() {
     <div className="min-h-screen bg-background">
       <Navigation
         title="Research Background"
-        description="Literature review of the tension carriers framework"
+        description="Literature review of the stressors framework"
       />
 
       {/* Introduction */}
@@ -136,9 +136,9 @@ export default function Research() {
             <div>
               <h2 className="font-semibold text-amber-900 dark:text-amber-200 mb-2">About This Review</h2>
               <p className="text-sm text-amber-800 dark:text-amber-300">
-                This page presents a research-grounded evaluation of the "tension carriers" concept used on this site.
+                This page presents a research-grounded evaluation of the "stressors" concept used on this site.
                 It reviews empirical and theoretical support, challenges and critiques, and comparable taxonomies
-                from psychology, organizational studies, and moral philosophy. The term "tension carriers" refers to
+                from psychology, organizational studies, and moral philosophy. The term "stressors" refers to
                 situational features that systematically activate, strain, or force trade-offs among values—rather
                 than being values themselves.
               </p>
@@ -148,7 +148,7 @@ export default function Research() {
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <p className="text-lg text-muted-foreground">
               Below is a structured summary of the relevant academic literature, organized into three sections:
-              research that supports the idea of tension carriers, research that challenges or complicates the
+              research that supports the idea of stressors, research that challenges or complicates the
               framework, and comparable taxonomies that provide useful context.
             </p>
           </div>
@@ -162,7 +162,7 @@ export default function Research() {
             <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h2 className="font-serif text-2xl font-bold">1. Research That Supports Tension Carriers</h2>
+            <h2 className="font-serif text-2xl font-bold">1. Research That Supports Stressors</h2>
           </div>
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-8">
@@ -176,8 +176,8 @@ export default function Research() {
               <h3 className="font-serif text-lg font-semibold mb-4 mt-0">1.1 Moral Stress, Moral Uncertainty, and Value Strain</h3>
               <p className="text-muted-foreground">
                 Research on moral stress shows that tension arises not merely from conflicting values, but from
-                situational ambiguity, responsibility, and constraint—precisely the kind of "carrier" the
-                tension carriers taxonomy highlights.
+                situational ambiguity, responsibility, and constraint—precisely the kind of "stressor" the
+                stressors taxonomy highlights.
               </p>
               <ul className="text-muted-foreground space-y-3 mt-4">
                 <li>
@@ -216,7 +216,7 @@ export default function Research() {
                 </li>
               </ul>
               <p className="text-sm text-muted-foreground mt-4 italic">
-                This aligns strongly with the carrier metaphor: values are latent; situations load them.
+                This aligns strongly with the stressor metaphor: values are latent; situations load them.
               </p>
             </div>
 
@@ -260,7 +260,7 @@ export default function Research() {
 
             {/* 2.1 Individual differences */}
             <div className="p-6 rounded-xl border bg-card">
-              <h3 className="font-serif text-lg font-semibold mb-4 mt-0">2.1 Individual Differences Undermine Fixed Carrier Effects</h3>
+              <h3 className="font-serif text-lg font-semibold mb-4 mt-0">2.1 Individual Differences Undermine Fixed Stressor Effects</h3>
               <p className="text-muted-foreground">
                 One challenge is that the same situational feature does not produce the same tension for
                 all agents.
@@ -276,7 +276,7 @@ export default function Research() {
                 </li>
               </ul>
               <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mt-4">
-                Implication: Tension carriers are probabilistic, not deterministic; they interact with
+                Implication: Tension stressors are probabilistic, not deterministic; they interact with
                 person-level variables.
               </p>
             </div>
@@ -298,7 +298,7 @@ export default function Research() {
                 </li>
               </ul>
               <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mt-4">
-                Implication: A list of 12 carriers risks false precision unless explicitly framed as
+                Implication: A list of 12 stressors risks false precision unless explicitly framed as
                 analytical lenses rather than independent variables.
               </p>
             </div>
@@ -307,7 +307,7 @@ export default function Research() {
             <div className="p-6 rounded-xl border bg-card">
               <h3 className="font-serif text-lg font-semibold mb-4 mt-0">2.3 Cultural and Institutional Dependence</h3>
               <p className="text-muted-foreground">
-                What counts as a tension-carrier is culturally mediated.
+                What counts as a tension-stressor is culturally mediated.
               </p>
               <ul className="text-muted-foreground space-y-3 mt-4">
                 <li>
@@ -335,7 +335,7 @@ export default function Research() {
           </div>
 
           <p className="text-muted-foreground mb-8">
-            The tension carriers framework sits at the intersection of several established classification
+            The stressors framework sits at the intersection of several established classification
             traditions:
           </p>
 
@@ -353,7 +353,7 @@ export default function Research() {
                 <CitationLink id="jex2003" />
               </p>
               <p className="text-xs text-muted-foreground mt-2 italic">
-                These overlap strongly with carriers like conflicting obligations, uncertainty, and
+                These overlap strongly with stressors like conflicting obligations, uncertainty, and
                 resource constraints.
               </p>
             </div>
@@ -372,7 +372,7 @@ export default function Research() {
                 <CitationLink id="klenk2022" />
               </p>
               <p className="text-xs text-muted-foreground mt-2 italic">
-                These are near-isomorphic to several proposed carriers and provide empirical grounding.
+                These are near-isomorphic to several proposed stressors and provide empirical grounding.
               </p>
             </div>
 
@@ -388,7 +388,7 @@ export default function Research() {
                 <CitationLink id="bouckenooghe2005" />; <CitationLink id="lee2015" />
               </p>
               <p className="text-xs text-muted-foreground mt-2 italic">
-                These focus less on situations, but help explain why carriers produce strain.
+                These focus less on situations, but help explain why stressors produce strain.
               </p>
             </div>
 
@@ -405,7 +405,7 @@ export default function Research() {
                 <CitationLink id="myyry2007" />
               </p>
               <p className="text-xs text-muted-foreground mt-2 italic">
-                These are especially relevant if carriers include social exposure, contestation, or
+                These are especially relevant if stressors include social exposure, contestation, or
                 public accountability.
               </p>
             </div>
@@ -424,7 +424,7 @@ export default function Research() {
               <ul className="text-sm text-emerald-800 dark:text-emerald-300 space-y-2">
                 <li>• The core idea that situational features systematically generate value tension is
                   very well supported.</li>
-                <li>• Treating these features as a taxonomy of tension carriers is conceptually legitimate
+                <li>• Treating these features as a taxonomy of stressors is conceptually legitimate
                   and empirically defensible.</li>
               </ul>
             </div>
@@ -432,8 +432,8 @@ export default function Research() {
             <div className="p-6 rounded-xl border bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900">
               <h3 className="font-semibold text-amber-900 dark:text-amber-200 mb-4">What the Research Challenges</h3>
               <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-2">
-                <li>• Fixed, universal effects of any single carrier</li>
-                <li>• Strict independence between carriers</li>
+                <li>• Fixed, universal effects of any single stressor</li>
+                <li>• Strict independence between stressors</li>
                 <li>• Culture-free or role-free interpretations</li>
               </ul>
             </div>
@@ -442,7 +442,7 @@ export default function Research() {
           <div className="p-6 rounded-xl border bg-primary/5 border-primary/20">
             <h3 className="font-semibold mb-4">Best Framing Going Forward</h3>
             <p className="text-muted-foreground">
-              The strongest alignment with the literature is to treat the 12 carriers as:
+              The strongest alignment with the literature is to treat the 12 stressors as:
             </p>
             <blockquote className="mt-4 pl-4 border-l-4 border-primary text-lg font-medium">
               "Recurring situational patterns that probabilistically activate value conflict,
@@ -493,8 +493,8 @@ export default function Research() {
       <footer className="border-t py-8">
         <div className="container text-center text-sm text-muted-foreground">
           <p>
-            <Link to="/carriers" className="text-primary hover:underline">
-              Explore Tension Carriers
+            <Link to="/stressors" className="text-primary hover:underline">
+              Explore Stressors
             </Link>
             {' · '}
             <Link to="/" className="text-primary hover:underline">

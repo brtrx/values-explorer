@@ -5,10 +5,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface CarrierData {
-  carrierId: string;
-  carrierName: string;
-  carrierDescription: string;
+interface StressorData {
+  stressorId: string;
+  stressorName: string;
+  stressorDescription: string;
   highPolarityValues: Array<{ code: string; label: string; polarity: number }>;
   lowPolarityValues: Array<{ code: string; label: string; polarity: number }>;
 }
@@ -16,7 +16,7 @@ interface CarrierData {
 interface RequestBody {
   jobDescription: string;
   jobTitle?: string;
-  carriers: CarrierData[];
+  stressors: StressorData[];
 }
 
 serve(async (req) => {
@@ -25,7 +25,7 @@ serve(async (req) => {
   }
 
   try {
-    const { jobDescription, jobTitle, carriers } = await req.json() as RequestBody;
+    const { jobDescription, jobTitle, stressors } = await req.json() as RequestBody;
 
     if (!jobDescription || jobDescription.length < 50) {
       return new Response(
@@ -34,9 +34,9 @@ serve(async (req) => {
       );
     }
 
-    if (!carriers || carriers.length === 0) {
+    if (!stressors || stressors.length === 0) {
       return new Response(
-        JSON.stringify({ error: "At least one carrier must be provided" }),
+        JSON.stringify({ error: "At least one stressor must be provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -46,16 +46,16 @@ serve(async (req) => {
       throw new Error("OPENAI_API_KEY is not configured");
     }
 
-    // Build carrier descriptions for the prompt
-    const carrierPrompts = carriers.map(c => {
+    // Build stressor descriptions for the prompt
+    const stressorPrompts = stressors.map(c => {
       const highValues = c.highPolarityValues.map(v => `${v.label} (${v.code})`).join(", ");
       const lowValues = c.lowPolarityValues.map(v => `${v.label} (${v.code})`).join(", ");
 
       return `
-CARRIER: ${c.carrierName}
-Description: ${c.carrierDescription}
-Values favored by HIGH ${c.carrierName}: ${highValues || "none strongly"}
-Values favored by LOW ${c.carrierName}: ${lowValues || "none strongly"}`;
+STRESSOR: ${c.stressorName}
+Description: ${c.stressorDescription}
+Values favored by HIGH ${c.stressorName}: ${highValues || "none strongly"}
+Values favored by LOW ${c.stressorName}: ${lowValues || "none strongly"}`;
     }).join("\n\n");
 
     const systemPrompt = `You are an expert in organizational psychology and Schwartz's Theory of Basic Human Values.
@@ -67,8 +67,8 @@ For each scenario:
 2. Frame it as a question to ask the hiring manager about what they would prefer
 3. Present two behavioral options (A and B) that authentically represent different value priorities
 4. Make both options reasonable - neither should be obviously "wrong"
-5. Option A should favor values with HIGH polarity on the given carrier dimension
-6. Option B should favor values with LOW polarity on the given carrier dimension
+5. Option A should favor values with HIGH polarity on the given stressor dimension
+6. Option B should favor values with LOW polarity on the given stressor dimension
 7. Keep scenarios concise (2-3 sentences for setup ending with "Would you prefer them to...", 1 sentence per option)
 
 IMPORTANT: Frame scenarios in THIRD PERSON as questions about "the person in this role" - NOT in second person ("you"). These are questions for candidates to ask hiring managers.
@@ -94,15 +94,15 @@ ${jobTitle ? `JOB TITLE: ${jobTitle}\n` : ""}
 JOB DESCRIPTION:
 ${jobDescription}
 
-Generate ONE scenario/question for EACH of these carriers:
-${carrierPrompts}
+Generate ONE scenario/question for EACH of these stressors:
+${stressorPrompts}
 
 Return JSON in this exact format:
 {
   "scenarios": [
     {
-      "carrierId": "the_carrier_id",
-      "carrierName": "Carrier Name",
+      "stressorId": "the_stressor_id",
+      "stressorName": "Stressor Name",
       "setup": "Imagine [specific situation from the job], leaving the person in this role [context]. Would you prefer them to...",
       "optionA": "[Specific action favoring high-polarity values, starting with a verb]",
       "optionB": "[Specific action favoring low-polarity values, starting with a verb]",
@@ -112,7 +112,7 @@ Return JSON in this exact format:
   ]
 }`;
 
-    console.log("Generating clarification scenarios for", carriers.length, "carriers");
+    console.log("Generating clarification scenarios for", stressors.length, "stressors");
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

@@ -6,7 +6,7 @@ import { Navigation } from '@/components/Navigation';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircle';
 import { ConflictScenario } from '@/components/ConflictScenario';
-import { ProfileTensionCarriers } from '@/components/ProfileTensionCarriers';
+import { ProfileStressors } from '@/components/ProfileStressors';
 import { ValueScores } from '@/lib/schwartz-values';
 import { toast } from 'sonner';
 
@@ -366,8 +366,8 @@ export default function Compare() {
                   )}
                 </div>
 
-                {/* Tension-Amplifying Carriers */}
-                <ProfileTensionCarriers profiles={selectedArchetypeData} />
+                {/* Tension-Amplifying Stressors */}
+                <ProfileStressors profiles={selectedArchetypeData} />
 
                 <ConflictScenario selectedArchetypes={selectedArchetypes} customProfiles={customProfiles} />
               </>

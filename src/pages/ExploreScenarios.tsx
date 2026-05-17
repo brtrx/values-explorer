@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, Archetype } from '@/lib/archetypes';
 import { SCHWARTZ_VALUES } from '@/lib/schwartz-values';
-import { CARRIERS, VALUE_POLARITY_MAP, CarrierId, findBestCarriersForTension, getCarrierById } from '@/lib/carriers';
+import { STRESSORS, VALUE_POLARITY_MAP, StressorId, findBestStressorsForTension, getStressorById } from '@/lib/stressors';
 import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircle';
 import { ValueAbbreviation } from '@/components/ValueAbbreviation';
 import { toast } from 'sonner';
@@ -21,12 +21,12 @@ interface TensionLine {
   valueA: string;
   valueB: string;
   scoreDiff: number;
-  carriers: Array<{ carrierId: CarrierId; polarityDiff: number }>;
+  stressors: Array<{ stressorId: StressorId; polarityDiff: number }>;
 }
 
 export default function ExploreScenarios() {
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
-  const [selectedCarriers, setSelectedCarriers] = useState<CarrierId[]>([]);
+  const [selectedStressors, setSelectedStressors] = useState<StressorId[]>([]);
   const [scenario, setScenario] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['fictional']);
@@ -126,14 +126,14 @@ export default function ExploreScenarios() {
         
         // Only consider significant tensions
         if (combinedTension > 1.0) {
-          const carrierImpacts = findBestCarriersForTension(valueA.code, valueB.code, 3);
+          const stressorImpacts = findBestStressorsForTension(valueA.code, valueB.code, 3);
           
           tensions.push({
             valueA: valueA.code,
             valueB: valueB.code,
             scoreDiff: combinedTension,
-            carriers: carrierImpacts.map(c => ({
-              carrierId: c.carrier.id as CarrierId,
+            stressors: stressorImpacts.map(c => ({
+              stressorId: c.stressor.id as StressorId,
               polarityDiff: c.polarityDiff,
             })),
           });
@@ -147,23 +147,23 @@ export default function ExploreScenarios() {
       .slice(0, 3);
   }, [personaData]);
 
-  // Get all carriers that impact the tensions
-  const impactingCarriers = useMemo(() => {
-    const carrierMap = new Map<CarrierId, { carrier: typeof CARRIERS[CarrierId]; tensions: string[] }>();
+  // Get all stressors that impact the tensions
+  const impactingStressors = useMemo(() => {
+    const stressorMap = new Map<StressorId, { stressor: typeof STRESSORS[StressorId]; tensions: string[] }>();
     
     tensionLines.forEach(tension => {
-      tension.carriers.forEach(({ carrierId }) => {
-        const carrier = CARRIERS[carrierId];
-        if (carrier) {
-          if (!carrierMap.has(carrierId)) {
-            carrierMap.set(carrierId, { carrier, tensions: [] });
+      tension.stressors.forEach(({ stressorId }) => {
+        const stressor = STRESSORS[stressorId];
+        if (stressor) {
+          if (!stressorMap.has(stressorId)) {
+            stressorMap.set(stressorId, { stressor, tensions: [] });
           }
-          carrierMap.get(carrierId)!.tensions.push(`${tension.valueA} vs ${tension.valueB}`);
+          stressorMap.get(stressorId)!.tensions.push(`${tension.valueA} vs ${tension.valueB}`);
         }
       });
     });
     
-    return Array.from(carrierMap.entries()).map(([id, data]) => ({
+    return Array.from(stressorMap.entries()).map(([id, data]) => ({
       id,
       ...data,
     }));
@@ -179,26 +179,26 @@ export default function ExploreScenarios() {
       }
       return [...prev, name];
     });
-    // Reset carriers when personas change
-    setSelectedCarriers([]);
+    // Reset stressors when personas change
+    setSelectedStressors([]);
     setScenario('');
   };
 
-  const toggleCarrier = (carrierId: CarrierId) => {
-    setSelectedCarriers(prev => 
-      prev.includes(carrierId) 
-        ? prev.filter(c => c !== carrierId)
-        : [...prev, carrierId]
+  const toggleStressor = (stressorId: StressorId) => {
+    setSelectedStressors(prev => 
+      prev.includes(stressorId) 
+        ? prev.filter(c => c !== stressorId)
+        : [...prev, stressorId]
     );
   };
 
-  const selectAllCarriers = () => {
-    setSelectedCarriers(impactingCarriers.map(c => c.id));
+  const selectAllStressors = () => {
+    setSelectedStressors(impactingStressors.map(c => c.id));
   };
 
   const generateScenario = async () => {
-    if (personaData.length !== 2 || selectedCarriers.length === 0) {
-      toast.error('Select 2 personas and at least 1 carrier');
+    if (personaData.length !== 2 || selectedStressors.length === 0) {
+      toast.error('Select 2 personas and at least 1 stressor');
       return;
     }
 
@@ -206,21 +206,21 @@ export default function ExploreScenarios() {
     setScenario('');
 
     try {
-      const carriers = selectedCarriers.map(id => {
-        const carrier = CARRIERS[id];
+      const stressors = selectedStressors.map(id => {
+        const stressor = STRESSORS[id];
         return {
           id,
-          name: carrier.name,
-          description: carrier.description,
+          name: stressor.name,
+          description: stressor.description,
         };
       });
 
       const tensions = tensionLines
-        .filter(t => t.carriers.some(c => selectedCarriers.includes(c.carrierId)))
+        .filter(t => t.stressors.some(c => selectedStressors.includes(c.stressorId)))
         .map(t => ({
           valueA: SCHWARTZ_VALUES.find(v => v.code === t.valueA)?.label || t.valueA,
           valueB: SCHWARTZ_VALUES.find(v => v.code === t.valueB)?.label || t.valueB,
-          carrier: t.carriers.find(c => selectedCarriers.includes(c.carrierId))?.carrierId || '',
+          stressor: t.stressors.find(c => selectedStressors.includes(c.stressorId))?.stressorId || '',
           explanation: `${personaData[0].name} values ${t.valueA} while ${personaData[1].name} values ${t.valueB}`,
         }));
 
@@ -233,7 +233,7 @@ export default function ExploreScenarios() {
             description: p.description,
             valueProfile: p.valueProfile,
           })),
-          carriers,
+          stressors,
           tensions,
         }),
       });
@@ -455,8 +455,8 @@ export default function ExploreScenarios() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Amplified by: {tension.carriers.map(c => 
-                          CARRIERS[c.carrierId]?.name
+                        Amplified by: {tension.stressors.map(c => 
+                          STRESSORS[c.stressorId]?.name
                         ).filter(Boolean).join(', ')}
                       </p>
                     </div>
@@ -465,31 +465,31 @@ export default function ExploreScenarios() {
               </Card>
             )}
 
-            {/* Impacting Carriers */}
-            {impactingCarriers.length > 0 && (
+            {/* Impacting Stressors */}
+            {impactingStressors.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>Select Carriers for Scenario</span>
-                    <Button variant="ghost" size="sm" onClick={selectAllCarriers}>
+                    <span>Select Stressors for Scenario</span>
+                    <Button variant="ghost" size="sm" onClick={selectAllStressors}>
                       Select All
                     </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {impactingCarriers.map(({ id, carrier, tensions }) => (
+                  {impactingStressors.map(({ id, stressor, tensions }) => (
                     <label 
                       key={id}
                       className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
                     >
                       <Checkbox
-                        checked={selectedCarriers.includes(id)}
-                        onCheckedChange={() => toggleCarrier(id)}
+                        checked={selectedStressors.includes(id)}
+                        onCheckedChange={() => toggleStressor(id)}
                         className="mt-1"
                       />
                       <div className="flex-1">
-                        <div className="font-medium">{carrier.name}</div>
-                        <p className="text-sm text-muted-foreground">{carrier.description}</p>
+                        <div className="font-medium">{stressor.name}</div>
+                        <p className="text-sm text-muted-foreground">{stressor.description}</p>
                         <p className="text-xs text-primary mt-1">
                           Aggravates: {tensions.join(', ')}
                         </p>
@@ -504,7 +504,7 @@ export default function ExploreScenarios() {
             {personaData.length === 2 && (
               <Button
                 onClick={generateScenario}
-                disabled={isGenerating || selectedCarriers.length === 0}
+                disabled={isGenerating || selectedStressors.length === 0}
                 className="w-full"
                 size="lg"
               >

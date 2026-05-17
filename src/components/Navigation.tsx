@@ -20,7 +20,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home', description: 'Landing page', icon: Home },
   { to: '/editor', label: 'Profile Editor', description: 'Create and edit value profiles', icon: Compass },
   { to: '/compare', label: 'Compare Profiles', description: 'Compare two profiles side-by-side', icon: Users },
-  { to: '/carriers', label: 'Tension Carriers', description: 'Explore value polarities', icon: Layers },
+  { to: '/stressors', label: 'Stressors', description: 'Explore value polarities', icon: Layers },
   { to: '/scenarios', label: 'Explore Scenarios', description: 'AI-generated conflict scenarios', icon: Sparkles },
   { to: '/job-analysis', label: 'Job Analysis', description: 'Analyze job descriptions', icon: Briefcase },
   { to: '/export', label: 'Data Export', description: 'Export profiles as JSON', icon: FileDown },

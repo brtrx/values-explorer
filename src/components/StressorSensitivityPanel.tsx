@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { ChevronDown, Zap, TrendingUp, ArrowUpDown, ArrowRight } from 'lucide-react';
 import { ValueScores } from '@/lib/schwartz-values';
 import {
-  getTopSensitiveCarriers,
-  getTopInternalTensionCarriers,
-  CarrierSensitivity,
-  CarrierInternalTension,
-} from '@/lib/carrier-sensitivity';
-import { CARRIERS, CarrierId } from '@/lib/carriers';
+  getTopSensitiveStressors,
+  getTopInternalTensionStressors,
+  StressorSensitivity,
+  StressorInternalTension,
+} from '@/lib/stressor-sensitivity';
+import { STRESSORS, StressorId } from '@/lib/stressors';
 import { ValueAbbreviation } from '@/components/ValueAbbreviation';
 import {
   Collapsible,
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
-interface CarrierSensitivityPanelProps {
+interface StressorSensitivityPanelProps {
   scores: ValueScores;
 }
 
@@ -43,8 +43,8 @@ function SensitivityBar({ value, max }: { value: number; max: number }) {
   );
 }
 
-function TopCarrierCard({ sensitivity, maxSensitivity }: { 
-  sensitivity: CarrierSensitivity; 
+function TopStressorCard({ sensitivity, maxSensitivity }: { 
+  sensitivity: StressorSensitivity; 
   maxSensitivity: number;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -62,9 +62,9 @@ function TopCarrierCard({ sensitivity, maxSensitivity }: {
               {isPositive ? <TrendingUp className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
             </div>
             <div className="flex-1 text-left min-w-0">
-              <h4 className="font-medium text-sm truncate">{sensitivity.carrierName}</h4>
+              <h4 className="font-medium text-sm truncate">{sensitivity.stressorName}</h4>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
-                {CARRIERS[sensitivity.carrierId as CarrierId]?.description}
+                {STRESSORS[sensitivity.stressorId as StressorId]?.description}
               </p>
               <SensitivityBar value={sensitivity.totalSensitivity} max={maxSensitivity} />
             </div>
@@ -103,7 +103,7 @@ function TopCarrierCard({ sensitivity, maxSensitivity }: {
   );
 }
 
-function InternalTensionCard({ tension }: { tension: CarrierInternalTension }) {
+function InternalTensionCard({ tension }: { tension: StressorInternalTension }) {
   const [isOpen, setIsOpen] = useState(false);
   
   return (
@@ -115,9 +115,9 @@ function InternalTensionCard({ tension }: { tension: CarrierInternalTension }) {
               <ArrowUpDown className="w-4 h-4" />
             </div>
             <div className="flex-1 text-left min-w-0">
-              <h4 className="font-medium text-sm truncate">{tension.carrierName}</h4>
+              <h4 className="font-medium text-sm truncate">{tension.stressorName}</h4>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
-                {CARRIERS[tension.carrierId as CarrierId]?.description}
+                {STRESSORS[tension.stressorId as StressorId]?.description}
               </p>
               <p className="text-xs text-muted-foreground">
                 Range: {tension.range.toFixed(2)} (σ: {tension.standardDeviation.toFixed(3)})
@@ -154,7 +154,7 @@ function InternalTensionCard({ tension }: { tension: CarrierInternalTension }) {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                This carrier creates internal conflict between your high and low priority values.
+                This stressor creates internal conflict between your high and low priority values.
               </p>
             </div>
           </div>
@@ -164,36 +164,36 @@ function InternalTensionCard({ tension }: { tension: CarrierInternalTension }) {
   );
 }
 
-export function CarrierSensitivityPanel({ scores }: CarrierSensitivityPanelProps) {
-  const topCarriers = useMemo(() => getTopSensitiveCarriers(scores, 5), [scores]);
-  const internalTensions = useMemo(() => getTopInternalTensionCarriers(scores, 5), [scores]);
+export function StressorSensitivityPanel({ scores }: StressorSensitivityPanelProps) {
+  const topStressors = useMemo(() => getTopSensitiveStressors(scores, 5), [scores]);
+  const internalTensions = useMemo(() => getTopInternalTensionStressors(scores, 5), [scores]);
   
   const maxSensitivity = useMemo(() => {
-    return Math.max(...topCarriers.map(c => c.absoluteSensitivity), 0.1);
-  }, [topCarriers]);
+    return Math.max(...topStressors.map(c => c.absoluteSensitivity), 0.1);
+  }, [topStressors]);
   
   return (
     <div className="space-y-6">
-      {/* Top Sensitive Carriers */}
+      {/* Top Sensitive Stressors */}
       <div>
         <h3 className="font-serif text-lg font-semibold mb-2">
-          Carrier Sensitivity
+          Stressor Sensitivity
         </h3>
         <p className="text-sm text-muted-foreground mb-3">
-          These carriers have the strongest effect on this profile. Positive values indicate 
-          the carrier satisfies the profile's values; negative values indicate frustration.
+          These stressors have the strongest effect on this profile. Positive values indicate 
+          the stressor satisfies the profile's values; negative values indicate frustration.
         </p>
         <Link 
-          to="/carriers" 
+          to="/stressors" 
           className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-4"
         >
-          Explore Tension Carriers
+          Explore Stressors
           <ArrowRight className="w-3 h-3" />
         </Link>
         <div className="space-y-2">
-          {topCarriers.map(sensitivity => (
-            <TopCarrierCard 
-              key={sensitivity.carrierId} 
+          {topStressors.map(sensitivity => (
+            <TopStressorCard 
+              key={sensitivity.stressorId} 
               sensitivity={sensitivity} 
               maxSensitivity={maxSensitivity}
             />
@@ -201,18 +201,18 @@ export function CarrierSensitivityPanel({ scores }: CarrierSensitivityPanelProps
         </div>
       </div>
       
-      {/* Internal Tension Carriers */}
+      {/* Internal Stressors */}
       <div>
         <h3 className="font-serif text-lg font-semibold mb-2">
-          Internal Tension Carriers
+          Internal Stressors
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          These carriers create the most internal conflict within this profile—situations 
+          These stressors create the most internal conflict within this profile—situations 
           where your high-priority values respond very differently.
         </p>
         <div className="space-y-2">
           {internalTensions.map(tension => (
-            <InternalTensionCard key={tension.carrierId} tension={tension} />
+            <InternalTensionCard key={tension.stressorId} tension={tension} />
           ))}
         </div>
       </div>

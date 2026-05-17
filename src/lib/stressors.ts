@@ -1,36 +1,36 @@
 /**
- * Carriers: Decision-Space Primitives for Value-Scenario Generation
+ * Stressors: Decision-Space Primitives for Value-Scenario Generation
  * 
  * CONCEPTUAL FRAMEWORK:
  * 
  * Schwartz values exist in MOTIVATION SPACE — they describe what people care about.
  * But values alone don't predict behavior; they require a DECISION CONTEXT.
  * 
- * Carriers exist in DECISION SPACE — they represent forms of scarcity, constraint,
+ * Stressors exist in DECISION SPACE — they represent forms of scarcity, constraint,
  * or tension that force tradeoffs and make latent value differences behaviorally salient.
  * 
- * Without a relevant carrier, two people with different values may behave identically
- * (no scarcity = no forced choice). Carriers are the "pressure" that reveals values.
+ * Without a relevant stressor, two people with different values may behave identically
+ * (no scarcity = no forced choice). Stressors are the "pressure" that reveals values.
  * 
  * POLARITY VECTORS:
  * 
- * A polarity vector maps each Schwartz value to each carrier, indicating how
- * increasing that carrier's intensity tends to satisfy (+) or frustrate (-) the value.
+ * A polarity vector maps each Schwartz value to each stressor, indicating how
+ * increasing that stressor's intensity tends to satisfy (+) or frustrate (-) the value.
  * 
  * Example: Humility has negative polarity on Attention/Recognition because
  * increasing public attention frustrates the humble person's preference to
  * recognize their insignificance in the larger scheme.
  * 
- * These vectors are used to SELECT which carrier best exposes a given value-value
- * tension. If two values have opposite polarities on a carrier, that carrier
+ * These vectors are used to SELECT which stressor best exposes a given value-value
+ * tension. If two values have opposite polarities on a stressor, that stressor
  * will make their conflict behaviorally visible.
  */
 
 // ============================================================================
-// CARRIER TYPES
+// STRESSOR TYPES
 // ============================================================================
 
-export type CarrierId = 
+export type StressorId = 
   | 'risk_uncertainty'
   | 'control_authority'
   | 'resources_allocation'
@@ -44,7 +44,7 @@ export type CarrierId =
   | 'change_stability'
   | 'boundary_permeability';
 
-export interface CarrierParameter {
+export interface StressorParameter {
   id: string;
   name: string;
   description: string;
@@ -56,25 +56,25 @@ export interface CarrierParameter {
   defaultValue: number;
 }
 
-export interface Carrier {
-  id: CarrierId;
+export interface Stressor {
+  id: StressorId;
   name: string;
   description: string;
-  /** A concrete example scenario illustrating this carrier in action */
+  /** A concrete example scenario illustrating this stressor in action */
   example: string;
   /** 
-   * Parameters that can be tuned to intensify or soften the carrier.
-   * Each parameter represents a dimension of the carrier that affects
+   * Parameters that can be tuned to intensify or soften the stressor.
+   * Each parameter represents a dimension of the stressor that affects
    * how strongly it creates decision pressure.
    */
-  parameters: CarrierParameter[];
+  parameters: StressorParameter[];
 }
 
 // ============================================================================
-// CARRIER DEFINITIONS
+// STRESSOR DEFINITIONS
 // ============================================================================
 
-export const CARRIERS: Record<CarrierId, Carrier> = {
+export const STRESSORS: Record<StressorId, Stressor> = {
   risk_uncertainty: {
     id: 'risk_uncertainty',
     name: 'Risk / Uncertainty',
@@ -472,55 +472,55 @@ export const CARRIERS: Record<CarrierId, Carrier> = {
   },
 };
 
-export const CARRIER_IDS: CarrierId[] = Object.keys(CARRIERS) as CarrierId[];
+export const STRESSOR_IDS: StressorId[] = Object.keys(STRESSORS) as StressorId[];
 
 // ============================================================================
 // POLARITY VECTOR TYPES
 // ============================================================================
 
 /**
- * A polarity score indicates how a carrier's increase affects a value.
+ * A polarity score indicates how a stressor's increase affects a value.
  * 
  * Range: -1.0 to +1.0
  * 
- * +1.0 = Increasing this carrier strongly SATISFIES the value
- * +0.5 = Increasing this carrier moderately satisfies the value
- *  0.0 = The carrier is orthogonal / weakly related to the value
- * -0.5 = Increasing this carrier moderately FRUSTRATES the value
- * -1.0 = Increasing this carrier strongly frustrates the value
+ * +1.0 = Increasing this stressor strongly SATISFIES the value
+ * +0.5 = Increasing this stressor moderately satisfies the value
+ *  0.0 = The stressor is orthogonal / weakly related to the value
+ * -0.5 = Increasing this stressor moderately FRUSTRATES the value
+ * -1.0 = Increasing this stressor strongly frustrates the value
  * 
  * USAGE:
- * To find which carrier best exposes a value-value tension, look for carriers
+ * To find which stressor best exposes a value-value tension, look for stressors
  * where the two values have OPPOSITE polarities. The larger the difference,
  * the more visible the conflict will be in that decision context.
  */
 export type PolarityScore = number; // -1.0 to +1.0
 
 /**
- * Maps each carrier to a polarity score for a given value.
+ * Maps each stressor to a polarity score for a given value.
  */
-export type PolarityVector = Record<CarrierId, PolarityScore>;
+export type PolarityVector = Record<StressorId, PolarityScore>;
 
 /**
- * Maps each Schwartz value code to its polarity vector over all carriers.
+ * Maps each Schwartz value code to its polarity vector over all stressors.
  */
 export type ValuePolarityMap = Record<string, PolarityVector>;
 
 // ============================================================================
-// VALUE-CARRIER POLARITY MAPPINGS
+// VALUE-STRESSOR POLARITY MAPPINGS
 // ============================================================================
 
 /**
  * POLARITY VECTORS FOR ALL 19 SCHWARTZ VALUES
  * 
- * These mappings encode how each value relates to each carrier dimension.
- * They are used to SELECT appropriate carriers for exposing value conflicts,
+ * These mappings encode how each value relates to each stressor dimension.
+ * They are used to SELECT appropriate stressors for exposing value conflicts,
  * not to define the conflicts themselves (which exist in motivation space).
  * 
  * Derivation notes:
  * - Positive polarity: the value is advanced when this scarcity/constraint increases
  * - Negative polarity: the value is frustrated when this scarcity/constraint increases
- * - Near-zero: the carrier doesn't strongly relate to this value's core concern
+ * - Near-zero: the stressor doesn't strongly relate to this value's core concern
  */
 export const VALUE_POLARITY_MAP: ValuePolarityMap = {
   // =========================================================================
@@ -856,25 +856,25 @@ export function getPolarityVector(valueCode: string): PolarityVector | undefined
 }
 
 /**
- * Get a specific polarity score for a value-carrier pair.
+ * Get a specific polarity score for a value-stressor pair.
  */
-export function getPolarity(valueCode: string, carrierId: CarrierId): PolarityScore | undefined {
-  return VALUE_POLARITY_MAP[valueCode]?.[carrierId];
+export function getPolarity(valueCode: string, stressorId: StressorId): PolarityScore | undefined {
+  return VALUE_POLARITY_MAP[valueCode]?.[stressorId];
 }
 
 /**
- * Calculate the polarity difference between two values on a carrier.
- * Larger absolute values indicate that this carrier would expose greater tension.
+ * Calculate the polarity difference between two values on a stressor.
+ * Larger absolute values indicate that this stressor would expose greater tension.
  * 
  * @returns Difference in polarity (-2.0 to +2.0), or undefined if values not found
  */
 export function getPolarityDifference(
   valueCodeA: string, 
   valueCodeB: string, 
-  carrierId: CarrierId
+  stressorId: StressorId
 ): number | undefined {
-  const polarityA = getPolarity(valueCodeA, carrierId);
-  const polarityB = getPolarity(valueCodeB, carrierId);
+  const polarityA = getPolarity(valueCodeA, stressorId);
+  const polarityB = getPolarity(valueCodeB, stressorId);
   
   if (polarityA === undefined || polarityB === undefined) return undefined;
   
@@ -882,24 +882,24 @@ export function getPolarityDifference(
 }
 
 /**
- * Find the carriers that would best expose a tension between two values.
- * Returns carriers sorted by the absolute polarity difference (highest first).
+ * Find the stressors that would best expose a tension between two values.
+ * Returns stressors sorted by the absolute polarity difference (highest first).
  * 
  * This is the key function for scenario generation: given two values in conflict,
  * it identifies which decision contexts would make that conflict behaviorally visible.
  */
-export function findBestCarriersForTension(
+export function findBestStressorsForTension(
   valueCodeA: string,
   valueCodeB: string,
   limit: number = 3
-): Array<{ carrier: Carrier; polarityDiff: number }> {
-  const results: Array<{ carrier: Carrier; polarityDiff: number }> = [];
+): Array<{ stressor: Stressor; polarityDiff: number }> {
+  const results: Array<{ stressor: Stressor; polarityDiff: number }> = [];
   
-  for (const carrierId of CARRIER_IDS) {
-    const diff = getPolarityDifference(valueCodeA, valueCodeB, carrierId);
+  for (const stressorId of STRESSOR_IDS) {
+    const diff = getPolarityDifference(valueCodeA, valueCodeB, stressorId);
     if (diff !== undefined) {
       results.push({
-        carrier: CARRIERS[carrierId],
+        stressor: STRESSORS[stressorId],
         polarityDiff: diff,
       });
     }
@@ -912,15 +912,15 @@ export function findBestCarriersForTension(
 }
 
 /**
- * Get all carrier definitions as an array.
+ * Get all stressor definitions as an array.
  */
-export function getCarriers(): Carrier[] {
-  return Object.values(CARRIERS);
+export function getStressors(): Stressor[] {
+  return Object.values(STRESSORS);
 }
 
 /**
- * Get a carrier by its ID.
+ * Get a stressor by its ID.
  */
-export function getCarrierById(id: CarrierId): Carrier | undefined {
-  return CARRIERS[id];
+export function getStressorById(id: StressorId): Stressor | undefined {
+  return STRESSORS[id];
 }

@@ -2,17 +2,17 @@
  * Polarity Explanations
  * 
  * This file provides human-readable explanations for why each value
- * has a particular polarity score on each carrier. These explanations
+ * has a particular polarity score on each stressor. These explanations
  * help users understand the psychological rationale behind the mappings.
  */
 
-import { CarrierId } from './carriers';
+import { StressorId } from './stressors';
 
 /**
- * Each explanation describes why increasing the carrier's intensity
+ * Each explanation describes why increasing the stressor's intensity
  * tends to satisfy (+) or frustrate (-) the value.
  */
-export type PolarityExplanationMap = Record<string, Record<CarrierId, string>>;
+export type PolarityExplanationMap = Record<string, Record<StressorId, string>>;
 
 export const POLARITY_EXPLANATIONS: PolarityExplanationMap = {
   // =========================================================================
@@ -318,8 +318,8 @@ export const POLARITY_EXPLANATIONS: PolarityExplanationMap = {
 };
 
 /**
- * Get the explanation for a specific value-carrier polarity.
+ * Get the explanation for a specific value-stressor polarity.
  */
-export function getPolarityExplanation(valueCode: string, carrierId: CarrierId): string | undefined {
-  return POLARITY_EXPLANATIONS[valueCode]?.[carrierId];
+export function getPolarityExplanation(valueCode: string, stressorId: StressorId): string | undefined {
+  return POLARITY_EXPLANATIONS[valueCode]?.[stressorId];
 }

@@ -9,18 +9,18 @@ import {
   analyzeForClarification,
   calculateUpdatedScores,
   responseToStrength,
-  selectOptimalCarriers,
-  CarrierSpreadInfo,
+  selectOptimalStressors,
+  StressorSpreadInfo,
   UndecidedValue,
 } from '@/lib/job-clarification';
-import { CarrierId } from '@/lib/carriers';
+import { StressorId } from '@/lib/stressors';
 import { toast } from 'sonner';
 
 const CLARIFICATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-clarification-scenarios`;
 
 interface Scenario {
-  carrierId: string;
-  carrierName: string;
+  stressorId: string;
+  stressorName: string;
   setup: string;
   optionA: string;
   optionB: string;
@@ -43,18 +43,18 @@ export function ClarificationPanel({
   confidence,
   onScoresUpdate,
 }: ClarificationPanelProps) {
-  const [maxCarriers, setMaxCarriers] = useState(4);
+  const [maxStressors, setMaxStressors] = useState(4);
   const [minSpread, setMinSpread] = useState(0.8);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [responses, setResponses] = useState<Record<string, ResponseValue>>({});
   const [isGenerating, setIsGenerating] = useState(false);
-  const [regeneratingCarrier, setRegeneratingCarrier] = useState<string | null>(null);
+  const [regeneratingStressor, setRegeneratingStressor] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [selectedValueCodes, setSelectedValueCodes] = useState<Set<string>>(new Set());
   // Store the analysis snapshot used when generating scenarios
   const [generatedAnalysis, setGeneratedAnalysis] = useState<{
     undecidedValues: UndecidedValue[];
-    selectedCarriers: CarrierSpreadInfo[];
+    selectedStressors: StressorSpreadInfo[];
   } | null>(null);
 
   // Get all undecided values first (before filtering)
@@ -69,7 +69,7 @@ export function ClarificationPanel({
     if (selectedValueCodes.size === 0) {
       return {
         undecidedValues: [],
-        selectedCarriers: [],
+        selectedStressors: [],
         canClarify: false,
         reason: 'Select at least 2 values to clarify.',
       };
@@ -80,30 +80,30 @@ export function ClarificationPanel({
     if (valuesToUse.length < 2) {
       return {
         undecidedValues: valuesToUse,
-        selectedCarriers: [],
+        selectedStressors: [],
         canClarify: false,
         reason: 'Select at least 2 values to generate meaningful comparisons.',
       };
     }
 
-    // Use selectOptimalCarriers with filtered values
-    const carriers = selectOptimalCarriers(valuesToUse, maxCarriers, minSpread);
+    // Use selectOptimalStressors with filtered values
+    const stressors = selectOptimalStressors(valuesToUse, maxStressors, minSpread);
 
-    if (carriers.length === 0) {
+    if (stressors.length === 0) {
       return {
         undecidedValues: valuesToUse,
-        selectedCarriers: [],
+        selectedStressors: [],
         canClarify: false,
-        reason: `No carriers meet the minimum spread threshold of ${minSpread}. Try lowering the threshold.`,
+        reason: `No stressors meet the minimum spread threshold of ${minSpread}. Try lowering the threshold.`,
       };
     }
 
     return {
       undecidedValues: valuesToUse,
-      selectedCarriers: carriers,
+      selectedStressors: stressors,
       canClarify: true,
     };
-  }, [allUndecidedAnalysis, selectedValueCodes, maxCarriers, minSpread]);
+  }, [allUndecidedAnalysis, selectedValueCodes, maxStressors, minSpread]);
 
   // Toggle value selection
   const toggleValueSelection = (code: string) => {
@@ -146,11 +146,11 @@ export function ClarificationPanel({
     let updatedScores = { ...scores };
     const undecidedCodes = analysisToUse.undecidedValues.map(v => v.code);
 
-    for (const [carrierId, response] of Object.entries(responses)) {
+    for (const [stressorId, response] of Object.entries(responses)) {
       const strength = responseToStrength(response);
       updatedScores = calculateUpdatedScores(
         updatedScores,
-        carrierId as CarrierId,
+        stressorId as StressorId,
         strength,
         undecidedCodes
       );
@@ -169,7 +169,7 @@ export function ClarificationPanel({
     // Store the current analysis snapshot
     setGeneratedAnalysis({
       undecidedValues: analysis.undecidedValues,
-      selectedCarriers: analysis.selectedCarriers,
+      selectedStressors: analysis.selectedStressors,
     });
 
     try {
@@ -181,10 +181,10 @@ export function ClarificationPanel({
         },
         body: JSON.stringify({
           jobDescription,
-          carriers: analysis.selectedCarriers.map(c => ({
-            carrierId: c.carrierId,
-            carrierName: c.carrierName,
-            carrierDescription: c.carrierDescription,
+          stressors: analysis.selectedStressors.map(c => ({
+            stressorId: c.stressorId,
+            stressorName: c.stressorName,
+            stressorDescription: c.stressorDescription,
             highPolarityValues: c.highPolarityValues,
             lowPolarityValues: c.lowPolarityValues,
           })),
@@ -207,13 +207,13 @@ export function ClarificationPanel({
     }
   };
 
-  const regenerateScenario = async (carrierId: string) => {
+  const regenerateScenario = async (stressorId: string) => {
     // Use stored analysis if available, otherwise fall back to current
     const analysisToUse = generatedAnalysis || analysis;
-    const carrier = analysisToUse.selectedCarriers.find(c => c.carrierId === carrierId);
-    if (!carrier) return;
+    const stressor = analysisToUse.selectedStressors.find(c => c.stressorId === stressorId);
+    if (!stressor) return;
 
-    setRegeneratingCarrier(carrierId);
+    setRegeneratingStressor(stressorId);
 
     try {
       const response = await fetch(CLARIFICATION_URL, {
@@ -224,12 +224,12 @@ export function ClarificationPanel({
         },
         body: JSON.stringify({
           jobDescription,
-          carriers: [{
-            carrierId: carrier.carrierId,
-            carrierName: carrier.carrierName,
-            carrierDescription: carrier.carrierDescription,
-            highPolarityValues: carrier.highPolarityValues,
-            lowPolarityValues: carrier.lowPolarityValues,
+          stressors: [{
+            stressorId: stressor.stressorId,
+            stressorName: stressor.stressorName,
+            stressorDescription: stressor.stressorDescription,
+            highPolarityValues: stressor.highPolarityValues,
+            lowPolarityValues: stressor.lowPolarityValues,
           }],
         }),
       });
@@ -244,24 +244,24 @@ export function ClarificationPanel({
 
       if (newScenario) {
         setScenarios(prev =>
-          prev.map(s => (s.carrierId === carrierId ? newScenario : s))
+          prev.map(s => (s.stressorId === stressorId ? newScenario : s))
         );
-        // Clear response for this carrier since scenario changed
+        // Clear response for this stressor since scenario changed
         setResponses(prev => {
           const updated = { ...prev };
-          delete updated[carrierId];
+          delete updated[stressorId];
           return updated;
         });
       }
     } catch (error) {
       toast.error('Failed to regenerate scenario');
     } finally {
-      setRegeneratingCarrier(null);
+      setRegeneratingStressor(null);
     }
   };
 
-  const handleResponse = (carrierId: string, value: ResponseValue) => {
-    setResponses(prev => ({ ...prev, [carrierId]: value }));
+  const handleResponse = (stressorId: string, value: ResponseValue) => {
+    setResponses(prev => ({ ...prev, [stressorId]: value }));
   };
 
   const applyUpdatedScores = () => {
@@ -314,19 +314,19 @@ export function ClarificationPanel({
             the role prioritizes. Values marked "medium" or "unspecified" confidence need clarification.
           </p>
           <p>
-            <strong>The solution:</strong> We identify "tension carriers" - situational dimensions
+            <strong>The solution:</strong> We identify "stressors" - situational dimensions
             that force trade-offs between different values. By presenting scenarios that activate
-            these carriers, we can infer which values the role actually emphasizes.
+            these stressors, we can infer which values the role actually emphasizes.
           </p>
           <p>
-            <strong>How carriers are selected:</strong> For each carrier, we calculate its "spread" -
-            how much the undecided values differ in their response to that carrier. Higher spread
-            means the carrier better differentiates between values. We select carriers with the
+            <strong>How stressors are selected:</strong> For each stressor, we calculate its "spread" -
+            how much the undecided values differ in their response to that stressor. Higher spread
+            means the stressor better differentiates between values. We select stressors with the
             highest spread.
           </p>
           <p>
             <strong>How scores update:</strong> When you respond to a scenario, values with positive
-            polarity on that carrier increase, while values with negative polarity decrease.
+            polarity on that stressor increase, while values with negative polarity decrease.
             The strength of your response (strongly/somewhat) determines the magnitude.
           </p>
         </div>
@@ -391,12 +391,12 @@ export function ClarificationPanel({
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Maximum carriers</span>
-              <span className="font-medium">{maxCarriers}</span>
+              <span>Maximum stressors</span>
+              <span className="font-medium">{maxStressors}</span>
             </div>
             <Slider
-              value={[maxCarriers]}
-              onValueChange={([v]) => setMaxCarriers(v)}
+              value={[maxStressors]}
+              onValueChange={([v]) => setMaxStressors(v)}
               min={1}
               max={8}
               step={1}
@@ -419,10 +419,10 @@ export function ClarificationPanel({
       )}
 
       {/* Polarity matrix - showing our work */}
-      {analysis.selectedCarriers.length > 0 && (
+      {analysis.selectedStressors.length > 0 && (
         <div>
           <h3 className="text-sm font-medium mb-2">
-            Value × Carrier Polarity Matrix
+            Value × Stressor Polarity Matrix
             <span className="font-normal text-muted-foreground ml-2">
               (spread shown in header)
             </span>
@@ -432,9 +432,9 @@ export function ClarificationPanel({
               <thead>
                 <tr>
                   <th className="text-left p-2 border-b">Value</th>
-                  {analysis.selectedCarriers.map(c => (
-                    <th key={c.carrierId} className="p-2 border-b text-center">
-                      <div>{c.carrierName}</div>
+                  {analysis.selectedStressors.map(c => (
+                    <th key={c.stressorId} className="p-2 border-b text-center">
+                      <div>{c.stressorName}</div>
                       <div className="text-muted-foreground font-normal">
                         spread: {c.spread.toFixed(2)}
                       </div>
@@ -446,11 +446,11 @@ export function ClarificationPanel({
                 {analysis.undecidedValues.map(value => (
                   <tr key={value.code}>
                     <td className="p-2 border-b font-medium">{value.label}</td>
-                    {analysis.selectedCarriers.map(carrier => {
-                      const polarityInfo = carrier.allPolarities.find(p => p.code === value.code);
+                    {analysis.selectedStressors.map(stressor => {
+                      const polarityInfo = stressor.allPolarities.find(p => p.code === value.code);
                       const polarity = polarityInfo?.polarity ?? 0;
                       return (
-                        <td key={carrier.carrierId} className="p-2 border-b text-center">
+                        <td key={stressor.stressorId} className="p-2 border-b text-center">
                           <span
                             className={`inline-block px-2 py-0.5 rounded ${getPolarityColor(polarity)}`}
                           >
@@ -494,30 +494,30 @@ export function ClarificationPanel({
           <h3 className="text-sm font-medium">Clarifying Scenarios to pose to the hiring manager</h3>
 
           {scenarios.map(scenario => {
-            const carrier = generatedAnalysis.selectedCarriers.find(
-              c => c.carrierId === scenario.carrierId
+            const stressor = generatedAnalysis.selectedStressors.find(
+              c => c.stressorId === scenario.stressorId
             );
-            const currentResponse = responses[scenario.carrierId];
+            const currentResponse = responses[scenario.stressorId];
 
             return (
-              <Card key={scenario.carrierId} className="p-4 space-y-4">
+              <Card key={scenario.stressorId} className="p-4 space-y-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h4 className="font-medium text-primary">{scenario.carrierName}</h4>
+                    <h4 className="font-medium text-primary">{scenario.stressorName}</h4>
                     <p className="text-xs text-muted-foreground">
                       Differentiates:{' '}
-                      {carrier?.highPolarityValues.map(v => v.label).join(', ') || 'values'}
+                      {stressor?.highPolarityValues.map(v => v.label).join(', ') || 'values'}
                       {' vs '}
-                      {carrier?.lowPolarityValues.map(v => v.label).join(', ') || 'values'}
+                      {stressor?.lowPolarityValues.map(v => v.label).join(', ') || 'values'}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => regenerateScenario(scenario.carrierId)}
-                    disabled={regeneratingCarrier === scenario.carrierId}
+                    onClick={() => regenerateScenario(scenario.stressorId)}
+                    disabled={regeneratingStressor === scenario.stressorId}
                   >
-                    {regeneratingCarrier === scenario.carrierId ? (
+                    {regeneratingStressor === scenario.stressorId ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <RefreshCw className="w-4 h-4" />
@@ -557,7 +557,7 @@ export function ClarificationPanel({
                       return (
                         <button
                           key={value}
-                          onClick={() => handleResponse(scenario.carrierId, value)}
+                          onClick={() => handleResponse(scenario.stressorId, value)}
                           className={`px-3 py-1.5 text-xs rounded transition-colors ${
                             isSelected
                               ? value <= 2

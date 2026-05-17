@@ -11,7 +11,7 @@ interface PersonaData {
   valueProfile: Record<string, number>;
 }
 
-interface CarrierData {
+interface StressorData {
   id: string;
   name: string;
   description: string;
@@ -20,7 +20,7 @@ interface CarrierData {
 interface TensionData {
   valueA: string;
   valueB: string;
-  carrier: string;
+  stressor: string;
   explanation: string;
 }
 
@@ -30,9 +30,9 @@ serve(async (req) => {
   }
 
   try {
-    const { personas, carriers, tensions } = await req.json() as { 
+    const { personas, stressors, tensions } = await req.json() as { 
       personas: PersonaData[]; 
-      carriers: CarrierData[];
+      stressors: StressorData[];
       tensions: TensionData[];
     };
     
@@ -43,9 +43,9 @@ serve(async (req) => {
       );
     }
 
-    if (!carriers || carriers.length === 0) {
+    if (!stressors || stressors.length === 0) {
       return new Response(
-        JSON.stringify({ error: "At least 1 carrier must be selected" }),
+        JSON.stringify({ error: "At least 1 stressor must be selected" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -71,10 +71,10 @@ serve(async (req) => {
 - Avoided/opposed: ${lowValues || 'none strongly opposed'}`;
     }).join('\n\n');
 
-    const carrierList = carriers.map(c => `- **${c.name}**: ${c.description}`).join('\n');
+    const stressorList = stressors.map(c => `- **${c.name}**: ${c.description}`).join('\n');
     
     const tensionList = tensions.map(t => 
-      `- ${t.valueA} vs ${t.valueB} (via ${t.carrier}): ${t.explanation}`
+      `- ${t.valueA} vs ${t.valueB} (via ${t.stressor}): ${t.explanation}`
     ).join('\n');
 
     const systemPrompt = `You are a dramatist and expert in Schwartz's Theory of Basic Human Values.
@@ -95,8 +95,8 @@ Write in a vivid, psychologically insightful style. Make each perspective authen
 
 ${personaSummaries}
 
-And these environmental conditions/carriers that will shape their interaction:
-${carrierList}
+And these environmental conditions/stressors that will shape their interaction:
+${stressorList}
 
 Key value tensions that will emerge:
 ${tensionList}
@@ -104,7 +104,7 @@ ${tensionList}
 Generate a rich scenario analysis with these three sections:
 
 ## SCENARIO SETUP
-(2-3 paragraphs) Describe a specific, concrete situation where these personas must interact while experiencing these carriers/conditions. Make it vivid and realistic - where are they, what's at stake, what decision or action has brought them into conflict?
+(2-3 paragraphs) Describe a specific, concrete situation where these personas must interact while experiencing these stressors/conditions. Make it vivid and realistic - where are they, what's at stake, what decision or action has brought them into conflict?
 
 ## THIRD-PARTY OBSERVATION
 (3-4 paragraphs) Write as an objective observer watching this conflict unfold. Describe what you see happening between these two personas. Note the subtext, the body language, the escalation or de-escalation patterns. Identify what each person seems to want and why they're clashing. Be insightful about the value dynamics at play.
@@ -118,7 +118,7 @@ Generate a rich scenario analysis with these three sections:
 Make each perspective genuinely reflect that persona's value system. Show how the same events look completely different through different value lenses.`;
 
     console.log("Generating persona scenario for:", personas.map(p => p.name).join(" vs "));
-    console.log("Carriers:", carriers.map(c => c.name).join(", "));
+    console.log("Stressors:", stressors.map(c => c.name).join(", "));
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

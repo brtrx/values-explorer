@@ -116,7 +116,7 @@ export default function Landing() {
               This site is an interactive exploration of human values—what we care about, why it matters, 
               and how different value priorities create both harmony and conflict. Using Schwartz's 
               scientifically validated framework, you can map value profiles, discover tensions, and 
-              explore how values express themselves through everyday carriers like money, time, and attention.
+              explore how values express themselves through everyday stressors like money, time, and attention.
             </p>
           </div>
         </div>
@@ -149,11 +149,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Tensions & Carriers Section */}
+      {/* Tensions & Stressors Section */}
       <section className="py-12 border-t">
         <div className="container">
           <div className="max-w-3xl mx-auto">
-            <h2 className="font-serif text-2xl font-bold mb-6">Tensions & Carriers</h2>
+            <h2 className="font-serif text-2xl font-bold mb-6">Tensions & Stressors</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <h3 className="font-semibold text-lg mb-3">Value Tensions</h3>
@@ -165,9 +165,9 @@ export default function Landing() {
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-3">Tension Carriers</h3>
+                <h3 className="font-semibold text-lg mb-3">Stressors</h3>
                 <p className="text-muted-foreground">
-                  Tension Carriers are forms of scarcity or constraint that force tradeoffs. They make 
+                  Stressors are forms of scarcity or constraint that force tradeoffs. They make 
                   latent value differences behaviorally visible by empowering or antagonising values 
                   in different ways.
                 </p>
@@ -201,10 +201,10 @@ export default function Landing() {
                   Visualize tensions between different value schemes and discover where conflicts arise.
                 </p>
               </Link>
-              <Link to="/carriers" className="group p-5 rounded-xl border bg-card hover:border-primary/30 hover:shadow-md transition-all">
+              <Link to="/stressors" className="group p-5 rounded-xl border bg-card hover:border-primary/30 hover:shadow-md transition-all">
                 <div className="flex items-center gap-3 mb-2">
                   <Layers className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold group-hover:text-primary transition-colors">Explore Tension Carriers</h3>
+                  <h3 className="font-semibold group-hover:text-primary transition-colors">Explore Stressors</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Discover the constraints that force tradeoffs and make value differences visible.

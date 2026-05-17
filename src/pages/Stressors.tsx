@@ -27,13 +27,13 @@ import {
 } from '@/components/ui/collapsible';
 import { SCHWARTZ_VALUES, HIGHER_ORDER_VALUES, HigherOrderValue, getValueByCode } from '@/lib/schwartz-values';
 import { 
-  CARRIERS, 
-  CARRIER_IDS, 
+  STRESSORS, 
+  STRESSOR_IDS, 
   VALUE_POLARITY_MAP, 
-  findBestCarriersForTension,
-  CarrierId,
+  findBestStressorsForTension,
+  StressorId,
   getPolarity,
-} from '@/lib/carriers';
+} from '@/lib/stressors';
 import { getPolarityExplanation } from '@/lib/polarity-explanations';
 import { ValueAbbreviation } from '@/components/ValueAbbreviation';
 import { cn } from '@/lib/utils';
@@ -53,11 +53,11 @@ function getPolarityTextColor(polarity: number): string {
   return 'text-foreground';
 }
 
-function PolarityCell({ polarity, valueCode, carrierId }: { polarity: number; valueCode: string; carrierId: CarrierId }) {
+function PolarityCell({ polarity, valueCode, stressorId }: { polarity: number; valueCode: string; stressorId: StressorId }) {
   const [open, setOpen] = useState(false);
   const value = getValueByCode(valueCode);
-  const carrier = CARRIERS[carrierId];
-  const explanation = getPolarityExplanation(valueCode, carrierId);
+  const stressor = STRESSORS[stressorId];
+  const explanation = getPolarityExplanation(valueCode, stressorId);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -78,7 +78,7 @@ function PolarityCell({ polarity, valueCode, carrierId }: { polarity: number; va
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold">{value?.label ?? valueCode}</p>
-              <p className="text-xs text-muted-foreground">{carrier.name}</p>
+              <p className="text-xs text-muted-foreground">{stressor.name}</p>
             </div>
             <div className={cn(
               'px-2 py-1 rounded text-sm font-bold',
@@ -102,15 +102,15 @@ function PolarityCell({ polarity, valueCode, carrierId }: { polarity: number; va
 function generateTensionExplanation(
   valueCodeA: string,
   valueCodeB: string,
-  carrierId: CarrierId
+  stressorId: StressorId
 ): string {
-  const carrier = CARRIERS[carrierId];
+  const stressor = STRESSORS[stressorId];
   const valueA = getValueByCode(valueCodeA);
   const valueB = getValueByCode(valueCodeB);
-  const polarityA = getPolarity(valueCodeA, carrierId) ?? 0;
-  const polarityB = getPolarity(valueCodeB, carrierId) ?? 0;
-  const explanationA = getPolarityExplanation(valueCodeA, carrierId);
-  const explanationB = getPolarityExplanation(valueCodeB, carrierId);
+  const polarityA = getPolarity(valueCodeA, stressorId) ?? 0;
+  const polarityB = getPolarity(valueCodeB, stressorId) ?? 0;
+  const explanationA = getPolarityExplanation(valueCodeA, stressorId);
+  const explanationB = getPolarityExplanation(valueCodeB, stressorId);
   const diff = Math.abs(polarityA - polarityB);
 
   if (!valueA || !valueB) return '';
@@ -132,34 +132,34 @@ function generateTensionExplanation(
   let explanation = '';
   
   if (diff >= 1.2) {
-    explanation = `This carrier creates **high tension** because the two values respond in opposite ways when ${carrier.name.toLowerCase()} increases.`;
+    explanation = `This stressor creates **high tension** because the two values respond in opposite ways when ${stressor.name.toLowerCase()} increases.`;
   } else if (diff >= 0.7) {
-    explanation = `This carrier creates **moderate tension**. The two values respond differently to changes in ${carrier.name.toLowerCase()}.`;
+    explanation = `This stressor creates **moderate tension**. The two values respond differently to changes in ${stressor.name.toLowerCase()}.`;
   } else {
-    explanation = `This carrier creates **weak tension** because both values respond similarly to ${carrier.name.toLowerCase()}.`;
+    explanation = `This stressor creates **weak tension** because both values respond similarly to ${stressor.name.toLowerCase()}.`;
   }
 
-  explanation += `\n\n**${valueA.label}** (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}): ${explanationA || `Is ${aEffect} when this carrier increases.`}`;
-  explanation += `\n\n**${valueB.label}** (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}): ${explanationB || `Is ${bEffect} when this carrier increases.`}`;
+  explanation += `\n\n**${valueA.label}** (${polarityA > 0 ? '+' : ''}${polarityA.toFixed(1)}): ${explanationA || `Is ${aEffect} when this stressor increases.`}`;
+  explanation += `\n\n**${valueB.label}** (${polarityB > 0 ? '+' : ''}${polarityB.toFixed(1)}): ${explanationB || `Is ${bEffect} when this stressor increases.`}`;
 
   return explanation;
 }
 
 function TensionResult({ 
-  carrierId, 
+  stressorId, 
   polarityDiff,
   valueCodeA,
   valueCodeB,
 }: { 
-  carrierId: CarrierId; 
+  stressorId: StressorId; 
   polarityDiff: number;
   valueCodeA: string;
   valueCodeB: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const carrier = CARRIERS[carrierId];
+  const stressor = STRESSORS[stressorId];
   const absDiff = Math.abs(polarityDiff);
-  const explanation = generateTensionExplanation(valueCodeA, valueCodeB, carrierId);
+  const explanation = generateTensionExplanation(valueCodeA, valueCodeB, stressorId);
   const valueA = getValueByCode(valueCodeA);
   const valueB = getValueByCode(valueCodeB);
 
@@ -176,7 +176,7 @@ function TensionResult({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div id={`carrier-${carrierId}`} className="rounded-lg border bg-card overflow-hidden scroll-mt-24">
+      <div id={`stressor-${stressorId}`} className="rounded-lg border bg-card overflow-hidden scroll-mt-24">
         <CollapsibleTrigger className="w-full">
           <div className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
             <div className={cn(
@@ -189,7 +189,7 @@ function TensionResult({
               {absDiff.toFixed(1)}
             </div>
             <div className="flex-1 text-left">
-              <h4 className="font-semibold">{carrier.name}</h4>
+              <h4 className="font-semibold">{stressor.name}</h4>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               {absDiff >= 1.2 ? (
@@ -228,16 +228,16 @@ function TensionResult({
                 </div>
               </div>
 
-              {/* Link to carrier details */}
+              {/* Link to stressor details */}
               <button 
                 onClick={() => {
-                  const el = document.getElementById(`carrier-list-${carrierId}`);
+                  const el = document.getElementById(`stressor-list-${stressorId}`);
                   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
                 className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
               >
                 <ArrowUp className="w-4 h-4" />
-                View full carrier description & parameters
+                View full stressor description & parameters
               </button>
             </div>
           </div>
@@ -247,7 +247,7 @@ function TensionResult({
   );
 }
 
-export default function Carriers() {
+export default function Stressors() {
   const [selectedValueA, setSelectedValueA] = useState<string>('');
   const [selectedValueB, setSelectedValueB] = useState<string>('');
   
@@ -255,7 +255,7 @@ export default function Carriers() {
     if (!selectedValueA || !selectedValueB || selectedValueA === selectedValueB) {
       return [];
     }
-    return findBestCarriersForTension(selectedValueA, selectedValueB, 12);
+    return findBestStressorsForTension(selectedValueA, selectedValueB, 12);
   }, [selectedValueA, selectedValueB]);
 
   const valuesByQuadrant = useMemo(() => {
@@ -274,7 +274,7 @@ export default function Carriers() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation
-        title="Tension Carriers & Polarity"
+        title="Stressors & Polarity"
         description="Decision-space primitives that expose value tensions"
       />
 
@@ -282,7 +282,7 @@ export default function Carriers() {
       <section className="py-12 border-b">
         <div className="container max-w-4xl">
           <div className="prose prose-gray dark:prose-invert max-w-none">
-            <h2 className="font-serif text-3xl font-bold mb-6">Understanding Tension Carriers</h2>
+            <h2 className="font-serif text-3xl font-bold mb-6">Understanding Stressors</h2>
             
             <div className="grid md:grid-cols-2 gap-6 not-prose mb-8">
               <div className="p-6 rounded-xl border bg-card">
@@ -295,7 +295,7 @@ export default function Carriers() {
               <div className="p-6 rounded-xl border bg-card">
                 <h3 className="font-serif text-lg font-semibold mb-2 text-primary">Decision Space</h3>
                 <p className="text-muted-foreground">
-                  <strong>Carriers</strong> are forms of scarcity or constraint that force tradeoffs. 
+                  <strong>Stressors</strong> are forms of scarcity or constraint that force tradeoffs. 
                   They make latent value differences behaviorally visible.
                 </p>
               </div>
@@ -305,10 +305,10 @@ export default function Carriers() {
               <div className="flex gap-3">
                 <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium mb-2">Why Carriers Matter</p>
+                  <p className="font-medium mb-2">Why Stressors Matter</p>
                   <p className="text-sm text-muted-foreground">
-                    Without a relevant carrier, two people with very different values may behave identically —
-                    no scarcity means no forced choice. Carriers are the "pressure" that reveals what people truly prioritize.
+                    Without a relevant stressor, two people with very different values may behave identically —
+                    no scarcity means no forced choice. Stressors are the "pressure" that reveals what people truly prioritize.
                   </p>
                 </div>
               </div>
@@ -323,8 +323,8 @@ export default function Carriers() {
                     Research supports that situational features systematically generate value tension. However:
                   </p>
                   <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-1 mb-3">
-                    <li>• Carrier effects are <strong>probabilistic, not deterministic</strong> — individual differences in identity, experience, and coping resources moderate their impact</li>
-                    <li>• The 12 carriers are <strong>analytical lenses, not independent variables</strong> — in practice, they overlap and correlate</li>
+                    <li>• Stressor effects are <strong>probabilistic, not deterministic</strong> — individual differences in identity, experience, and coping resources moderate their impact</li>
+                    <li>• The 12 stressors are <strong>analytical lenses, not independent variables</strong> — in practice, they overlap and correlate</li>
                     <li>• Effects are <strong>culturally and institutionally mediated</strong> — authority and autonomy tensions differ across contexts (healthcare vs. military vs. startups)</li>
                   </ul>
                   <Link to="/research" className="text-sm text-amber-700 dark:text-amber-400 hover:underline font-medium">
@@ -337,25 +337,25 @@ export default function Carriers() {
         </div>
       </section>
 
-      {/* The 12 Carriers */}
+      {/* The 12 Stressors */}
       <section className="py-12 border-b bg-muted/30">
         <div className="container">
-          <h2 className="font-serif text-3xl font-bold mb-8">The 12 Carriers</h2>
+          <h2 className="font-serif text-3xl font-bold mb-8">The 12 Stressors</h2>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {CARRIER_IDS.map(id => {
-              const carrier = CARRIERS[id];
+            {STRESSOR_IDS.map(id => {
+              const stressor = STRESSORS[id];
               return (
-                <div key={id} id={`carrier-list-${id}`} className="p-5 rounded-xl border bg-card scroll-mt-24">
-                  <h3 className="font-serif text-lg font-semibold mb-2">{carrier.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-3">{carrier.description}</p>
+                <div key={id} id={`stressor-list-${id}`} className="p-5 rounded-xl border bg-card scroll-mt-24">
+                  <h3 className="font-serif text-lg font-semibold mb-2">{stressor.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-3">{stressor.description}</p>
                   <div className="p-3 rounded-lg bg-muted/50 border border-dashed mb-4">
                     <p className="text-xs text-muted-foreground italic">
-                      <span className="font-medium not-italic">Example:</span> {carrier.example}
+                      <span className="font-medium not-italic">Example:</span> {stressor.example}
                     </p>
                   </div>
                   <div className="space-y-2">
-                    {carrier.parameters.map(param => (
+                    {stressor.parameters.map(param => (
                       <div key={param.id} className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">{param.lowLabel}</span>
                         <span className="px-2 py-0.5 rounded bg-muted font-medium">{param.name}</span>
@@ -375,7 +375,7 @@ export default function Carriers() {
         <div className="container">
           <h2 className="font-serif text-3xl font-bold mb-4">Polarity Heatmap</h2>
           <p className="text-muted-foreground mb-8 max-w-2xl">
-            Each cell shows how increasing a carrier's intensity tends to <span className="text-emerald-600 font-medium">satisfy (+)</span> or{' '}
+            Each cell shows how increasing a stressor's intensity tends to <span className="text-emerald-600 font-medium">satisfy (+)</span> or{' '}
             <span className="text-rose-600 font-medium">frustrate (-)</span> a value.
           </p>
 
@@ -386,17 +386,17 @@ export default function Carriers() {
                   <th className="text-left p-2 text-sm font-medium text-muted-foreground sticky left-0 bg-background z-10">
                     Value
                   </th>
-                  {CARRIER_IDS.map(id => (
+                  {STRESSOR_IDS.map(id => (
                     <th key={id} className="p-2 text-center">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="text-xs font-medium text-muted-foreground cursor-help whitespace-nowrap">
-                            {CARRIERS[id].name.split(' / ')[0]}
+                            {STRESSORS[id].name.split(' / ')[0]}
                           </span>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="font-semibold">{CARRIERS[id].name}</p>
-                          <p className="text-xs text-muted-foreground">{CARRIERS[id].description}</p>
+                          <p className="font-semibold">{STRESSORS[id].name}</p>
+                          <p className="text-xs text-muted-foreground">{STRESSORS[id].description}</p>
                         </TooltipContent>
                       </Tooltip>
                     </th>
@@ -408,7 +408,7 @@ export default function Carriers() {
                   <>
                     <tr key={`header-${quadrant}`}>
                       <td 
-                        colSpan={CARRIER_IDS.length + 1} 
+                        colSpan={STRESSOR_IDS.length + 1} 
                         className="pt-6 pb-2 px-2 text-sm font-semibold"
                         style={{ color: `hsl(var(--${HIGHER_ORDER_VALUES[quadrant].color}))` }}
                       >
@@ -420,11 +420,11 @@ export default function Carriers() {
                         <td className="p-2 sticky left-0 bg-background z-10">
                           <ValueAbbreviation code={value.code} className="text-sm" />
                         </td>
-                        {CARRIER_IDS.map(carrierId => {
-                          const polarity = VALUE_POLARITY_MAP[value.code]?.[carrierId] ?? 0;
+                        {STRESSOR_IDS.map(stressorId => {
+                          const polarity = VALUE_POLARITY_MAP[value.code]?.[stressorId] ?? 0;
                           return (
-                            <td key={carrierId} className="p-1">
-                              <PolarityCell polarity={polarity} valueCode={value.code} carrierId={carrierId} />
+                            <td key={stressorId} className="p-1">
+                              <PolarityCell polarity={polarity} valueCode={value.code} stressorId={stressorId} />
                             </td>
                           );
                         })}
@@ -468,7 +468,7 @@ export default function Carriers() {
         <div className="container max-w-4xl">
           <h2 className="font-serif text-3xl font-bold mb-4">Tension Analyzer</h2>
           <p className="text-muted-foreground mb-8">
-            Select two values to see which carriers will most strongly expose the tension between them.
+            Select two values to see which stressors will most strongly expose the tension between them.
           </p>
 
           <div className="grid md:grid-cols-2 gap-4 mb-8">
@@ -530,12 +530,12 @@ export default function Carriers() {
           {selectedValueA && selectedValueB && selectedValueA !== selectedValueB && (
             <div className="space-y-3">
               <h3 className="font-serif text-xl font-semibold mb-4">
-                Carriers ranked by tension exposure
+                Stressors ranked by tension exposure
               </h3>
               {tensionResults.map(result => (
                 <TensionResult 
-                  key={result.carrier.id} 
-                  carrierId={result.carrier.id} 
+                  key={result.stressor.id} 
+                  stressorId={result.stressor.id} 
                   polarityDiff={result.polarityDiff}
                   valueCodeA={selectedValueA}
                   valueCodeB={selectedValueB}
@@ -547,7 +547,7 @@ export default function Carriers() {
           {(!selectedValueA || !selectedValueB) && (
             <div className="text-center py-12 text-muted-foreground">
               <Info className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Select two values above to analyze which carriers expose their tension.</p>
+              <p>Select two values above to analyze which stressors expose their tension.</p>
             </div>
           )}
         </div>
@@ -570,7 +570,7 @@ export default function Carriers() {
           </p>
           <p className="mt-2">
             <Link to="/research" className="text-primary hover:underline">
-              Research background for the tension carriers framework
+              Research background for the stressors framework
             </Link>
           </p>
         </div>

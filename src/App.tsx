@@ -6,7 +6,7 @@ import { BrowserRouter, HashRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Compare from "./pages/Compare";
-import Carriers from "./pages/Carriers";
+import Stressors from "./pages/Stressors";
 import ExploreScenarios from "./pages/ExploreScenarios";
 import SharedProfile from "./pages/SharedProfile";
 import DataExport from "./pages/DataExport";
@@ -32,7 +32,7 @@ const App = () => {
             <Route path="/" element={<Landing />} />
             <Route path="/editor" element={<Index />} />
             <Route path="/compare" element={<Compare />} />
-            <Route path="/carriers" element={<Carriers />} />
+            <Route path="/stressors" element={<Stressors />} />
             <Route path="/scenarios" element={<ExploreScenarios />} />
             <Route path="/p/:id" element={<SharedProfile />} />
             <Route path="/export" element={<DataExport />} />

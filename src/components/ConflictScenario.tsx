@@ -45,24 +45,24 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: Co
     setIsGenerating(true);
     setScenario('');
 
-    const archetypesData = selectedArchetypes.map(name => {
-      const archetype = ARCHETYPES.find(a => a.name === name)!;
-      return {
-        name: archetype.name,
-        description: archetype.description,
-        valueProfile: archetype.valueProfile,
-      };
-    });
-
-    const customProfilesData = customProfiles.map(profile => ({
-      name: profile.name,
-      description: profile.description ?? 'A custom user-created value profile',
-      valueProfile: scoresToValueProfile(profile.scores),
-    }));
-
-    const allProfilesData = [...customProfilesData, ...archetypesData];
-
     try {
+      const archetypesData = selectedArchetypes.map(name => {
+        const archetype = ARCHETYPES.find(a => a.name === name)!;
+        return {
+          name: archetype.name,
+          description: archetype.description,
+          valueProfile: archetype.valueProfile,
+        };
+      });
+
+      const customProfilesData = customProfiles.map(profile => ({
+        name: profile.name,
+        description: profile.description ?? 'A custom user-created value profile',
+        valueProfile: scoresToValueProfile(profile.scores),
+      }));
+
+      const allProfilesData = [...customProfilesData, ...archetypesData];
+
       const response = await fetch(CONFLICT_URL, {
         method: 'POST',
         headers: {
@@ -85,7 +85,6 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: Co
         } else {
           toast.error(message);
         }
-        setIsGenerating(false);
         return;
       }
 
@@ -98,10 +97,10 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: Co
       let textBuffer = '';
       let fullText = '';
 
-      while (true) {
+      outer: while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         textBuffer += decoder.decode(value, { stream: true });
 
         let newlineIndex: number;
@@ -114,7 +113,7 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: Co
           if (!line.startsWith('data: ')) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') break;
+          if (jsonStr === '[DONE]') break outer;
 
           try {
             const parsed = JSON.parse(jsonStr);
@@ -124,7 +123,6 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: Co
               setScenario(fullText);
             }
           } catch {
-            textBuffer = line + '\n' + textBuffer;
             break;
           }
         }

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Loader2, Swords, Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { ARCHETYPES } from '@/lib/archetypes';
 import { ValueScores } from '@/lib/schwartz-values';
@@ -205,20 +205,18 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
           )}
         </div>
         <div className="flex items-center gap-1.5">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Info className="w-4 h-4" />
-                  <span className="sr-only">About conflict generation</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="left" className="max-w-xs">
-                <p>AI-generated scenario and dialogue that brings value tensions to life. Each character speaks authentically from their worldview, showing where and why they clash.</p>
-                <p className="mt-1 text-xs opacity-75">When "Use stressor context" is on, the scenario is grounded in the stressors that most amplify tensions between these profiles.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Info className="w-4 h-4" />
+                <span className="sr-only">About conflict generation</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="left" className="max-w-xs text-sm">
+              <p>AI-generated scenario and dialogue that brings value tensions to life. Each character speaks authentically from their worldview, showing where and why they clash.</p>
+              <p className="mt-2 text-xs text-muted-foreground">When "Use stressor context" is on, the scenario is grounded in the stressors that most amplify tensions between these profiles.</p>
+            </PopoverContent>
+          </Popover>
           <Button
             onClick={generateScenario}
             disabled={isGenerating || totalSelected < 2}

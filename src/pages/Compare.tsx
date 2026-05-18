@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sparkles, Loader2, X, User, Info } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sparkles, Loader2, X, User } from 'lucide-react';
+import { InfoPopover } from '@/components/InfoPopover';
 import { Navigation } from '@/components/Navigation';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircle';
@@ -331,17 +331,9 @@ export default function Compare() {
                       AI Analysis
                     </h2>
                     <div className="flex items-center gap-1.5">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
-                            <Info className="w-4 h-4" />
-                            <span className="sr-only">About comparison generation</span>
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent side="left" className="max-w-xs text-sm">
-                          <p>AI analysis comparing how these profiles differ in core values, motivations, and philosophy. Identifies key tensions, what drives each character differently, and any unexpected common ground.</p>
-                        </PopoverContent>
-                      </Popover>
+                      <InfoPopover content={
+                        <p>AI analysis comparing how these profiles differ in core values, motivations, and philosophy. Identifies key tensions, what drives each character differently, and any unexpected common ground.</p>
+                      } />
                       <Button
                         onClick={generateComparison}
                         disabled={isGenerating}

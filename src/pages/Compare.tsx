@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sparkles, Loader2, X, User } from 'lucide-react';
+import { Sparkles, Loader2, X, User, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Navigation } from '@/components/Navigation';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircle';
@@ -329,23 +330,38 @@ export default function Compare() {
                     <h2 className="font-serif text-lg font-semibold">
                       AI Analysis
                     </h2>
-                    <Button 
-                      onClick={generateComparison}
-                      disabled={isGenerating}
-                      className="gap-2"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4" />
-                          Generate Comparison
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex items-center gap-1.5">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                              <Info className="w-4 h-4" />
+                              <span className="sr-only">About comparison generation</span>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-xs">
+                            <p>AI analysis comparing how these profiles differ in core values, motivations, and philosophy. Identifies key tensions, what drives each character differently, and any unexpected common ground.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <Button
+                        onClick={generateComparison}
+                        disabled={isGenerating}
+                        className="gap-2"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            Generate Comparison
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
 
                   {comparison ? (
@@ -365,7 +381,7 @@ export default function Compare() {
                 {/* Tension-Amplifying Stressors */}
                 <ProfileStressors profiles={selectedArchetypeData} />
 
-                <ConflictScenario selectedArchetypes={selectedArchetypes} customProfiles={customProfiles} />
+                <ConflictScenario selectedArchetypes={selectedArchetypes} customProfiles={customProfiles} profilesData={selectedArchetypeData} />
               </>
             ) : (
               <div className="rounded-xl border bg-card/50 p-12 text-center">

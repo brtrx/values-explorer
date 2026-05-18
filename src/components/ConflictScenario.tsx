@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Swords } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Loader2, Swords, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { ARCHETYPES } from '@/lib/archetypes';
 import { ValueScores } from '@/lib/schwartz-values';
+import { getTopProfileStressors } from '@/lib/stressor-sensitivity';
 
 const CONFLICT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-conflict-scenario`;
 
@@ -16,6 +20,7 @@ interface CustomProfile {
 interface ConflictScenarioProps {
   selectedArchetypes: string[];
   customProfiles?: CustomProfile[];
+  profilesData?: { name: string; scores: ValueScores }[];
 }
 
 // Converts ValueScores (0–7 scale) to valueProfile weights (-3 to 3)
@@ -30,9 +35,10 @@ function scoresToValueProfile(scores: ValueScores): Record<string, number> {
   return profile;
 }
 
-export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: ConflictScenarioProps) {
+export function ConflictScenario({ selectedArchetypes, customProfiles = [], profilesData }: ConflictScenarioProps) {
   const [scenario, setScenario] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [includeStressors, setIncludeStressors] = useState(false);
 
   const totalSelected = selectedArchetypes.length + customProfiles.length;
 
@@ -63,13 +69,19 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: Co
 
       const allProfilesData = [...customProfilesData, ...archetypesData];
 
+      let stressorNames: string[] | undefined;
+      if (includeStressors && profilesData && profilesData.length >= 2) {
+        const topStressors = getTopProfileStressors(profilesData, 3);
+        stressorNames = topStressors.map(s => s.stressorName);
+      }
+
       const response = await fetch(CONFLICT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ archetypes: allProfilesData }),
+        body: JSON.stringify({ archetypes: allProfilesData, stressors: stressorNames }),
       });
 
       if (!response.ok) {
@@ -173,29 +185,59 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [] }: Co
 
   return (
     <div className="rounded-xl border bg-card p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-serif text-lg font-semibold flex items-center gap-2">
-          <Swords className="w-5 h-5 text-destructive" />
-          Conflict Scenario
-        </h2>
-        <Button 
-          onClick={generateScenario}
-          disabled={isGenerating || totalSelected < 2}
-          variant="outline"
-          className="gap-2"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Swords className="w-4 h-4" />
-              Generate Conflict
-            </>
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h2 className="font-serif text-lg font-semibold flex items-center gap-2">
+            <Swords className="w-5 h-5 text-destructive" />
+            Conflict Scenario
+          </h2>
+          {profilesData && profilesData.length >= 2 && (
+            <div className="flex items-center gap-2 mt-2">
+              <Switch
+                id="include-stressors"
+                checked={includeStressors}
+                onCheckedChange={setIncludeStressors}
+              />
+              <Label htmlFor="include-stressors" className="text-sm text-muted-foreground cursor-pointer">
+                Use stressor context
+              </Label>
+            </div>
           )}
-        </Button>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Info className="w-4 h-4" />
+                  <span className="sr-only">About conflict generation</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="max-w-xs">
+                <p>AI-generated scenario and dialogue that brings value tensions to life. Each character speaks authentically from their worldview, showing where and why they clash.</p>
+                <p className="mt-1 text-xs opacity-75">When "Use stressor context" is on, the scenario is grounded in the stressors that most amplify tensions between these profiles.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button
+            onClick={generateScenario}
+            disabled={isGenerating || totalSelected < 2}
+            variant="outline"
+            className="gap-2"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Swords className="w-4 h-4" />
+                Generate Conflict
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {scenario ? (

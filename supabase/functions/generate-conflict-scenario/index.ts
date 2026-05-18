@@ -17,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const { archetypes } = await req.json() as { archetypes: ArchetypeData[] };
+    const { archetypes, stressors } = await req.json() as { archetypes: ArchetypeData[], stressors?: string[] };
     
     if (!archetypes || archetypes.length < 2) {
       return new Response(
@@ -62,10 +62,14 @@ Value code reference:
 Write dialogue that feels authentic to each character's voice and worldview.
 Show how their differing values create genuine tension, not just surface disagreement.`;
 
+    const stressorsLine = stressors && stressors.length > 0
+      ? `\nThese stressors have been identified as the strongest sources of tension between the characters: ${stressors.join(', ')}. Ground the conflict in one or more of these specific pressures — make them feel like the real stakes.\n`
+      : '';
+
     const userPrompt = `Given these characters and their value profiles:
 
 ${archetypesSummary}
-
+${stressorsLine}
 Create a compelling conflict scenario:
 
 1. SCENARIO (2-3 sentences): Describe a specific, realistic situation where these characters' values would naturally clash. Be concrete about the setting and stakes.

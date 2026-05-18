@@ -83,7 +83,8 @@ values-explorer/
 │   │   ├── ProfileSidebar.tsx     # Profile metadata editing
 │   │   ├── Navigation.tsx         # Top nav dropdown
 │   │   ├── ValueAbbreviation.tsx  # Renders 3-letter value codes
-│   │   └── ValueEditor.tsx        # Individual value slider
+│   │   ├── ValueEditor.tsx        # Individual value slider
+│   │   └── InfoPopover.tsx        # ⓘ info icon + popover (mobile-safe; use instead of Tooltip)
 │   ├── pages/
 │   │   ├── Landing.tsx            # Home: archetype browser + saved profiles
 │   │   ├── Index.tsx              # Profile editor wrapper
@@ -326,3 +327,4 @@ When working on Claude-assisted tasks, develop on the designated branch and push
 - Do not push to `main` directly — use feature branches and PRs
 - Do not add a test framework without discussion — none is currently configured
 - Do not introduce global state management (Redux/Zustand) without discussion
+- Do not use `Tooltip` from `src/components/ui/tooltip` for informational UI — it is hover-only and does not work on touch screens. Use `InfoPopover` from `src/components/InfoPopover.tsx` instead

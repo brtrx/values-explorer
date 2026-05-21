@@ -175,44 +175,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Value Predicate Forms Table */}
-      <section className="py-12 border-t">
-        <div className="container">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="font-serif text-2xl font-bold mb-2 text-center">Values as Action</h2>
-            <p className="text-center text-muted-foreground mb-6 text-sm">Preferred predicate forms — how each value expresses itself in first-person</p>
-            <div className="overflow-x-auto rounded-lg border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="text-left px-4 py-3 font-semibold w-48">Basic value</th>
-                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Preferred predicate forms</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {SCHWARTZ_VALUES.map((v, i) => (
-                    <tr key={v.code} className={i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
-                      <td className="px-4 py-2.5 align-top">
-                        <span
-                          className="font-mono text-xs font-semibold mr-1.5"
-                          style={{ color: `hsl(var(--${HIGHER_ORDER_VALUES[v.higherOrderValue].color}))` }}
-                        >
-                          {v.code}
-                        </span>
-                        <span className="font-medium">{v.label}</span>
-                      </td>
-                      <td className="px-4 py-2.5 text-muted-foreground">
-                        {v.verbs.join(' / ')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Tensions & Stressors Section */}
       <section className="py-12 border-t">
         <div className="container">

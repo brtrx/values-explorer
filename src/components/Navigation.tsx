@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Compass, Users, Layers, Sparkles, FileDown, Briefcase, BookOpen, Home } from 'lucide-react';
+import { Menu, Compass, Users, Layers, Sparkles, FileDown, Briefcase, BookOpen, Home, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,6 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/scenarios', label: 'Explore Scenarios', description: 'AI-generated conflict scenarios', icon: Sparkles },
   { to: '/job-analysis', label: 'Job Analysis', description: 'Analyze job descriptions', icon: Briefcase },
   { to: '/export', label: 'Data Export', description: 'Export profiles as JSON', icon: FileDown },
+  { to: '/preferred-verbs', label: 'Preferred Verbs', description: 'Values as first-person verb forms', icon: Languages },
   { to: '/research', label: 'Research Background', description: 'Literature review', icon: BookOpen },
 ];
 

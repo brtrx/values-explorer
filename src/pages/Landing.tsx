@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Compass, Sparkles, ArrowRight, Plus, Star, GitCompare, Trash2, Layers, Users } from 'lucide-react';
 import { DbProfile, deleteProfile } from '@/lib/profile-storage';
-import { ValueScores, SAMPLE_PROFILE_SCORES } from '@/lib/schwartz-values';
+import { ValueScores, SAMPLE_PROFILE_SCORES, SCHWARTZ_VALUES, HIGHER_ORDER_VALUES, HigherOrderValue } from '@/lib/schwartz-values';
 import { Json } from '@/integrations/supabase/types';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
 import { useToast } from '@/hooks/use-toast';
@@ -144,6 +144,32 @@ export default function Landing() {
               <div className="flex justify-center pb-16">
                 <SchwartzCircle scores={SAMPLE_PROFILE_SCORES} size={320} />
               </div>
+            </div>
+
+            <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(['openness', 'self-enhancement', 'conservation', 'self-transcendence'] as HigherOrderValue[]).map((ho) => {
+                const meta = HIGHER_ORDER_VALUES[ho];
+                const values = SCHWARTZ_VALUES.filter(v => v.higherOrderValue === ho);
+                return (
+                  <div key={ho} className="rounded-lg border bg-card p-4">
+                    <h3
+                      className="font-semibold text-sm mb-3"
+                      style={{ color: `hsl(var(--${meta.color}))` }}
+                    >
+                      {meta.label}
+                    </h3>
+                    <ul className="space-y-2">
+                      {values.map((v) => (
+                        <li key={v.code}>
+                          <span className="font-mono text-xs font-semibold text-muted-foreground">{v.code}</span>
+                          <span className="ml-1.5 text-sm font-medium">{v.label}</span>
+                          <p className="text-xs text-muted-foreground leading-snug mt-0.5">{v.description}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

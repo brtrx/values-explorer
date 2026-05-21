@@ -20,7 +20,7 @@ const App = () => {
   // Use HashRouter only on GitHub Pages to avoid 404 on refresh
   const isGitHubPages = typeof window !== 'undefined' && window.location.hostname === 'brtrx.github.io';
   const Router = isGitHubPages ? HashRouter : BrowserRouter;
-  const basename = (!isGitHubPages && process.env.NODE_ENV === 'production') ? '/trait-generator' : '';
+  const basename = '';
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -84,6 +84,7 @@ values-explorer/
 │   │   ├── Navigation.tsx         # Top nav dropdown
 │   │   ├── ValueAbbreviation.tsx  # Renders 3-letter value codes
 │   │   ├── ValueEditor.tsx        # Individual value slider
+│   │   ├── NavLink.tsx            # React Router NavLink wrapper with className/activeClassName support
 │   │   └── InfoPopover.tsx        # ⓘ info icon + popover (mobile-safe; use instead of Tooltip)
 │   ├── pages/
 │   │   ├── Landing.tsx            # Home: archetype browser + saved profiles
@@ -95,6 +96,7 @@ values-explorer/
 │   │   ├── DataExport.tsx         # Export profiles as JSON
 │   │   ├── Research.tsx           # Literature review background
 │   │   ├── SharedProfile.tsx      # Public profile view (/p/:id)
+│   │   ├── PreferredVerbs.tsx     # Value-driven verb phrases per archetype
 │   │   └── NotFound.tsx           # 404
 │   ├── lib/
 │   │   ├── schwartz-values.ts     # 19 PVQ-RR value definitions + helpers
@@ -150,6 +152,7 @@ Defined in `src/App.tsx`:
 | `/export` | `DataExport` | Export profiles as JSON |
 | `/research` | `Research` | Academic background |
 | `/p/:id` | `SharedProfile` | Publicly shared profile |
+| `/preferred-verbs` | `PreferredVerbs` | Value-driven verb phrases for archetypes |
 
 **Router selection:** `HashRouter` on `brtrx.github.io` (GitHub Pages), `BrowserRouter` elsewhere. The base path is `/values-explorer/` when built via GitHub Actions.
 
@@ -187,7 +190,7 @@ Default score: `3.5` (midpoint of 1–6 range). Source in `src/lib/schwartz-valu
 
 ### Archetypes
 
-90+ predefined profiles in `src/lib/archetypes.ts`. Each archetype has relative value weightings (−3 to +3 delta). Categories: fictional characters, historical figures, superheroes, mythological, literary, cultural roles.
+81 predefined profiles in `src/lib/archetypes.ts`. Each archetype has relative value weightings (−3 to +3 delta). Categories: fictional characters, historical figures, superheroes, mythological, literary, cultural roles.
 
 Inter-page state: `sessionStorage.loadArchetype` passes an archetype to the editor.
 
@@ -308,7 +311,7 @@ When working on Claude-assisted tasks, develop on the designated branch and push
 |---|---|
 | `src/App.tsx` | All routes defined here |
 | `src/lib/schwartz-values.ts` | Canonical value definitions and helpers |
-| `src/lib/archetypes.ts` | All 90+ archetype profiles |
+| `src/lib/archetypes.ts` | All 81 archetype profiles |
 | `src/lib/stressors.ts` | Stressor framework and polarity vectors |
 | `src/lib/profile-storage.ts` | All Supabase DB operations |
 | `src/integrations/supabase/client.ts` | Supabase client (singleton) |

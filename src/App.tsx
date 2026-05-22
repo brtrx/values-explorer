@@ -12,6 +12,7 @@ import SharedProfile from "./pages/SharedProfile";
 import DataExport from "./pages/DataExport";
 import JobAnalysis from "./pages/JobAnalysis";
 import Research from "./pages/Research";
+import PreferredVerbs from "./pages/PreferredVerbs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,7 +21,7 @@ const App = () => {
   // Use HashRouter only on GitHub Pages to avoid 404 on refresh
   const isGitHubPages = typeof window !== 'undefined' && window.location.hostname === 'brtrx.github.io';
   const Router = isGitHubPages ? HashRouter : BrowserRouter;
-  const basename = (!isGitHubPages && process.env.NODE_ENV === 'production') ? '/trait-generator' : '';
+  const basename = '';
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -38,6 +39,7 @@ const App = () => {
             <Route path="/export" element={<DataExport />} />
             <Route path="/job-analysis" element={<JobAnalysis />} />
             <Route path="/research" element={<Research />} />
+            <Route path="/preferred-verbs" element={<PreferredVerbs />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

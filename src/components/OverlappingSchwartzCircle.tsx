@@ -159,7 +159,7 @@ export function OverlappingSchwartzCircle({ archetypes, size = 360, tensionLines
     <div className="relative flex flex-col items-center">
       <svg width={size} height={size} className="overflow-visible">
         {/* Background concentric circles */}
-        {[1, 2, 3, 4, 5, 6, 7].map((level) => (
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((level) => (
           <g key={level}>
             <circle
               cx={center}

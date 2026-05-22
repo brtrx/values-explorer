@@ -77,7 +77,7 @@ export const VALUE_CODES = SCHWARTZ_VALUES.map(v => v.code);
 export type ValueScores = Record<string, number>;
 
 export const DEFAULT_SCORES: ValueScores = VALUE_CODES.reduce((acc, code) => {
-  acc[code] = 3.5; // Middle of 1-6 range
+  acc[code] = 3.5; // Midpoint of 0–7 scale
   return acc;
 }, {} as ValueScores);
 

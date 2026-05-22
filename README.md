@@ -8,7 +8,7 @@ An interactive philosophical tool for exploring Schwartz's Theory of Basic Human
 
 - **Value Profile Editor**: Create and customize profiles using the 19 Schwartz PVQ-RR values
 - **Schwartz Circumplex Visualization**: Interactive circular display of value relationships
-- **Archetype Library**: 80+ pre-built character profiles (historical figures, fictional characters, mythological beings)
+- **Archetype Library**: 81 pre-built character profiles (historical figures, fictional characters, mythological beings)
 - **Profile Comparison**: Compare multiple profiles to identify value alignments and tensions
 - **Stressor Analysis**: Explore 12 decision-space dimensions that place stress on value preferences, forcing trade-offs
 - **AI Scenario Generation**: Generate narratives that reveal how value tensions play out
@@ -50,10 +50,10 @@ The app will be available at http://localhost:8080
 
 ## Environment Variables
 
-Create a `.env` file based on `.env.example`:
+Create a `.env.local` file based on `.env.example`:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
 Required variables:
@@ -62,7 +62,7 @@ Required variables:
 |----------|-------------|----------|
 | `VITE_SUPABASE_URL` | Your Supabase project URL | Yes |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon/public key | Yes |
-| `OPENAI_API_KEY` | OpenAI API key for AI features | Yes (for Edge Functions) |
+| `OPENAI_API_KEY` | OpenAI API key for AI features | Yes (Supabase secret only — never in `.env`) |
 
 The `OPENAI_API_KEY` must be set as a Supabase secret for the Edge Functions:
 

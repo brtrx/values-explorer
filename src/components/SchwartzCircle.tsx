@@ -86,7 +86,7 @@ export function SchwartzCircle({ scores, size = 320 }: SchwartzCircleProps) {
     <div className="relative flex items-center justify-center">
       <svg width={size} height={size} className="overflow-visible">
         {/* Background concentric circles with scale numbers */}
-        {[1, 2, 3, 4, 5, 6, 7].map((level) => (
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((level) => (
           <g key={level}>
             <circle
               cx={center}

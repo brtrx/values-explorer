@@ -162,7 +162,7 @@ Defined in `src/App.tsx`:
 
 ### Schwartz Values (PVQ-RR)
 
-19 values scored 1–6, grouped into 4 higher-order clusters arranged in a motivational circle:
+19 values scored 0–7, grouped into 4 higher-order clusters arranged in a motivational circle:
 
 | Code | Label | Higher-Order |
 |---|---|---|
@@ -186,7 +186,7 @@ Defined in `src/App.tsx`:
 | UNN | Universalism – nature | Self-Transcendence |
 | UNT | Universalism – tolerance | Self-Transcendence |
 
-Default score: `3.5` (midpoint of 1–6 range). Source in `src/lib/schwartz-values.ts`.
+Default score: `3.5` (midpoint of 0–7 scale). Source in `src/lib/schwartz-values.ts`.
 
 ### Archetypes
 

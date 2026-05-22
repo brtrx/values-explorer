@@ -86,8 +86,7 @@ export default function PreferredVerbs() {
       <section className="py-12 border-b bg-muted/30">
         <div className="container">
           <div className="max-w-5xl mx-auto">
-            <h2 className="font-serif text-2xl font-bold mb-2 text-center">All 19 Values</h2>
-            <p className="text-center text-muted-foreground text-sm mb-6">Preferred predicate forms in the present (character) register</p>
+            <h2 className="font-serif text-2xl font-bold mb-6 text-center">The 19 Schwartz Basic Values as Verbs</h2>
             <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-sm">
                 <thead>

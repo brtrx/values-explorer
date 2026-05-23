@@ -2,14 +2,18 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Swords } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { HeartHandshake, Loader2, Swords } from 'lucide-react';
 import { InfoPopover } from '@/components/InfoPopover';
 import { toast } from 'sonner';
 import { ARCHETYPES } from '@/lib/archetypes';
 import { ValueScores } from '@/lib/schwartz-values';
 import { getTopProfileStressors } from '@/lib/stressor-sensitivity';
+import { analyzeReconciliation } from '@/lib/reconciliation-analysis';
 
 const CONFLICT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-conflict-scenario`;
+const RECONCILIATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-reconciliation`;
 
 interface CustomProfile {
   name: string;
@@ -39,6 +43,8 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
   const [scenario, setScenario] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [includeStressors, setIncludeStressors] = useState(false);
+  const [reconciliation, setReconciliation] = useState<string>('');
+  const [isGeneratingReconciliation, setIsGeneratingReconciliation] = useState(false);
 
   const totalSelected = selectedArchetypes.length + customProfiles.length;
 
@@ -50,6 +56,7 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
 
     setIsGenerating(true);
     setScenario('');
+    setReconciliation('');
 
     try {
       const archetypesData = selectedArchetypes.map(name => {
@@ -147,6 +154,103 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
     }
   };
 
+  const generateReconciliation = async () => {
+    if (!scenario || totalSelected < 2) return;
+
+    setIsGeneratingReconciliation(true);
+    setReconciliation('');
+
+    try {
+      const archetypesData = selectedArchetypes.map(name => {
+        const archetype = ARCHETYPES.find(a => a.name === name)!;
+        return {
+          name: archetype.name,
+          description: archetype.description,
+          valueProfile: archetype.valueProfile,
+        };
+      });
+
+      const customProfilesData = customProfiles.map(profile => ({
+        name: profile.name,
+        description: profile.description ?? 'A custom user-created value profile',
+        valueProfile: scoresToValueProfile(profile.scores),
+      }));
+
+      const allProfilesData = [...customProfilesData, ...archetypesData];
+      const analysis = analyzeReconciliation(profilesData ?? []);
+
+      const response = await fetch(RECONCILIATION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ archetypes: allProfilesData, conflictScenario: scenario, analysis }),
+      });
+
+      if (!response.ok) {
+        let message = 'Failed to generate reconciliation';
+        try {
+          const error = await response.json();
+          message = error.error || message;
+        } catch { /* non-JSON body */ }
+        if (response.status === 429) {
+          toast.error('Rate limit exceeded. Please try again later.');
+        } else if (response.status === 402) {
+          toast.error('AI credits exhausted. Please add funds.');
+        } else {
+          toast.error(message);
+        }
+        return;
+      }
+
+      if (!response.body) {
+        throw new Error('No response body');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let fullText = '';
+
+      outer: while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break outer;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullText += content;
+              setReconciliation(fullText);
+            }
+          } catch {
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Reconciliation error:', error);
+      toast.error('Failed to generate reconciliation');
+    } finally {
+      setIsGeneratingReconciliation(false);
+    }
+  };
+
   // Parse the scenario text to render dialogue nicely
   const renderScenario = (text: string) => {
     const lines = text.split('\n');
@@ -179,6 +283,37 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
         return <p key={i} className="text-muted-foreground mb-2">{line}</p>;
       }
       
+      return null;
+    });
+  };
+
+  const renderReconciliation = (text: string) => {
+    const lines = text.split('\n');
+
+    return lines.map((line, i) => {
+      const dialogueMatch = line.match(/^\*\*\[?([^\]:\*]+)\]?\*\*:\s*(.+)/);
+      if (dialogueMatch) {
+        const [, speaker, dialogue] = dialogueMatch;
+        return (
+          <div key={i} className="mb-3">
+            <span className="font-semibold text-primary">{speaker}:</span>
+            <span className="ml-2 text-foreground italic">{dialogue.replace(/^"|"$/g, '')}</span>
+          </div>
+        );
+      }
+
+      if (line.match(/^\d+\.\s*(COMMON GROUND|RECONCILIATION PATH|DIALOGUE)/i)) {
+        return (
+          <h4 key={i} className="font-semibold text-foreground mt-4 mb-2 text-sm uppercase tracking-wide">
+            {line.replace(/^\d+\.\s*/, '')}
+          </h4>
+        );
+      }
+
+      if (line.trim()) {
+        return <p key={i} className="text-muted-foreground mb-2">{line}</p>;
+      }
+
       return null;
     });
   };
@@ -238,10 +373,70 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
         </div>
       ) : (
         <p className="text-sm text-muted-foreground text-center py-8">
-          Click "Generate Conflict" to see a scenario where these characters' 
+          Click "Generate Conflict" to see a scenario where these characters'
           values would naturally clash, complete with dialogue.
         </p>
       )}
+
+      {scenario && profilesData && profilesData.length >= 2 && (() => {
+        const { conflictValues, bridgeValues } = analyzeReconciliation(profilesData);
+        return (
+          <>
+            <Separator className="my-5" />
+            <div className="space-y-3">
+              {conflictValues.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  <span className="text-xs text-muted-foreground font-medium">Value tensions:</span>
+                  {conflictValues.map(v => (
+                    <Badge key={v.code} variant="destructive" className="text-xs font-normal opacity-75">
+                      {v.code} · {v.label}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {bridgeValues.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  <span className="text-xs text-muted-foreground font-medium">Bridge values:</span>
+                  {bridgeValues.map(v => (
+                    <Badge key={v.code} variant="secondary" className="text-xs font-normal">
+                      {v.code} · {v.label}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center gap-1.5">
+                <InfoPopover content={
+                  <p>AI reconciliation grounded in values adjacent to the conflict on the Schwartz circumflex — the natural motivational bridges between these personas.</p>
+                } />
+                <Button
+                  onClick={generateReconciliation}
+                  disabled={isGeneratingReconciliation || !scenario}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {isGeneratingReconciliation ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Finding common ground...
+                    </>
+                  ) : (
+                    <>
+                      <HeartHandshake className="w-4 h-4" />
+                      Find Common Ground
+                    </>
+                  )}
+                </Button>
+              </div>
+              {reconciliation && (
+                <div className="prose prose-sm max-w-none mt-2">
+                  {renderReconciliation(reconciliation)}
+                </div>
+              )}
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

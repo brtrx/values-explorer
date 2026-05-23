@@ -14,6 +14,7 @@ import { ValueScores } from '@/lib/schwartz-values';
 import { getTopProfileStressors } from '@/lib/stressor-sensitivity';
 import { analyzeReconciliation } from '@/lib/reconciliation-analysis';
 import { buildConflictPrompt, buildReconciliationPrompt, PromptPair } from '@/lib/prompt-builders';
+import { stripMarkdown } from '@/lib/utils';
 
 const CONFLICT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-conflict-scenario`;
 const RECONCILIATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-reconciliation`;
@@ -256,21 +257,21 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
   // Parse the scenario text to render dialogue nicely
   const renderScenario = (text: string) => {
     const lines = text.split('\n');
-    
+
     return lines.map((line, i) => {
       // Check if it's a dialogue line (starts with ** for bold character name)
       const dialogueMatch = line.match(/^\*\*\[?([^\]:\*]+)\]?\*\*:\s*(.+)/);
-      
+
       if (dialogueMatch) {
         const [, speaker, dialogue] = dialogueMatch;
         return (
           <div key={i} className="mb-3">
-            <span className="font-semibold text-primary">{speaker}:</span>
-            <span className="ml-2 text-foreground italic">{dialogue.replace(/^"|"$/g, '')}</span>
+            <span className="font-semibold text-primary">{stripMarkdown(speaker)}:</span>
+            <span className="ml-2 text-foreground italic">{stripMarkdown(dialogue).replace(/^"|"$/g, '')}</span>
           </div>
         );
       }
-      
+
       // Check for section headers (like "SCENARIO" or "DIALOGUE")
       if (line.match(/^\d+\.\s*(SCENARIO|DIALOGUE)/i)) {
         return (
@@ -279,12 +280,12 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
           </h4>
         );
       }
-      
+
       // Regular paragraph
       if (line.trim()) {
-        return <p key={i} className="text-muted-foreground mb-2">{line}</p>;
+        return <p key={i} className="text-muted-foreground mb-2">{stripMarkdown(line)}</p>;
       }
-      
+
       return null;
     });
   };
@@ -298,8 +299,8 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
         const [, speaker, dialogue] = dialogueMatch;
         return (
           <div key={i} className="mb-3">
-            <span className="font-semibold text-primary">{speaker}:</span>
-            <span className="ml-2 text-foreground italic">{dialogue.replace(/^"|"$/g, '')}</span>
+            <span className="font-semibold text-primary">{stripMarkdown(speaker)}:</span>
+            <span className="ml-2 text-foreground italic">{stripMarkdown(dialogue).replace(/^"|"$/g, '')}</span>
           </div>
         );
       }
@@ -313,7 +314,7 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
       }
 
       if (line.trim()) {
-        return <p key={i} className="text-muted-foreground mb-2">{line}</p>;
+        return <p key={i} className="text-muted-foreground mb-2">{stripMarkdown(line)}</p>;
       }
 
       return null;

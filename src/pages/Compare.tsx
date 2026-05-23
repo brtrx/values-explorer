@@ -12,6 +12,7 @@ import { ConflictScenario } from '@/components/ConflictScenario';
 import { ProfileStressors } from '@/components/ProfileStressors';
 import { ValueScores } from '@/lib/schwartz-values';
 import { buildComparisonPrompt, PromptPair } from '@/lib/prompt-builders';
+import { stripMarkdown } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const COMPARE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compare-archetypes`;
@@ -383,7 +384,7 @@ export default function Compare() {
                   {comparison ? (
                     <div className="prose prose-sm max-w-none text-muted-foreground">
                       {comparison.split('\n').map((para, i) => (
-                        <p key={i}>{para}</p>
+                        <p key={i}>{stripMarkdown(para)}</p>
                       ))}
                     </div>
                   ) : (

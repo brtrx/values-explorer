@@ -60,7 +60,8 @@ Value code reference:
 - UNC (Universalism Concern), UNN (Universalism Nature), UNT (Universalism Tolerance) - Justice, equality
 
 Write dialogue that feels authentic to each character's voice and worldview.
-Show how their differing values create genuine tension, not just surface disagreement.`;
+Show how their differing values create genuine tension, not just surface disagreement.
+Write in plain prose — do not use markdown formatting (bold, italics, headers) anywhere except the dialogue speaker labels.`;
 
     const stressorsLine = stressors && stressors.length > 0
       ? `\nThese stressors have been identified as the strongest sources of tension between the characters: ${stressors.join(', ')}. Ground the conflict in one or more of these specific pressures — make them feel like the real stakes.\n`

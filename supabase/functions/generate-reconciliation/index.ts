@@ -99,7 +99,8 @@ Value code reference:
 - HUM (Humility), BED (Benevolence Dependability), BEC (Benevolence Caring) - Modesty, loyalty
 - UNC (Universalism Concern), UNN (Universalism Nature), UNT (Universalism Tolerance) - Justice, equality
 
-Adjacent values on the Schwartz circumflex are motivationally compatible. Bridge values — values adjacent to the conflict region where both characters have common ground — are the most psychologically natural path to reconciliation. Show reconciliation beginning, not completing.`;
+Adjacent values on the Schwartz circumflex are motivationally compatible. Bridge values — values adjacent to the conflict region where both characters have common ground — are the most psychologically natural path to reconciliation. Show reconciliation beginning, not completing.
+Write in plain prose — do not use markdown formatting (bold, italics, headers) anywhere except the dialogue speaker labels.`;
 
     const userPrompt = `Given these characters and their value profiles:
 

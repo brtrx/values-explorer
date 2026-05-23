@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sparkles, Loader2, X, User } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sparkles, Loader2, ScrollText, X, User } from 'lucide-react';
 import { InfoPopover } from '@/components/InfoPopover';
 import { Navigation } from '@/components/Navigation';
 import { ARCHETYPES, ARCHETYPE_CATEGORIES, archetypeToScores } from '@/lib/archetypes';
@@ -9,6 +11,7 @@ import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircl
 import { ConflictScenario } from '@/components/ConflictScenario';
 import { ProfileStressors } from '@/components/ProfileStressors';
 import { ValueScores } from '@/lib/schwartz-values';
+import { buildComparisonPrompt, PromptPair } from '@/lib/prompt-builders';
 import { toast } from 'sonner';
 
 const COMPARE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compare-archetypes`;
@@ -25,6 +28,7 @@ export default function Compare() {
   const [customProfiles, setCustomProfiles] = useState<CustomProfile[]>([]);
   const [comparison, setComparison] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [viewingPrompt, setViewingPrompt] = useState<{ title: string; prompt: PromptPair } | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
     ARCHETYPE_CATEGORIES.map(c => c.value)
   );
@@ -108,6 +112,19 @@ export default function Compare() {
       }
     }
     return profile;
+  };
+
+  const openComparisonPrompt = () => {
+    const archetypesData = selectedArchetypes.map(name => {
+      const archetype = ARCHETYPES.find(a => a.name === name)!;
+      return { name: archetype.name, description: archetype.description, valueProfile: archetype.valueProfile };
+    });
+    const customProfilesData = customProfiles.map(profile => ({
+      name: profile.name,
+      description: profile.description || 'A custom user-created value profile',
+      valueProfile: scoresToValueProfile(profile.scores),
+    }));
+    setViewingPrompt({ title: 'AI Comparison Prompt', prompt: buildComparisonPrompt([...customProfilesData, ...archetypesData]) });
   };
 
   const generateComparison = async () => {
@@ -335,6 +352,15 @@ export default function Compare() {
                         <p>AI analysis comparing how these profiles differ in core values, motivations, and philosophy. Identifies key tensions, what drives each character differently, and any unexpected common ground.</p>
                       } />
                       <Button
+                        onClick={openComparisonPrompt}
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 text-muted-foreground"
+                      >
+                        <ScrollText className="w-3.5 h-3.5" />
+                        View prompt
+                      </Button>
+                      <Button
                         onClick={generateComparison}
                         disabled={isGenerating}
                         className="gap-2"
@@ -388,6 +414,32 @@ export default function Compare() {
           </div>
         </div>
       </main>
+
+      <Dialog open={!!viewingPrompt} onOpenChange={open => !open && setViewingPrompt(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif">{viewingPrompt?.title}</DialogTitle>
+          </DialogHeader>
+          {viewingPrompt && (
+            <ScrollArea className="max-h-[60vh]">
+              <div className="space-y-4 pr-4">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">System prompt</p>
+                  <pre className="text-xs bg-muted rounded-md p-3 whitespace-pre-wrap font-mono leading-relaxed">
+                    {viewingPrompt.prompt.system}
+                  </pre>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">User prompt</p>
+                  <pre className="text-xs bg-muted rounded-md p-3 whitespace-pre-wrap font-mono leading-relaxed">
+                    {viewingPrompt.prompt.user}
+                  </pre>
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

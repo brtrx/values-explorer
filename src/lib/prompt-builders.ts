@@ -46,7 +46,26 @@ export function buildConflictPrompt(archetypes: ArchetypeData[], stressors?: str
   };
 }
 
-export function buildReconciliationPrompt(
+export function buildComparisonPrompt(archetypes: ArchetypeData[]): PromptPair {
+  const summary = archetypes.map(a => {
+    const highValues = Object.entries(a.valueProfile)
+      .filter(([, v]) => v >= 2)
+      .map(([k, v]) => `${k}(${v > 0 ? '+' : ''}${v})`)
+      .join(', ');
+    const lowValues = Object.entries(a.valueProfile)
+      .filter(([, v]) => v <= -1)
+      .map(([k, v]) => `${k}(${v})`)
+      .join(', ');
+    return `**${a.name}**: ${a.description}\n- Emphasized values: ${highValues || 'none specified'}\n- Avoided/opposed values: ${lowValues || 'none specified'}`;
+  }).join('\n\n');
+
+  return {
+    system: `You are an expert in Schwartz's Theory of Basic Human Values and character analysis. \nYou compare fictional, historical, and mythological characters based on their value profiles.\n\nThe Schwartz value codes are:\n- SDT (Self-direction Thought), SDA (Self-direction Action) - Openness to Change\n- STI (Stimulation), HED (Hedonism) - Openness/Self-Enhancement\n- ACM (Achievement), POD (Power Dominance), POR (Power Resources) - Self-Enhancement\n- FAC (Face), SEO (Security Personal), SES (Security Societal) - Self-Enhancement/Conservation\n- TRD (Tradition), COR (Conformity Rules), COI (Conformity Interpersonal) - Conservation\n- HUM (Humility), BED (Benevolence Dependability), BEC (Benevolence Caring) - Conservation/Self-Transcendence\n- UNC (Universalism Concern), UNN (Universalism Nature), UNT (Universalism Tolerance) - Self-Transcendence\n\nValue weights range from -3 (actively opposed) to +3 (defining trait).\n\nProvide insightful, engaging comparisons that highlight:\n1. Key philosophical and motivational differences\n2. Potential conflicts if these characters met\n3. Surprising similarities despite surface differences\n4. How their value profiles explain their famous actions/decisions`,
+    user: `Compare these ${archetypes.length} characters based on their Schwartz value profiles:\n\n${summary}\n\nWrite a compelling 3-4 paragraph comparison that:\n1. Identifies the core value tensions between them\n2. Explains what drives each character differently\n3. Notes any unexpected common ground\n4. Considers how they would view each other's choices`,
+  };
+}
+
+
   archetypes: ArchetypeData[],
   conflictScenario: string,
   analysis: ReconciliationAnalysis,

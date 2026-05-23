@@ -4,13 +4,16 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { HeartHandshake, Loader2, Swords } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { HeartHandshake, Loader2, ScrollText, Swords } from 'lucide-react';
 import { InfoPopover } from '@/components/InfoPopover';
 import { toast } from 'sonner';
 import { ARCHETYPES } from '@/lib/archetypes';
 import { ValueScores } from '@/lib/schwartz-values';
 import { getTopProfileStressors } from '@/lib/stressor-sensitivity';
 import { analyzeReconciliation } from '@/lib/reconciliation-analysis';
+import { buildConflictPrompt, buildReconciliationPrompt, PromptPair } from '@/lib/prompt-builders';
 
 const CONFLICT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-conflict-scenario`;
 const RECONCILIATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-reconciliation`;
@@ -45,8 +48,37 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
   const [includeStressors, setIncludeStressors] = useState(false);
   const [reconciliation, setReconciliation] = useState<string>('');
   const [isGeneratingReconciliation, setIsGeneratingReconciliation] = useState(false);
+  const [viewingPrompt, setViewingPrompt] = useState<{ title: string; prompt: PromptPair } | null>(null);
 
   const totalSelected = selectedArchetypes.length + customProfiles.length;
+
+  const buildAllProfilesData = () => {
+    const archetypesData = selectedArchetypes.map(name => {
+      const archetype = ARCHETYPES.find(a => a.name === name)!;
+      return { name: archetype.name, description: archetype.description, valueProfile: archetype.valueProfile };
+    });
+    const customProfilesData = customProfiles.map(profile => ({
+      name: profile.name,
+      description: profile.description ?? 'A custom user-created value profile',
+      valueProfile: scoresToValueProfile(profile.scores),
+    }));
+    return [...customProfilesData, ...archetypesData];
+  };
+
+  const openConflictPrompt = () => {
+    const allProfilesData = buildAllProfilesData();
+    let stressorNames: string[] | undefined;
+    if (includeStressors && profilesData && profilesData.length >= 2) {
+      stressorNames = getTopProfileStressors(profilesData, 3).map(s => s.stressorName);
+    }
+    setViewingPrompt({ title: 'Conflict Scenario Prompt', prompt: buildConflictPrompt(allProfilesData, stressorNames) });
+  };
+
+  const openReconciliationPrompt = () => {
+    const allProfilesData = buildAllProfilesData();
+    const analysis = analyzeReconciliation(profilesData ?? []);
+    setViewingPrompt({ title: 'Reconciliation Prompt', prompt: buildReconciliationPrompt(allProfilesData, scenario, analysis) });
+  };
 
   const generateScenario = async () => {
     if (totalSelected < 2) {
@@ -59,22 +91,7 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
     setReconciliation('');
 
     try {
-      const archetypesData = selectedArchetypes.map(name => {
-        const archetype = ARCHETYPES.find(a => a.name === name)!;
-        return {
-          name: archetype.name,
-          description: archetype.description,
-          valueProfile: archetype.valueProfile,
-        };
-      });
-
-      const customProfilesData = customProfiles.map(profile => ({
-        name: profile.name,
-        description: profile.description ?? 'A custom user-created value profile',
-        valueProfile: scoresToValueProfile(profile.scores),
-      }));
-
-      const allProfilesData = [...customProfilesData, ...archetypesData];
+      const allProfilesData = buildAllProfilesData();
 
       let stressorNames: string[] | undefined;
       if (includeStressors && profilesData && profilesData.length >= 2) {
@@ -161,22 +178,7 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
     setReconciliation('');
 
     try {
-      const archetypesData = selectedArchetypes.map(name => {
-        const archetype = ARCHETYPES.find(a => a.name === name)!;
-        return {
-          name: archetype.name,
-          description: archetype.description,
-          valueProfile: archetype.valueProfile,
-        };
-      });
-
-      const customProfilesData = customProfiles.map(profile => ({
-        name: profile.name,
-        description: profile.description ?? 'A custom user-created value profile',
-        valueProfile: scoresToValueProfile(profile.scores),
-      }));
-
-      const allProfilesData = [...customProfilesData, ...archetypesData];
+      const allProfilesData = buildAllProfilesData();
       const analysis = analyzeReconciliation(profilesData ?? []);
 
       const response = await fetch(RECONCILIATION_URL, {
@@ -346,6 +348,17 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
               <p className="mt-2 text-xs text-muted-foreground">When "Use stressor context" is on, the scenario is grounded in the stressors that most amplify tensions between these profiles.</p>
             </>
           } />
+          {totalSelected >= 2 && (
+            <Button
+              onClick={openConflictPrompt}
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-muted-foreground"
+            >
+              <ScrollText className="w-3.5 h-3.5" />
+              View prompt
+            </Button>
+          )}
           <Button
             onClick={generateScenario}
             disabled={isGenerating || totalSelected < 2}
@@ -409,6 +422,15 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
                   <p>AI reconciliation grounded in values adjacent to the conflict on the Schwartz circumflex — the natural motivational bridges between these personas.</p>
                 } />
                 <Button
+                  onClick={openReconciliationPrompt}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-muted-foreground"
+                >
+                  <ScrollText className="w-3.5 h-3.5" />
+                  View prompt
+                </Button>
+                <Button
                   onClick={generateReconciliation}
                   disabled={isGeneratingReconciliation || !scenario}
                   variant="outline"
@@ -437,6 +459,32 @@ export function ConflictScenario({ selectedArchetypes, customProfiles = [], prof
           </>
         );
       })()}
+
+      <Dialog open={!!viewingPrompt} onOpenChange={open => !open && setViewingPrompt(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif">{viewingPrompt?.title}</DialogTitle>
+          </DialogHeader>
+          {viewingPrompt && (
+            <ScrollArea className="max-h-[60vh]">
+              <div className="space-y-4 pr-4">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">System prompt</p>
+                  <pre className="text-xs bg-muted rounded-md p-3 whitespace-pre-wrap font-mono leading-relaxed">
+                    {viewingPrompt.prompt.system}
+                  </pre>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">User prompt</p>
+                  <pre className="text-xs bg-muted rounded-md p-3 whitespace-pre-wrap font-mono leading-relaxed">
+                    {viewingPrompt.prompt.user}
+                  </pre>
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

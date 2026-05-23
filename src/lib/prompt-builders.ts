@@ -65,7 +65,7 @@ export function buildComparisonPrompt(archetypes: ArchetypeData[]): PromptPair {
   };
 }
 
-
+export function buildReconciliationPrompt(
   archetypes: ArchetypeData[],
   conflictScenario: string,
   analysis: ReconciliationAnalysis,

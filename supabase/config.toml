@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.generate-persona-scenario]
 verify_jwt = false
+
+[functions.generate-reconciliation]
+verify_jwt = false

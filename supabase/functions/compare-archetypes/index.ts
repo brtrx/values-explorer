@@ -64,7 +64,9 @@ Provide insightful, engaging comparisons that highlight:
 1. Key philosophical and motivational differences
 2. Potential conflicts if these characters met
 3. Surprising similarities despite surface differences
-4. How their value profiles explain their famous actions/decisions`;
+4. How their value profiles explain their famous actions/decisions
+
+Write in plain prose — do not use markdown formatting (bold, italics, headers) anywhere in your response.`;
 
     const userPrompt = `Compare these ${archetypes.length} characters based on their Schwartz value profiles:
 

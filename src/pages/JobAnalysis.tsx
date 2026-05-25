@@ -298,11 +298,16 @@ const JobAnalysis = () => {
 
           if (!enrichResponse.error && enrichResponse.data) {
             const enriched = enrichResponse.data as AnalysisResult;
-            // Preserve detectedJobTitle from original response
-            setResults({ ...enriched, detectedJobTitle: jobTitle });
-            if (enriched.onetEnriched) {
-              toast.success('Analysis complete — enriched with O*NET occupational data');
+            // Only apply enrichment if the response includes scores (not a bare fallback)
+            if (enriched.scores && enriched.confidence) {
+              setResults({ ...enriched, detectedJobTitle: jobTitle });
+              if (enriched.onetEnriched) {
+                toast.success('Analysis complete — enriched with O*NET occupational data');
+              } else {
+                toast.success('Analysis complete');
+              }
             } else {
+              // Enrichment returned a bare fallback — keep the initial results
               toast.success('Analysis complete');
             }
           } else {

@@ -338,18 +338,21 @@ serve(async (req) => {
       existingAnalysis: ExistingAnalysis;
     };
 
-    // Input validation
+    // Input validation — return original analysis (200) rather than 4xx so the
+    // frontend always gets a usable response even if enrichment can't proceed.
     if (!jobTitle || typeof jobTitle !== "string" || jobTitle.trim().length < 2) {
+      console.warn("enrich-job-analysis: missing or short jobTitle");
       return new Response(
-        JSON.stringify({ error: "jobTitle is required (minimum 2 characters)" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ ...(existingAnalysis ?? {}), onetEnriched: false }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (!existingAnalysis?.scores || !existingAnalysis?.confidence) {
+      console.warn("enrich-job-analysis: missing existingAnalysis");
       return new Response(
-        JSON.stringify({ error: "existingAnalysis with scores and confidence is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ onetEnriched: false }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -501,10 +504,12 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    // Always return 200 so the frontend never sees a non-2xx from this function.
+    // The caller treats onetEnriched:false as a graceful no-op.
     console.error("enrich-job-analysis error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ onetEnriched: false }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });

@@ -1,5 +1,11 @@
 project_id = "fkejnzklhrbujvlckubd"
 
+[functions.analyze-job-description]
+verify_jwt = false
+
+[functions.enrich-job-analysis]
+verify_jwt = false
+
 [functions.generate-archetype-image]
 verify_jwt = false
 

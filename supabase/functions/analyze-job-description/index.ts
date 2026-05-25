@@ -38,8 +38,12 @@ The 19 values are:
 
 For each value with "high" or "medium" confidence, provide a brief rationale that quotes specific phrases from the job description. Keep rationales concise (1-2 short quoted phrases). Do NOT include rationales for "unspecified" values.
 
+Also extract the job title from the description (e.g. "Software Engineer", "ICU Nurse", "Architect").
+Use the most specific title mentioned. If no clear title is present, infer the most likely one from context.
+
 Return ONLY a valid JSON object with this structure:
 {
+  "detectedJobTitle": "Software Engineer",
   "scores": {
     "SDT": 5.2,
     "SDA": 4.8,
@@ -70,6 +74,7 @@ const VALUE_CODES = [
 ];
 
 interface AnalysisResult {
+  detectedJobTitle?: string;
   scores: Record<string, number>;
   confidence: Record<string, "high" | "medium" | "unspecified">;
   rationales: Record<string, string>;
@@ -93,6 +98,11 @@ function validateAndNormalizeResult(parsed: unknown): AnalysisResult {
   const scores: Record<string, number> = {};
   const confidence: Record<string, "high" | "medium" | "unspecified"> = {};
   const rationales: Record<string, string> = {};
+
+  // Extract detected job title (optional field)
+  const detectedJobTitle = typeof result.detectedJobTitle === 'string' && result.detectedJobTitle.trim()
+    ? result.detectedJobTitle.trim()
+    : undefined;
 
   // Get rationales from response (optional field)
   const rawRationales = result.rationales as Record<string, unknown> | undefined;
@@ -123,7 +133,7 @@ function validateAndNormalizeResult(parsed: unknown): AnalysisResult {
     }
   }
 
-  return { scores, confidence, rationales };
+  return { detectedJobTitle, scores, confidence, rationales };
 }
 
 serve(async (req) => {

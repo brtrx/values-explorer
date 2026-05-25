@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, Building2, Briefcase, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Navigation } from '@/components/Navigation';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,7 @@ import { ValueEditor } from '@/components/ValueEditor';
 import { ClarificationPanel } from '@/components/ClarificationPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import type { ValueScores } from '@/lib/schwartz-values';
 import type { ConfidenceLevel } from '@/lib/job-clarification';
 
@@ -56,15 +57,191 @@ function getTimeUntilReset(): string {
   return `Resets in ${minutesRemaining} minute${minutesRemaining === 1 ? '' : 's'}.`;
 }
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface OccupationalContext {
+  socCode: string;
+  occupationTitle: string;
+  isProfession: boolean;
+  professionEthicsNote?: string;
+  topWorkStyles: string[];
+  interestProfile: string[];
+  workValues: string[];
+}
+
 interface AnalysisResult {
+  detectedJobTitle?: string;
   scores: ValueScores;
   confidence: Record<string, ConfidenceLevel>;
   rationales?: Record<string, string>;
+  sources?: Record<string, 'job_description' | 'onet' | 'merged'>;
+  occupationalContext?: OccupationalContext;
+  onetEnriched?: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Confidence helpers
+// ---------------------------------------------------------------------------
+
+const CONFIDENCE_ORDER: Record<ConfidenceLevel, number> = {
+  high: 0,
+  medium: 1,
+  occupational: 2,
+  professional: 3,
+  unspecified: 4,
+};
+
+function confidenceDot(level: ConfidenceLevel) {
+  const classes: Record<ConfidenceLevel, string> = {
+    high: 'bg-green-500',
+    medium: 'bg-yellow-500',
+    occupational: 'bg-blue-500',
+    professional: 'bg-purple-500',
+    unspecified: 'bg-gray-400',
+  };
+  return classes[level] ?? 'bg-gray-400';
+}
+
+function confidenceLabel(level: ConfidenceLevel) {
+  const labels: Record<ConfidenceLevel, string> = {
+    high: 'high',
+    medium: 'medium',
+    occupational: 'occupational',
+    professional: 'professional',
+    unspecified: 'unspecified',
+  };
+  return labels[level] ?? level;
+}
+
+// ---------------------------------------------------------------------------
+// OccupationalContextPanel
+// ---------------------------------------------------------------------------
+
+function OccupationalContextPanel({ ctx }: { ctx: OccupationalContext }) {
+  const [open, setOpen] = useState(true);
+
+  const riasecColors: Record<string, string> = {
+    Realistic: 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300',
+    Investigative: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+    Artistic: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+    Social: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+    Enterprising: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+    Conventional: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  };
+
+  return (
+    <section className="rounded-xl border bg-card p-6">
+      <button
+        className="flex w-full items-center justify-between"
+        onClick={() => setOpen(o => !o)}
+      >
+        <h2 className="font-serif text-xl font-semibold flex items-center gap-2">
+          <Building2 className="h-5 w-5 text-blue-500" />
+          Occupational Baseline
+        </h2>
+        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+      </button>
+
+      {open && (
+        <div className="mt-4 space-y-4">
+          {/* SOC info */}
+          <div className="flex items-start gap-3 text-sm">
+            <Briefcase className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+            <div>
+              <span className="font-medium">{ctx.occupationTitle}</span>
+              <span className="text-muted-foreground ml-2">SOC {ctx.socCode}</span>
+            </div>
+          </div>
+
+          {/* Interest profile (RIASEC) */}
+          {ctx.interestProfile.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                Holland Interest Profile
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ctx.interestProfile.map(type => (
+                  <span
+                    key={type}
+                    className={cn(
+                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      riasecColors[type] ?? 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Work styles */}
+          {ctx.topWorkStyles.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                Top Work Styles
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ctx.topWorkStyles.map(style => (
+                  <span
+                    key={style}
+                    className="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground"
+                  >
+                    {style}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Work values */}
+          {ctx.workValues.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                O*NET Work Values
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ctx.workValues.map(val => (
+                  <span
+                    key={val}
+                    className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                  >
+                    {val}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Ethics note */}
+          {ctx.isProfession && ctx.professionEthicsNote && (
+            <div className="rounded-lg border border-purple-200 bg-purple-50 dark:bg-purple-950 dark:border-purple-800 p-3 text-sm">
+              <p className="font-medium text-purple-800 dark:text-purple-200 flex items-center gap-1.5 mb-1">
+                <Star className="h-3.5 w-3.5" />
+                Regulated Profession
+              </p>
+              <p className="text-purple-700 dark:text-purple-300">{ctx.professionEthicsNote}</p>
+              <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                Conformity–Rules and Universalism–Concern are elevated to reflect professional ethics obligations.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main page
+// ---------------------------------------------------------------------------
 
 const JobAnalysis = () => {
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isEnriching, setIsEnriching] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [rateLimitState, setRateLimitState] = useState<RateLimitState>({ count: 0, timestamps: [] });
 
@@ -86,21 +263,61 @@ const JobAnalysis = () => {
     }
 
     setIsAnalyzing(true);
+    setResults(null);
 
     try {
-      const response = await supabase.functions.invoke('analyze-job-description', {
+      // Step 1: analyze job description
+      const analyzeResponse = await supabase.functions.invoke('analyze-job-description', {
         body: { jobDescription }
       });
 
-      if (response.error) {
-        throw response.error;
+      if (analyzeResponse.error) {
+        throw analyzeResponse.error;
       }
 
-      setResults(response.data as AnalysisResult);
+      const initialResult = analyzeResponse.data as AnalysisResult;
+      setResults(initialResult);
       addRateLimitTimestamp();
       setRateLimitState(getRateLimitState());
-      toast.success('Analysis complete!');
 
+      // Step 2: enrich with O*NET (non-blocking — show initial results immediately)
+      const jobTitle = initialResult.detectedJobTitle;
+      if (jobTitle) {
+        setIsEnriching(true);
+        try {
+          const enrichResponse = await supabase.functions.invoke('enrich-job-analysis', {
+            body: {
+              jobTitle,
+              existingAnalysis: {
+                scores: initialResult.scores,
+                confidence: initialResult.confidence,
+                rationales: initialResult.rationales ?? {},
+              },
+            }
+          });
+
+          if (!enrichResponse.error && enrichResponse.data) {
+            const enriched = enrichResponse.data as AnalysisResult;
+            // Preserve detectedJobTitle from original response
+            setResults({ ...enriched, detectedJobTitle: jobTitle });
+            if (enriched.onetEnriched) {
+              toast.success('Analysis complete — enriched with O*NET occupational data');
+            } else {
+              toast.success('Analysis complete');
+            }
+          } else {
+            toast.success('Analysis complete');
+          }
+        } catch (enrichErr) {
+          // Enrichment failure is non-fatal — initial results are still shown
+          console.warn('O*NET enrichment failed:', enrichErr);
+          toast.success('Analysis complete');
+        } finally {
+          setIsEnriching(false);
+        }
+      } else {
+        toast.success('Analysis complete!');
+      }
 
     } catch (error) {
       console.error('Analysis error:', error);
@@ -121,6 +338,8 @@ const JobAnalysis = () => {
     }
   };
 
+  const isBusy = isAnalyzing || isEnriching;
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation
@@ -135,8 +354,9 @@ const JobAnalysis = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Experimental Feature</AlertTitle>
             <AlertDescription>
-              This tool infers values from job descriptions using AI. Results are directionally
-              accurate but not psychometrically validated. Use for exploration, not formal assessment.
+              This tool infers values from job descriptions using AI and O*NET occupational data.
+              Results are directionally accurate but not psychometrically validated. Use for
+              exploration, not formal assessment.
             </AlertDescription>
           </Alert>
 
@@ -168,9 +388,9 @@ const JobAnalysis = () => {
               </span>
               <Button
                 onClick={handleAnalyze}
-                disabled={isAnalyzing || jobDescription.length < 50 || rateLimitReached}
+                disabled={isBusy || jobDescription.length < 50 || rateLimitReached}
               >
-                {isAnalyzing ? 'Analyzing...' : 'Analyze Values'}
+                {isAnalyzing ? 'Analyzing description…' : isEnriching ? 'Enriching with O*NET…' : 'Analyze Values'}
               </Button>
             </div>
           </section>
@@ -178,6 +398,16 @@ const JobAnalysis = () => {
           {/* Results Section (only show after analysis) */}
           {results && (
             <>
+              {/* Detected job title */}
+              {results.detectedJobTitle && (
+                <p className="text-sm text-muted-foreground text-center">
+                  Detected role: <strong>{results.detectedJobTitle}</strong>
+                  {results.onetEnriched === false && (
+                    <span className="ml-2 text-xs">(O*NET enrichment unavailable)</span>
+                  )}
+                </p>
+              )}
+
               {/* Spider Chart */}
               <section className="rounded-xl border bg-card p-6">
                 <h2 className="font-serif text-xl font-semibold mb-4 text-center">
@@ -188,43 +418,60 @@ const JobAnalysis = () => {
                 </div>
               </section>
 
+              {/* Occupational Context (O*NET) */}
+              {results.occupationalContext && (
+                <OccupationalContextPanel ctx={results.occupationalContext} />
+              )}
+
               {/* Confidence Legend */}
               <section className="rounded-xl border bg-card p-6">
                 <h2 className="font-serif text-xl font-semibold mb-4">Confidence Levels</h2>
-                <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex flex-wrap gap-4 text-sm mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span>High - Clear evidence in description</span>
+                    <span>High — clear evidence in description</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                    <span>Medium - Inferrable but not explicit</span>
+                    <span>Medium — inferrable but not explicit</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500" />
+                    <span>Occupational — inferred from O*NET baseline</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-500" />
+                    <span>Professional — influenced by ethics code</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-gray-400" />
-                    <span>Unspecified - No relevant information</span>
+                    <span>Unspecified — no relevant information</span>
                   </div>
                 </div>
                 <div className="mt-4 space-y-1 text-sm">
                   {Object.entries(results.confidence)
                     .sort(([codeA, levelA], [codeB, levelB]) => {
-                      // Sort by confidence level first (high → medium → unspecified)
-                      const levelOrder = { high: 0, medium: 1, unspecified: 2 };
-                      const levelDiff = levelOrder[levelA] - levelOrder[levelB];
+                      const levelDiff = (CONFIDENCE_ORDER[levelA] ?? 4) - (CONFIDENCE_ORDER[levelB] ?? 4);
                       if (levelDiff !== 0) return levelDiff;
-                      // Then alphabetically by code
                       return codeA.localeCompare(codeB);
                     })
                     .map(([code, level]) => {
                       const rationale = results.rationales?.[code];
+                      const source = results.sources?.[code];
                       return (
                         <div key={code} className="flex items-start gap-2">
-                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                            level === 'high' ? 'bg-green-500' :
-                            level === 'medium' ? 'bg-yellow-500' : 'bg-gray-400'
-                          }`} />
+                          <div className={cn('w-2 h-2 rounded-full mt-1.5 flex-shrink-0', confidenceDot(level))} />
                           <span className="font-mono text-xs flex-shrink-0">{code}</span>
-                          <span className="text-muted-foreground flex-shrink-0">{level}</span>
+                          <span className="text-muted-foreground flex-shrink-0">{confidenceLabel(level)}</span>
+                          {source && source !== 'job_description' && (
+                            <span className={cn(
+                              'text-xs px-1.5 py-0.5 rounded font-mono flex-shrink-0',
+                              source === 'onet' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' :
+                              source === 'merged' ? 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300' : ''
+                            )}>
+                              {source}
+                            </span>
+                          )}
                           {rationale && (
                             <span className="text-xs text-muted-foreground italic truncate">
                               — {rationale}
@@ -250,6 +497,9 @@ const JobAnalysis = () => {
                 <p className="text-sm text-muted-foreground mb-4">
                   Scores range from 0 (contradicts value) to 7 (strongly emphasizes value).
                   3.5 indicates neutral/not mentioned.
+                  {results.onetEnriched && (
+                    <> Scores marked <code className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-1 rounded">onet</code> or <code className="text-xs bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300 px-1 rounded">merged</code> draw on O*NET occupational data.</>
+                  )}
                 </p>
                 <ValueEditor
                   scores={results.scores}
@@ -258,6 +508,9 @@ const JobAnalysis = () => {
               </section>
             </>
           )}
+
+          {/* How it works */}
+          <HowItWorksSection />
         </div>
       </main>
 
@@ -281,5 +534,112 @@ const JobAnalysis = () => {
     </div>
   );
 };
+
+// ---------------------------------------------------------------------------
+// How it works explanation
+// ---------------------------------------------------------------------------
+
+function HowItWorksSection() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className="rounded-xl border bg-card p-6">
+      <button
+        className="flex w-full items-center justify-between"
+        onClick={() => setOpen(o => !o)}
+      >
+        <h2 className="font-serif text-xl font-semibold">How it works</h2>
+        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+      </button>
+
+      {open && (
+        <div className="mt-4 space-y-4 text-sm text-muted-foreground">
+          <p>
+            This tool uses a two-layer approach to infer the Schwartz values (PVQ-RR) that
+            best describe what a job is likely to reward, require, and reinforce.
+          </p>
+
+          <div className="space-y-3">
+            <div className="flex gap-3">
+              <div className="w-6 h-6 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+              <div>
+                <p className="font-medium text-foreground">Job description analysis</p>
+                <p>
+                  An AI reads the job posting and scores all 19 Schwartz values based on
+                  what the employer explicitly states or implies. Values with clear textual
+                  evidence are marked <strong>High</strong>; inferrable ones are{' '}
+                  <strong>Medium</strong>; anything the description doesn't address is{' '}
+                  <strong>Unspecified</strong> (defaulting to the neutral score of 3.5).
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+              <div>
+                <p className="font-medium text-foreground">O*NET occupational enrichment</p>
+                <p>
+                  The detected job title is looked up in the{' '}
+                  <a
+                    href="https://www.onetcenter.org/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    O*NET database
+                  </a>{' '}
+                  (maintained by the U.S. Department of Labor). O*NET's work values, work
+                  styles, Holland interest codes, and knowledge areas are mapped to Schwartz
+                  values to fill any gaps left <strong>Unspecified</strong> by the job
+                  description. These scores are marked <strong>Occupational</strong> — they
+                  reflect what the work structurally requires, not what this employer chose
+                  to emphasise.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <div className="w-6 h-6 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+              <div>
+                <p className="font-medium text-foreground">Merging and tension detection</p>
+                <p>
+                  Where both sources agree, their scores are blended (60% job description,
+                  40% O*NET) and marked <strong>Merged</strong>. Where they diverge by
+                  more than 1.5 points, a tension note is added to the rationale — these
+                  gaps between what an employer <em>said</em> and what the work{' '}
+                  <em>structurally requires</em> are often the most revealing interview topics.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</div>
+              <div>
+                <p className="font-medium text-foreground">Professional ethics detection</p>
+                <p>
+                  For licensed or regulated professions (medicine, law, architecture, nursing,
+                  etc.) an applicable ethics code is identified. Conformity–Rules and
+                  Universalism–Concern are nudged upward slightly to reflect the public
+                  accountability obligations those codes impose, and marked{' '}
+                  <strong>Professional</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border bg-muted/50 p-3 text-xs">
+            <p className="font-medium mb-1">Data provenance note</p>
+            <p>
+              O*NET data is collected from U.S. workers and employers. Scores reflect North
+              American occupational norms and may not match conditions in other countries.
+              The mapping from O*NET constructs to Schwartz values is a directional heuristic,
+              not a psychometrically validated instrument.
+            </p>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 export default JobAnalysis;

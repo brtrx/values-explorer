@@ -2,10 +2,11 @@ name: Deploy Supabase Edge Functions
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "claude/onet-job-analysis-enrichment-FQw7h"]
     paths:
       - "supabase/functions/**"
       - "supabase/config.toml"
+      - ".github/workflows/functions.yml"
   workflow_dispatch:
 
 jobs:

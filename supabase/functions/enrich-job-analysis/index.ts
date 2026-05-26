@@ -158,11 +158,31 @@ async function fetchOnet(
   return [];
 }
 
-async function findOccupation(
-  jobTitle: string,
+/**
+ * Strip seniority/level prefixes that O*NET titles don't use.
+ * "Senior Architect" → "Architect", "Lead Software Engineer" → "Software Engineer"
+ */
+function normalizeJobTitle(title: string): string {
+  const prefixes = [
+    "senior", "junior", "lead", "principal", "staff", "associate",
+    "head of", "director of", "vp of", "chief", "founding",
+    "mid-level", "mid level", "entry-level", "entry level",
+  ];
+  let normalized = title.trim().toLowerCase();
+  for (const prefix of prefixes) {
+    if (normalized.startsWith(prefix + " ")) {
+      normalized = normalized.slice(prefix.length + 1).trim();
+    }
+  }
+  // Restore original casing by capitalising first letter of each word
+  return normalized.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+async function searchOnet(
+  keyword: string,
   credentials: string
-): Promise<{ code: string; title: string; relevance: number } | null> {
-  const url = `https://services.onetcenter.org/ws/occupations/search?keyword=${encodeURIComponent(jobTitle)}&start=1&end=3`;
+): Promise<{ code: string; title: string } | null> {
+  const url = `https://services.onetcenter.org/ws/occupations/search?keyword=${encodeURIComponent(keyword)}&start=1&end=5`;
   const response = await fetch(url, {
     headers: {
       Authorization: `Basic ${credentials}`,
@@ -175,15 +195,26 @@ async function findOccupation(
   }
 
   const data = await response.json();
-  const occupations: Array<{ code: string; title: string; relevance?: number }> =
-    data.occupation ?? [];
+  const occupations: Array<{ code: string; title: string }> = data.occupation ?? [];
+  return occupations.length > 0 ? occupations[0] : null;
+}
 
-  if (occupations.length === 0) return null;
+async function findOccupation(
+  jobTitle: string,
+  credentials: string
+): Promise<{ code: string; title: string } | null> {
+  // Try the full title first
+  const result = await searchOnet(jobTitle, credentials);
+  if (result) return result;
 
-  const top = occupations[0];
-  const relevance = top.relevance ?? 100; // If not returned, assume full match
+  // Try with seniority prefix stripped
+  const normalized = normalizeJobTitle(jobTitle);
+  if (normalized.toLowerCase() !== jobTitle.toLowerCase()) {
+    const fallback = await searchOnet(normalized, credentials);
+    if (fallback) return fallback;
+  }
 
-  return { code: top.code, title: top.title, relevance };
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -363,29 +394,29 @@ serve(async (req) => {
     if (!ONET_USERNAME || !ONET_PASSWORD) {
       console.error("O*NET credentials not configured — returning original analysis");
       return new Response(
-        JSON.stringify({ ...existingAnalysis, onetEnriched: false }),
+        JSON.stringify({ ...existingAnalysis, onetEnriched: false, onetStatus: "credentials_missing" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const credentials = btoa(`${ONET_USERNAME}:${ONET_PASSWORD}`);
 
-    // Step 1: Look up occupation
+    // Step 1: Look up occupation (tries full title, then strips seniority prefix)
     console.log(`Enriching job analysis for: "${jobTitle}"`);
-    let occupation: { code: string; title: string; relevance: number } | null = null;
+    let occupation: { code: string; title: string } | null = null;
 
     try {
       occupation = await findOccupation(jobTitle.trim(), credentials);
     } catch (err) {
       console.error("O*NET occupation lookup failed:", err);
       return new Response(
-        JSON.stringify({ ...existingAnalysis, onetEnriched: false }),
+        JSON.stringify({ ...existingAnalysis, onetEnriched: false, onetStatus: "api_error" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!occupation || occupation.relevance < 70) {
-      console.log(`No confident O*NET match for "${jobTitle}" (relevance: ${occupation?.relevance ?? 0})`);
+    if (!occupation) {
+      console.log(`No O*NET match for "${jobTitle}" (tried with and without seniority prefix)`);
       return new Response(
         JSON.stringify({ ...existingAnalysis, onetEnriched: false }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }

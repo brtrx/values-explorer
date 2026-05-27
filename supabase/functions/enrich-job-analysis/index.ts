@@ -182,15 +182,13 @@ function normalizeJobTitle(title: string): string {
 
 async function searchOnet(
   keyword: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<{ code: string; title: string } | null> {
+  // TODO: update URL once correct v2 path is confirmed from samples repo
   const url = `https://api-v2.onetcenter.org/occupations/search/?keyword=${encodeURIComponent(keyword)}&start=1&end=10`;
   console.log(`O*NET search: ${url}`);
   const response = await fetch(url, {
-    headers: {
-      "X-API-Key": apiKey,
-      Accept: "application/json",
-    },
+    headers: { "X-API-Key": apiKey, Accept: "application/json" },
   });
 
   const rawText = await response.text();
@@ -209,7 +207,6 @@ async function searchOnet(
 
   console.log(`O*NET response keys: [${Object.keys(data).join(", ")}]`);
 
-  // Handle both singular (v1: "occupation") and plural (v2: "occupations") field names
   const occupations = (
     (data.occupation as Array<{ code: string; title: string }>) ??
     (data.occupations as Array<{ code: string; title: string }>) ??

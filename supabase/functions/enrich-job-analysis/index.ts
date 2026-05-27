@@ -182,7 +182,9 @@ async function searchOnet(
   keyword: string,
   credentials: string
 ): Promise<{ code: string; title: string } | null> {
-  const url = `https://services.onetcenter.org/ws/occupations/search?keyword=${encodeURIComponent(keyword)}&start=1&end=5`;
+  // Correct O*NET WS endpoint: /ws/occupations?keyword=... (NOT /search sub-path)
+  const url = `https://services.onetcenter.org/ws/occupations?keyword=${encodeURIComponent(keyword)}&start=1&end=10`;
+  console.log(`O*NET search: ${url}`);
   const response = await fetch(url, {
     headers: {
       Authorization: `Basic ${credentials}`,
@@ -191,29 +193,46 @@ async function searchOnet(
   });
 
   if (!response.ok) {
-    throw new Error(`O*NET search error: ${response.status}`);
+    throw new Error(`O*NET search error: ${response.status} for keyword "${keyword}"`);
   }
 
   const data = await response.json();
+  console.log(`O*NET search result for "${keyword}": total=${data.total ?? "?"}, keys=${Object.keys(data).join(",")}`);
+
   const occupations: Array<{ code: string; title: string }> = data.occupation ?? [];
+  console.log(`O*NET occupations returned: ${occupations.length}`);
   return occupations.length > 0 ? occupations[0] : null;
 }
 
 async function findOccupation(
   jobTitle: string,
   credentials: string
-): Promise<{ code: string; title: string } | null> {
-  // Try the full title first
+): Promise<{ code: string; title: string; searchedAs: string } | null> {
+  // 1. Try the full title
   const result = await searchOnet(jobTitle, credentials);
-  if (result) return result;
+  if (result) return { ...result, searchedAs: jobTitle };
 
-  // Try with seniority prefix stripped
+  // 2. Try with seniority prefix stripped ("Senior Architect" → "Architect")
   const normalized = normalizeJobTitle(jobTitle);
   if (normalized.toLowerCase() !== jobTitle.toLowerCase()) {
+    console.log(`Trying normalized title: "${normalized}"`);
     const fallback = await searchOnet(normalized, credentials);
-    if (fallback) return fallback;
+    if (fallback) return { ...fallback, searchedAs: normalized };
   }
 
+  // 3. Last resort: try just the last significant word
+  //    "Senior Project Architect" → "Architect"
+  const words = normalized.split(/\s+/).filter(w => w.length > 3);
+  if (words.length > 1) {
+    const lastWord = words[words.length - 1];
+    if (lastWord.toLowerCase() !== normalized.toLowerCase()) {
+      console.log(`Trying last word fallback: "${lastWord}"`);
+      const lastWordResult = await searchOnet(lastWord, credentials);
+      if (lastWordResult) return { ...lastWordResult, searchedAs: lastWord };
+    }
+  }
+
+  console.log(`No O*NET match for "${jobTitle}" after ${words.length > 1 ? "3" : "2"} attempts`);
   return null;
 }
 
@@ -425,15 +444,15 @@ serve(async (req) => {
     }
 
     if (!occupation) {
-      console.log(`No O*NET match for "${jobTitle}" (tried with and without seniority prefix)`);
+      console.log(`No O*NET match for "${jobTitle}" after all fallbacks`);
       return new Response(
-        JSON.stringify({ ...existingAnalysis, onetEnriched: false }),
+        JSON.stringify({ ...existingAnalysis, onetEnriched: false, onetStatus: "no_match", searchedTitle: jobTitle }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const { code: socCode, title: occupationTitle } = occupation;
-    console.log(`Matched: ${socCode} — ${occupationTitle}`);
+    const { code: socCode, title: occupationTitle, searchedAs } = occupation;
+    console.log(`Matched: ${socCode} — ${occupationTitle} (searched as: "${searchedAs}")`);
 
     // Step 2: Fetch occupational detail in parallel
     let workValuesData: OnetElement[] = [];

@@ -15,7 +15,8 @@ import { buildComparisonPrompt, PromptPair } from '@/lib/prompt-builders';
 import { stripMarkdown } from '@/lib/utils';
 import { toast } from 'sonner';
 
-const COMPARE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compare-archetypes`;
+const SUPABASE_BASE_URL = (import.meta.env.VITE_SUPABASE_URL as string).replace(/\/$/, '');
+const COMPARE_URL = `${SUPABASE_BASE_URL}/functions/v1/compare-archetypes`;
 
 // Custom profile type for user-created profiles
 interface CustomProfile {

@@ -8,12 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { FEATURES } from '@/lib/features';
 
 interface NavItem {
   to: string;
   label: string;
   description?: string;
   icon: React.ComponentType<{ className?: string }>;
+  hidden?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -22,11 +24,13 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/compare', label: 'Compare Profiles', description: 'Compare two profiles side-by-side', icon: Users },
   { to: '/stressors', label: 'Stressors', description: 'Explore value polarities', icon: Layers },
   { to: '/scenarios', label: 'Explore Scenarios', description: 'AI-generated conflict scenarios', icon: Sparkles },
-  { to: '/job-analysis', label: 'Job Analysis', description: 'Analyze job descriptions', icon: Briefcase },
+  { to: '/job-analysis', label: 'Job Analysis', description: 'Analyze job descriptions', icon: Briefcase, hidden: !FEATURES.jobAnalysis },
   { to: '/export', label: 'Data Export', description: 'Export profiles as JSON', icon: FileDown },
   { to: '/preferred-verbs', label: 'Preferred Verbs', description: 'Values as first-person verb forms', icon: Languages },
   { to: '/research', label: 'Research Background', description: 'Literature review', icon: BookOpen },
 ];
+
+const VISIBLE_NAV_ITEMS = NAV_ITEMS.filter(item => !item.hidden);
 
 interface NavigationProps {
   title: string;
@@ -49,14 +53,14 @@ export function Navigation({ title, description }: NavigationProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-64">
-            {NAV_ITEMS.map((item, index) => {
+            {VISIBLE_NAV_ITEMS.map((item, index) => {
               const Icon = item.icon;
               const isActive = currentPath === item.to;
 
               return (
                 <div key={item.to}>
                   {index === 1 && <DropdownMenuSeparator />}
-                  {index === NAV_ITEMS.length - 1 && <DropdownMenuSeparator />}
+                  {index === VISIBLE_NAV_ITEMS.length - 1 && <DropdownMenuSeparator />}
                   <DropdownMenuItem
                     disabled={isActive}
                     onSelect={() => navigate(item.to)}

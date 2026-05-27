@@ -16,8 +16,9 @@ import { analyzeReconciliation } from '@/lib/reconciliation-analysis';
 import { buildConflictPrompt, buildReconciliationPrompt, PromptPair } from '@/lib/prompt-builders';
 import { stripMarkdown } from '@/lib/utils';
 
-const CONFLICT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-conflict-scenario`;
-const RECONCILIATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-reconciliation`;
+const SUPABASE_BASE_URL = (import.meta.env.VITE_SUPABASE_URL as string).replace(/\/$/, '');
+const CONFLICT_URL = `${SUPABASE_BASE_URL}/functions/v1/generate-conflict-scenario`;
+const RECONCILIATION_URL = `${SUPABASE_BASE_URL}/functions/v1/generate-reconciliation`;
 
 interface CustomProfile {
   name: string;

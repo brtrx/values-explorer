@@ -16,7 +16,8 @@ import {
 import { StressorId } from '@/lib/stressors';
 import { toast } from 'sonner';
 
-const CLARIFICATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-clarification-scenarios`;
+const SUPABASE_BASE_URL = (import.meta.env.VITE_SUPABASE_URL as string).replace(/\/$/, '');
+const CLARIFICATION_URL = `${SUPABASE_BASE_URL}/functions/v1/generate-clarification-scenarios`;
 
 interface Scenario {
   stressorId: string;

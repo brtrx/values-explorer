@@ -12,7 +12,8 @@ import { OverlappingSchwartzCircle } from '@/components/OverlappingSchwartzCircl
 import { ValueAbbreviation } from '@/components/ValueAbbreviation';
 import { toast } from 'sonner';
 
-const SCENARIO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-persona-scenario`;
+const SUPABASE_BASE_URL = (import.meta.env.VITE_SUPABASE_URL as string).replace(/\/$/, '');
+const SCENARIO_URL = `${SUPABASE_BASE_URL}/functions/v1/generate-persona-scenario`;
 
 // Predefined colors for the two personas
 const PERSONA_COLORS = ['#3b82f6', '#ef4444'];
@@ -226,7 +227,10 @@ export default function ExploreScenarios() {
 
       const response = await fetch(SCENARIO_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
         body: JSON.stringify({
           personas: personaData.map(p => ({
             name: p.name,

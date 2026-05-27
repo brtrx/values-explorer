@@ -37,7 +37,7 @@ const App = () => {
             <Route path="/stressors" element={<Stressors />} />
             <Route path="/scenarios" element={<ExploreScenarios />} />
             <Route path="/p/:id" element={<SharedProfile />} />
-            <Route path="/export" element={<DataExport />} />
+            {FEATURES.dataExport && <Route path="/export" element={<DataExport />} />}
             {FEATURES.jobAnalysis && <Route path="/job-analysis" element={<JobAnalysis />} />}
             <Route path="/research" element={<Research />} />
             <Route path="/preferred-verbs" element={<PreferredVerbs />} />

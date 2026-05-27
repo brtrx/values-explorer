@@ -6,4 +6,6 @@
 export const FEATURES = {
   /** Set to true to re-enable the Job Analysis page (/job-analysis). */
   jobAnalysis: false,
+  /** Set to true to re-enable the Data Export page (/export). */
+  dataExport: false,
 } as const;

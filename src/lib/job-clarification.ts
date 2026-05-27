@@ -16,7 +16,7 @@
 import { ValueScores, getValueByCode } from './schwartz-values';
 import { StressorId, STRESSORS, getPolarity } from './stressors';
 
-export type ConfidenceLevel = 'high' | 'medium' | 'unspecified';
+export type ConfidenceLevel = 'high' | 'medium' | 'unspecified' | 'occupational' | 'professional';
 
 export interface UndecidedValue {
   code: string;
@@ -54,6 +54,7 @@ export function identifyUndecidedValues(
   const undecided: UndecidedValue[] = [];
 
   for (const [code, conf] of Object.entries(confidence)) {
+    // 'occupational' and 'professional' have a real signal — treat as decided
     if (conf === 'medium' || conf === 'unspecified') {
       const valueInfo = getValueByCode(code);
       if (valueInfo) {

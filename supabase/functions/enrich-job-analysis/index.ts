@@ -455,26 +455,42 @@ serve(async (req) => {
     const { code: socCode, title: occupationTitle, searchedAs } = occupation;
     console.log(`Matched: ${socCode} — ${occupationTitle} (searched as: "${searchedAs}")`);
 
-    // Step 2: Fetch occupational detail in parallel
+    // Step 2: Fetch occupational detail in parallel.
+    // Probe the occupation overview first to discover available sub-resources.
     let workValuesData: OnetElement[] = [];
     let workStylesData: OnetElement[] = [];
     let interestsData: OnetElement[] = [];
     let knowledgeData: OnetElement[] = [];
 
+    // Probe the occupation root to discover v2 detail paths
     try {
-      [workValuesData, workStylesData, interestsData, knowledgeData] = await Promise.all([
-        fetchOnet(`/occupations/${socCode}/work_values`, apiKey),
-        fetchOnet(`/occupations/${socCode}/work_styles`, apiKey),
-        fetchOnet(`/occupations/${socCode}/interests`, apiKey),
-        fetchOnet(`/occupations/${socCode}/knowledge`, apiKey),
-      ]);
-    } catch (err) {
-      console.error("O*NET detail fetch failed:", err);
-      return new Response(
-        JSON.stringify({ ...existingAnalysis, onetEnriched: false }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      const probeResp = await fetch(
+        `https://api-v2.onetcenter.org/online/occupations/${socCode}/`,
+        { headers: { "X-API-Key": apiKey, Accept: "application/json" } }
       );
+      const probeText = await probeResp.text();
+      console.log(`O*NET occupation probe (${probeResp.status}): ${probeText.slice(0, 800)}`);
+    } catch (e) {
+      console.log(`O*NET occupation probe failed: ${e}`);
     }
+
+    // Fetch details — each is independently optional; failures are logged but don't abort
+    const detailPaths: [string, (d: OnetElement[]) => void][] = [
+      [`/occupations/${socCode}/work_values`, (d) => { workValuesData = d; }],
+      [`/occupations/${socCode}/work_styles`, (d) => { workStylesData = d; }],
+      [`/occupations/${socCode}/interests`,   (d) => { interestsData = d; }],
+      [`/occupations/${socCode}/knowledge`,   (d) => { knowledgeData = d; }],
+    ];
+
+    await Promise.all(
+      detailPaths.map(async ([path, setter]) => {
+        try {
+          setter(await fetchOnet(path, apiKey));
+        } catch (err) {
+          console.warn(`O*NET detail failed for ${path}:`, String(err).slice(0, 200));
+        }
+      })
+    );
 
     // Step 3: Accumulate Schwartz signals
     const onetSignals: Record<string, number[]> = {};

@@ -387,19 +387,28 @@ serve(async (req) => {
       );
     }
 
-    // Get O*NET credentials
+    // Get O*NET credentials.
+    // O*NET Web Services uses HTTP Basic Auth. When you register at
+    // services.onetcenter.org you receive a username/code (which looks like an
+    // API key). Set ONET_API_KEY to that value and leave the password empty, OR
+    // set both ONET_USERNAME and ONET_PASSWORD if you have a full credential pair.
+    const ONET_API_KEY = Deno.env.get("ONET_API_KEY");
     const ONET_USERNAME = Deno.env.get("ONET_USERNAME");
     const ONET_PASSWORD = Deno.env.get("ONET_PASSWORD");
 
-    if (!ONET_USERNAME || !ONET_PASSWORD) {
+    let credentials: string;
+    if (ONET_API_KEY) {
+      // Single API key — use as username with empty password
+      credentials = btoa(`${ONET_API_KEY}:`);
+    } else if (ONET_USERNAME && ONET_PASSWORD) {
+      credentials = btoa(`${ONET_USERNAME}:${ONET_PASSWORD}`);
+    } else {
       console.error("O*NET credentials not configured — returning original analysis");
       return new Response(
         JSON.stringify({ ...existingAnalysis, onetEnriched: false, onetStatus: "credentials_missing" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const credentials = btoa(`${ONET_USERNAME}:${ONET_PASSWORD}`);
 
     // Step 1: Look up occupation (tries full title, then strips seniority prefix)
     console.log(`Enriching job analysis for: "${jobTitle}"`);

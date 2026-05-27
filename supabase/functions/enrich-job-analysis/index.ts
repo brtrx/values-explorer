@@ -133,10 +133,13 @@ async function fetchOnet(
   });
 
   if (!response.ok) {
-    throw new Error(`O*NET API error: ${response.status} on ${path}`);
+    const body = await response.text();
+    throw new Error(`O*NET API error: ${response.status} on ${path} — ${body.slice(0, 200)}`);
   }
 
-  const data = await response.json();
+  const rawText = await response.text();
+  console.log(`O*NET ${path} keys: [${Object.keys(JSON.parse(rawText)).join(", ")}]`);
+  const data = JSON.parse(rawText);
 
   // O*NET returns different shapes depending on the endpoint.
   // Try common wrapper keys used across v2 endpoints.
@@ -190,15 +193,29 @@ async function searchOnet(
     },
   });
 
+  const rawText = await response.text();
+  console.log(`O*NET HTTP ${response.status} for "${keyword}" — raw: ${rawText.slice(0, 600)}`);
+
   if (!response.ok) {
     throw new Error(`O*NET search error: ${response.status} for keyword "${keyword}"`);
   }
 
-  const data = await response.json();
-  console.log(`O*NET search result for "${keyword}": total=${data.total ?? "?"}, keys=${Object.keys(data).join(",")}`);
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    throw new Error(`O*NET non-JSON response for "${keyword}": ${rawText.slice(0, 100)}`);
+  }
 
-  const occupations: Array<{ code: string; title: string }> = data.occupation ?? [];
-  console.log(`O*NET occupations returned: ${occupations.length}`);
+  console.log(`O*NET response keys: [${Object.keys(data).join(", ")}]`);
+
+  // Handle both singular (v1: "occupation") and plural (v2: "occupations") field names
+  const occupations = (
+    (data.occupation as Array<{ code: string; title: string }>) ??
+    (data.occupations as Array<{ code: string; title: string }>) ??
+    []
+  );
+  console.log(`O*NET occupations found: ${occupations.length}`);
   return occupations.length > 0 ? occupations[0] : null;
 }
 

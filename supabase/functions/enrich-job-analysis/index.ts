@@ -184,7 +184,7 @@ async function searchOnet(
   keyword: string,
   apiKey: string
 ): Promise<{ code: string; title: string } | null> {
-  const url = `https://api-v2.onetcenter.org/occupations/?keyword=${encodeURIComponent(keyword)}&start=1&end=10`;
+  const url = `https://api-v2.onetcenter.org/occupations/search/?keyword=${encodeURIComponent(keyword)}&start=1&end=10`;
   console.log(`O*NET search: ${url}`);
   const response = await fetch(url, {
     headers: {

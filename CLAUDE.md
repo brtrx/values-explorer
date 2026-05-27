@@ -148,7 +148,7 @@ Defined in `src/App.tsx`:
 | `/compare` | `Compare` | Compare multiple profiles |
 | `/stressors` | `Stressors` | Explore stressors |
 | `/scenarios` | `ExploreScenarios` | AI scenario generation |
-| `/job-analysis` | `JobAnalysis` | Analyze job descriptions |
+| `/job-analysis` | `JobAnalysis` | Analyze job descriptions *(feature-flagged off — set `FEATURES.jobAnalysis = true` in `src/lib/features.ts` to re-enable)* |
 | `/export` | `DataExport` | Export profiles as JSON |
 | `/research` | `Research` | Academic background |
 | `/p/:id` | `SharedProfile` | Publicly shared profile |
@@ -310,6 +310,7 @@ When working on Claude-assisted tasks, develop on the designated branch and push
 | File | Why it matters |
 |---|---|
 | `src/App.tsx` | All routes defined here |
+| `src/lib/features.ts` | Feature flags — toggle pages/features on/off by flipping booleans |
 | `src/lib/schwartz-values.ts` | Canonical value definitions and helpers |
 | `src/lib/archetypes.ts` | All 81 archetype profiles |
 | `src/lib/stressors.ts` | Stressor framework and polarity vectors |

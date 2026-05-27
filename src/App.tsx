@@ -14,6 +14,7 @@ import JobAnalysis from "./pages/JobAnalysis";
 import Research from "./pages/Research";
 import PreferredVerbs from "./pages/PreferredVerbs";
 import NotFound from "./pages/NotFound";
+import { FEATURES } from "@/lib/features";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +38,7 @@ const App = () => {
             <Route path="/scenarios" element={<ExploreScenarios />} />
             <Route path="/p/:id" element={<SharedProfile />} />
             <Route path="/export" element={<DataExport />} />
-            <Route path="/job-analysis" element={<JobAnalysis />} />
+            {FEATURES.jobAnalysis && <Route path="/job-analysis" element={<JobAnalysis />} />}
             <Route path="/research" element={<Research />} />
             <Route path="/preferred-verbs" element={<PreferredVerbs />} />
             <Route path="*" element={<NotFound />} />

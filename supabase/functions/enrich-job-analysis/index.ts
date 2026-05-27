@@ -122,12 +122,12 @@ const PROFESSION_ETHICS_MAP: Record<string, string> = {
 
 async function fetchOnet(
   path: string,
-  credentials: string
+  apiKey: string
 ): Promise<OnetElement[]> {
-  const url = `https://services.onetcenter.org/ws${path}`;
+  const url = `https://api-v2.onetcenter.org${path}`;
   const response = await fetch(url, {
     headers: {
-      Authorization: `Basic ${credentials}`,
+      "X-API-Key": apiKey,
       Accept: "application/json",
     },
   });
@@ -139,8 +139,7 @@ async function fetchOnet(
   const data = await response.json();
 
   // O*NET returns different shapes depending on the endpoint.
-  // Most detail endpoints wrap results in the last path segment.
-  // Try common keys: element, occupation, category
+  // Try common wrapper keys used across v2 endpoints.
   const candidates = [
     data.element,
     data.occupation,
@@ -180,14 +179,13 @@ function normalizeJobTitle(title: string): string {
 
 async function searchOnet(
   keyword: string,
-  credentials: string
+  apiKey: string
 ): Promise<{ code: string; title: string } | null> {
-  // Correct O*NET WS endpoint: /ws/occupations?keyword=... (NOT /search sub-path)
-  const url = `https://services.onetcenter.org/ws/occupations?keyword=${encodeURIComponent(keyword)}&start=1&end=10`;
+  const url = `https://api-v2.onetcenter.org/occupations/?keyword=${encodeURIComponent(keyword)}&start=1&end=10`;
   console.log(`O*NET search: ${url}`);
   const response = await fetch(url, {
     headers: {
-      Authorization: `Basic ${credentials}`,
+      "X-API-Key": apiKey,
       Accept: "application/json",
     },
   });
@@ -206,17 +204,17 @@ async function searchOnet(
 
 async function findOccupation(
   jobTitle: string,
-  credentials: string
+  apiKey: string
 ): Promise<{ code: string; title: string; searchedAs: string } | null> {
   // 1. Try the full title
-  const result = await searchOnet(jobTitle, credentials);
+  const result = await searchOnet(jobTitle, apiKey);
   if (result) return { ...result, searchedAs: jobTitle };
 
   // 2. Try with seniority prefix stripped ("Senior Architect" → "Architect")
   const normalized = normalizeJobTitle(jobTitle);
   if (normalized.toLowerCase() !== jobTitle.toLowerCase()) {
     console.log(`Trying normalized title: "${normalized}"`);
-    const fallback = await searchOnet(normalized, credentials);
+    const fallback = await searchOnet(normalized, apiKey);
     if (fallback) return { ...fallback, searchedAs: normalized };
   }
 
@@ -227,7 +225,7 @@ async function findOccupation(
     const lastWord = words[words.length - 1];
     if (lastWord.toLowerCase() !== normalized.toLowerCase()) {
       console.log(`Trying last word fallback: "${lastWord}"`);
-      const lastWordResult = await searchOnet(lastWord, credentials);
+      const lastWordResult = await searchOnet(lastWord, apiKey);
       if (lastWordResult) return { ...lastWordResult, searchedAs: lastWord };
     }
   }
@@ -406,23 +404,12 @@ serve(async (req) => {
       );
     }
 
-    // Get O*NET credentials.
-    // O*NET Web Services uses HTTP Basic Auth. When you register at
-    // services.onetcenter.org you receive a username/code (which looks like an
-    // API key). Set ONET_API_KEY to that value and leave the password empty, OR
-    // set both ONET_USERNAME and ONET_PASSWORD if you have a full credential pair.
-    const ONET_API_KEY = Deno.env.get("ONET_API_KEY");
-    const ONET_USERNAME = Deno.env.get("ONET_USERNAME");
-    const ONET_PASSWORD = Deno.env.get("ONET_PASSWORD");
-
-    let credentials: string;
-    if (ONET_API_KEY) {
-      // Single API key — use as username with empty password
-      credentials = btoa(`${ONET_API_KEY}:`);
-    } else if (ONET_USERNAME && ONET_PASSWORD) {
-      credentials = btoa(`${ONET_USERNAME}:${ONET_PASSWORD}`);
-    } else {
-      console.error("O*NET credentials not configured — returning original analysis");
+    // Get O*NET API key.
+    // O*NET API v2 uses an X-API-Key header. Set ONET_API_KEY in Supabase
+    // project secrets (Dashboard → Settings → Edge Functions → Secrets).
+    const apiKey = Deno.env.get("ONET_API_KEY");
+    if (!apiKey) {
+      console.error("ONET_API_KEY not configured — returning original analysis");
       return new Response(
         JSON.stringify({ ...existingAnalysis, onetEnriched: false, onetStatus: "credentials_missing" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -434,7 +421,7 @@ serve(async (req) => {
     let occupation: { code: string; title: string } | null = null;
 
     try {
-      occupation = await findOccupation(jobTitle.trim(), credentials);
+      occupation = await findOccupation(jobTitle.trim(), apiKey);
     } catch (err) {
       console.error("O*NET occupation lookup failed:", err);
       return new Response(
@@ -462,10 +449,10 @@ serve(async (req) => {
 
     try {
       [workValuesData, workStylesData, interestsData, knowledgeData] = await Promise.all([
-        fetchOnet(`/occupations/${socCode}/work_values`, credentials),
-        fetchOnet(`/occupations/${socCode}/work_styles`, credentials),
-        fetchOnet(`/occupations/${socCode}/interests`, credentials),
-        fetchOnet(`/occupations/${socCode}/knowledge`, credentials),
+        fetchOnet(`/occupations/${socCode}/work_values/`, apiKey),
+        fetchOnet(`/occupations/${socCode}/work_styles/`, apiKey),
+        fetchOnet(`/occupations/${socCode}/interests/`, apiKey),
+        fetchOnet(`/occupations/${socCode}/knowledge/`, apiKey),
       ]);
     } catch (err) {
       console.error("O*NET detail fetch failed:", err);

@@ -124,7 +124,8 @@ async function fetchOnet(
   path: string,
   apiKey: string
 ): Promise<OnetElement[]> {
-  const url = `https://api-v2.onetcenter.org${path}`;
+  // Detail endpoints follow /online/occupations/{code}/{data-type}/ pattern
+  const url = `https://api-v2.onetcenter.org/online${path}`;
   const response = await fetch(url, {
     headers: {
       "X-API-Key": apiKey,
@@ -138,10 +139,9 @@ async function fetchOnet(
   }
 
   const rawText = await response.text();
-  console.log(`O*NET ${path} keys: [${Object.keys(JSON.parse(rawText)).join(", ")}]`);
   const data = JSON.parse(rawText);
+  console.log(`O*NET ${path} keys: [${Object.keys(data).join(", ")}]`);
 
-  // O*NET returns different shapes depending on the endpoint.
   // Try common wrapper keys used across v2 endpoints.
   const candidates = [
     data.element,
@@ -184,8 +184,8 @@ async function searchOnet(
   keyword: string,
   apiKey: string,
 ): Promise<{ code: string; title: string } | null> {
-  // TODO: update URL once correct v2 path is confirmed from samples repo
-  const url = `https://api-v2.onetcenter.org/occupations/search/?keyword=${encodeURIComponent(keyword)}&start=1&end=10`;
+  // Confirmed from official v2 samples: https://github.com/onetcenter/web-services-v2-samples
+  const url = `https://api-v2.onetcenter.org/online/search?keyword=${encodeURIComponent(keyword)}&end=10`;
   console.log(`O*NET search: ${url}`);
   const response = await fetch(url, {
     headers: { "X-API-Key": apiKey, Accept: "application/json" },
@@ -463,10 +463,10 @@ serve(async (req) => {
 
     try {
       [workValuesData, workStylesData, interestsData, knowledgeData] = await Promise.all([
-        fetchOnet(`/occupations/${socCode}/work_values/`, apiKey),
-        fetchOnet(`/occupations/${socCode}/work_styles/`, apiKey),
-        fetchOnet(`/occupations/${socCode}/interests/`, apiKey),
-        fetchOnet(`/occupations/${socCode}/knowledge/`, apiKey),
+        fetchOnet(`/occupations/${socCode}/work_values`, apiKey),
+        fetchOnet(`/occupations/${socCode}/work_styles`, apiKey),
+        fetchOnet(`/occupations/${socCode}/interests`, apiKey),
+        fetchOnet(`/occupations/${socCode}/knowledge`, apiKey),
       ]);
     } catch (err) {
       console.error("O*NET detail fetch failed:", err);
